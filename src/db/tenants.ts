@@ -1,5 +1,46 @@
 import { resolveSurface } from "@/domain/hostname";
 
+export type TenantRow = {
+  id: number;
+  slug: string;
+  custom_domain: string | null;
+  name: string;
+  vertical_id: number;
+  theme_id: number;
+  status: string;
+};
+
+export async function findTenantById(db: D1Database, id: number): Promise<TenantRow | null> {
+  return db
+    .prepare(
+      "SELECT id, slug, custom_domain, name, vertical_id, theme_id, status FROM tenants WHERE id = ?1",
+    )
+    .bind(id)
+    .first<TenantRow>();
+}
+
+export function tenantHostnames(tenant: TenantRow, baseDomain: string): string[] {
+  const hostnames = [`${tenant.slug}.${baseDomain}`];
+  if (tenant.custom_domain) hostnames.push(tenant.custom_domain);
+  return hostnames;
+}
+
+export async function setTenantStatus(
+  db: D1Database,
+  tenantId: number,
+  status: string,
+): Promise<void> {
+  await db.prepare("UPDATE tenants SET status = ?1 WHERE id = ?2").bind(status, tenantId).run();
+}
+
+export async function setTenantTheme(
+  db: D1Database,
+  tenantId: number,
+  themeId: number,
+): Promise<void> {
+  await db.prepare("UPDATE tenants SET theme_id = ?1 WHERE id = ?2").bind(themeId, tenantId).run();
+}
+
 const CACHE_TTL_MS = 5 * 60_000;
 const MAX_CACHE_ENTRIES = 5_000;
 const cache = new Map<string, { tenantId: number | null; expiresAt: number }>();

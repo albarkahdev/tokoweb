@@ -27,3 +27,11 @@ export function yesterdayWibWindow(nowMs: number): DayWindow {
 export function pruneCutoffUtc(nowMs: number): string {
   return sqlUtcDateTime(nowMs - PRUNE_AFTER_DAYS * DAY_MS);
 }
+
+export function addDays(date: string, days: number): string {
+  const [year, month, day] = date.split("-").map(Number);
+  if (year === undefined || month === undefined || day === undefined) {
+    throw new Error(`Invalid date: ${date}`);
+  }
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+}

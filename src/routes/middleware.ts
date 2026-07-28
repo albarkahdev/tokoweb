@@ -16,7 +16,7 @@ export const attachSession: MiddlewareHandler<AppEnv> = async (c, next) => {
 
 export const requireOwner: MiddlewareHandler<AppEnv> = async (c, next) => {
   const session = c.get("session");
-  if (!session || session.role !== "owner" || session.tenantId === null) {
+  if (session?.role !== "owner" || session.tenantId === null) {
     return c.redirect("/masuk");
   }
   await next();
@@ -24,7 +24,7 @@ export const requireOwner: MiddlewareHandler<AppEnv> = async (c, next) => {
 
 export const requireAdmin: MiddlewareHandler<AppEnv> = async (c, next) => {
   const session = c.get("session");
-  if (!session || session.role !== "admin") {
+  if (session?.role !== "admin") {
     return c.redirect("/masuk");
   }
   await next();
