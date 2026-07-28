@@ -49,7 +49,10 @@ Semua penolakan tetap balas `204` — tidak memberi sinyal ke penyerang.
 
 ## Agregasi
 
-- Cron harian (00:30 WIB): rekap `track_events` kemarin → `daily_stats (tenant_id, date, type, count)` + `unique_visitors` per hari.
+- Cron harian (00:30 WIB = 17:30 UTC): rekap `track_events` kemarin (hari WIB, window 17:00 UTC – 17:00 UTC) → `daily_stats (tenant_id, date, type, count)`.
+- `unique_visitors` disimpan sebagai baris `type = 'unique_visitors'` di `daily_stats` (COUNT DISTINCT `visitor_hash`).
+- `daily_stats.date` = label tanggal WIB (hari yang dilihat pemilik usaha), timestamp mentah tetap UTC.
+- Agregasi idempotent (upsert) — cron boleh jalan ulang tanpa dobel hitung.
 - Menu Statistik CMS baca `daily_stats` saja — murah, cepat.
 
 ## Laporan bulanan (alat retensi)

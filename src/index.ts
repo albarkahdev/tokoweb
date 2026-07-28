@@ -1,6 +1,7 @@
 import { Hono } from "hono";
+import { runDailyJobs } from "@/cron";
 import { resolveSurface } from "@/domain/hostname";
-import type { AppEnv } from "@/env";
+import type { AppEnv, Bindings } from "@/env";
 import { health } from "@/routes/health";
 import { tracker } from "@/routes/tracker";
 
@@ -25,4 +26,11 @@ app.all("*", (c) => {
   }
 });
 
-export default app;
+const worker = {
+  fetch: app.fetch,
+  scheduled(controller, env, ctx) {
+    ctx.waitUntil(runDailyJobs(env, controller.scheduledTime));
+  },
+} satisfies ExportedHandler<Bindings>;
+
+export default worker;
