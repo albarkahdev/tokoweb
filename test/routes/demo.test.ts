@@ -23,7 +23,7 @@ describe("halaman demo kuliner", () => {
     expect(response.status).toBe(200);
     const html = await response.text();
     expect(html).toContain("Warung Bu Sari");
-    expect(html).toContain("Coba tema:");
+    expect(html).toContain('class="demo-sws"');
     expect(html).toContain("/kuliner?tema=arang");
     expect(html).toContain("Coba nama usahamu");
     expect(html).toContain('action="/lead"');
@@ -33,7 +33,7 @@ describe("halaman demo kuliner", () => {
 
   it("switches theme via query", async () => {
     const html = await (await send(new Request(`${DEMO}/kuliner?tema=arang`))).text();
-    expect(html).toContain("#1A1815");
+    expect(html).toContain("#15130F");
   });
 
   it("records scan for valid active referrer only", async () => {
@@ -133,6 +133,6 @@ describe("halaman demo /menu", () => {
     const html = await response.text();
     expect(html).toContain("Makanan");
     expect(html).toContain("Es Teh Manis");
-    expect(html).toContain("Coba tema:");
+    expect(html).toContain('class="demo-sws"');
   });
 });

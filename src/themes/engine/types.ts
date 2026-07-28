@@ -5,6 +5,7 @@ import type { TestimonialRow } from "@/db/testimonials";
 export type ThemeConfig = {
   slug: string;
   name: string;
+  character: string;
   colors: {
     bg: string;
     surface: string;
@@ -14,6 +15,7 @@ export type ThemeConfig = {
     primaryContrast: string;
     accent: string;
     heroOverlay: string;
+    heroBg: string;
   };
   fonts: {
     heading: string;
@@ -25,7 +27,7 @@ export type ThemeConfig = {
     button: string;
   };
   layout: {
-    hero: "image-full" | "image-split" | "color-block";
+    hero: "photo" | "typo" | "color-block";
     menu: "cards" | "list" | "grid-2";
   };
 };

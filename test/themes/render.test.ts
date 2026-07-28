@@ -113,7 +113,7 @@ describe("tema kuliner — preview & switcher", () => {
     const response = await get("/?preview_theme=arang");
     expect(response.headers.get("cache-control")).toBe("no-store");
     const html = await response.text();
-    expect(html).toContain("#1A1815");
+    expect(html).toContain("#15130F");
     expect(html).toContain('name="robots" content="noindex"');
   });
 
