@@ -3,6 +3,10 @@
   "name": "tokoweb",
   "main": "src/index.ts",
   "compatibility_date": "2026-07-01",
+  "routes": [
+    { "pattern": "tokoweb.id/*", "zone_name": "tokoweb.id" },
+    { "pattern": "*.tokoweb.id/*", "zone_name": "tokoweb.id" }
+  ],
   "triggers": {
     "crons": ["30 17 * * *", "5 17 * * *"]
   },
@@ -18,6 +22,6 @@
     "BASE_DOMAIN": "tokoweb.id",
     "STORAGE_ENDPOINT": "https://is3.cloudhost.id",
     "STORAGE_BUCKET": "tokoweb",
-    "STORAGE_ACCESS_KEY_ID": ""
+    "STORAGE_ACCESS_KEY_ID": "P92COYWN81RH4MDQ42XJ"
   }
 }
