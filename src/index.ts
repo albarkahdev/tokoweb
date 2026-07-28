@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { runDailyJobs } from "@/cron";
+import { runDailyJobs, runNightlyMaintenance } from "@/cron";
 import { resolveSurface } from "@/domain/hostname";
 import type { AppEnv, Bindings } from "@/env";
 import { appHost } from "@/routes/app-host";
@@ -7,6 +7,7 @@ import { assets } from "@/routes/assets";
 import { health } from "@/routes/health";
 import { img } from "@/routes/img";
 import { servePublicSite } from "@/routes/public-site";
+import { referralPage } from "@/routes/referral-page";
 import { tracker } from "@/routes/tracker";
 
 const app = new Hono<AppEnv>();
@@ -28,6 +29,9 @@ app.all("*", (c) => {
     case "custom-domain":
       return servePublicSite(c);
     case "unknown":
+      if (new URL(c.req.url).pathname.startsWith("/r/")) {
+        return referralPage.fetch(c.req.raw, c.env, c.executionCtx);
+      }
       return c.notFound();
   }
 });
@@ -35,6 +39,10 @@ app.all("*", (c) => {
 const worker = {
   fetch: app.fetch,
   scheduled(controller, env, ctx) {
+    if (controller.cron === "5 17 * * *") {
+      ctx.waitUntil(runNightlyMaintenance(env, controller.scheduledTime));
+      return;
+    }
     ctx.waitUntil(runDailyJobs(env, controller.scheduledTime));
   },
 } satisfies ExportedHandler<Bindings>;

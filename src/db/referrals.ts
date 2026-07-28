@@ -40,6 +40,34 @@ export async function createClosing(
   return referral.id;
 }
 
+export type ClosingSummary = {
+  referral_id: number;
+  tenant_name: string;
+  closed_at: string;
+  installment: number;
+  amount: number;
+  status: string;
+};
+
+export async function listClosingsWithPayouts(
+  db: D1Database,
+  referrerId: number,
+): Promise<ClosingSummary[]> {
+  const rows = await db
+    .prepare(
+      `SELECT r.id AS referral_id, t.name AS tenant_name, r.closed_at,
+              cp.installment, cp.amount, cp.status
+       FROM referrals r
+       JOIN tenants t ON t.id = r.tenant_id
+       JOIN commission_payouts cp ON cp.referral_id = r.id
+       WHERE r.referrer_id = ?1 AND r.tenant_id IS NOT NULL
+       ORDER BY r.closed_at DESC, cp.installment`,
+    )
+    .bind(referrerId)
+    .all<ClosingSummary>();
+  return rows.results;
+}
+
 export async function findClosingByTenant(
   db: D1Database,
   tenantId: number,

@@ -10,12 +10,14 @@ import { cmsPesan } from "@/routes/cms/pesan";
 import { cmsPromo } from "@/routes/cms/promo";
 import { cmsStatistik } from "@/routes/cms/statistik";
 import { cmsTema } from "@/routes/cms/tema";
+import { intake } from "@/routes/intake";
 import { attachSession, rejectCrossOriginWrites } from "@/routes/middleware";
 
 export const appHost = new Hono<AppEnv>()
   .use("*", rejectCrossOriginWrites)
   .use("*", attachSession)
   .route("/", auth)
+  .route("/", intake)
   .route("/admin", admin)
   .route("/", cmsHome)
   .route("/", cmsInfo)
