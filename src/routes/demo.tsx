@@ -38,7 +38,7 @@ body{padding-top:2.9rem;padding-bottom:6.5rem}
 .demo-cta p{margin:0 0 0.5rem;font-size:0.85rem}
 .demo-cta form{display:flex;gap:0.4rem;flex-wrap:wrap}
 .demo-cta input{flex:1 1 8rem;border-radius:0.4rem;border:none;padding:0.55rem 0.6rem;font-size:0.85rem}
-.demo-cta button{background:#FF6B57;color:#fff;border:none;border-radius:0.4rem;padding:0.55rem 1rem;font-weight:700;cursor:pointer}
+.demo-cta button{background:#FF6B57;color:#17141F;border:none;border-radius:0.4rem;padding:0.55rem 1rem;font-weight:800;cursor:pointer}
 .wa-float{display:none}
 </style>
 <div class="demo-top">

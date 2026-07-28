@@ -269,8 +269,11 @@ export function renderKulinerPage(data: RenderData): string {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{pageTitle(data)}</title>
         <meta name="description" content={metaDescription(data)} />
-        {data.noindex ? <meta name="robots" content="noindex" /> : null}
-        <link rel="canonical" href={canonical} />
+        {data.noindex ? (
+          <meta name="robots" content="noindex" />
+        ) : (
+          <link rel="canonical" href={canonical} />
+        )}
         <meta property="og:title" content={pageTitle(data)} />
         <meta property="og:description" content={metaDescription(data)} />
         <meta property="og:type" content="business.business" />
@@ -281,19 +284,21 @@ export function renderKulinerPage(data: RenderData): string {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(data) }} />
       </head>
       <body>
-        {data.path === "/" ? (
-          <>
-            <Hero data={data} theme={theme} waNumber={waNumber} />
-            <MenuSection data={data} theme={theme} waNumber={waNumber} />
-            <HoursSection data={data} />
-            <PromoSection data={data} />
-            <GallerySection data={data} />
-            <TestimonialSection data={data} />
-            <ContactSection data={data} waNumber={waNumber} />
-          </>
-        ) : (
-          <FullMenuPage data={data} waNumber={waNumber} />
-        )}
+        <main>
+          {data.path === "/" ? (
+            <>
+              <Hero data={data} theme={theme} waNumber={waNumber} />
+              <MenuSection data={data} theme={theme} waNumber={waNumber} />
+              <HoursSection data={data} />
+              <PromoSection data={data} />
+              <GallerySection data={data} />
+              <TestimonialSection data={data} />
+              <ContactSection data={data} waNumber={waNumber} />
+            </>
+          ) : (
+            <FullMenuPage data={data} waNumber={waNumber} />
+          )}
+        </main>
         <footer class="site">
           <p>
             {businessName} · Dibuat dengan{" "}
