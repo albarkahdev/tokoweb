@@ -11,6 +11,7 @@ export default defineConfig({
         bindings: {
           TEST_MIGRATIONS: migrations,
           TRACKER_SALT_SECRET: "test-salt-secret",
+          AUTH_SECRET: "test-auth-secret",
         },
       },
     }),

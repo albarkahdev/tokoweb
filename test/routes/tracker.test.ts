@@ -33,9 +33,6 @@ async function eventCount(): Promise<number> {
 
 beforeAll(async () => {
   await env.DB.prepare(
-    "INSERT INTO themes (id, vertical_id, slug, name, tokens, status) VALUES (1, 1, 'sederhana', 'Sederhana', '{}', 'active')",
-  ).run();
-  await env.DB.prepare(
     "INSERT INTO tenants (id, slug, name, vertical_id, theme_id, status) VALUES (1, 'warung', 'Warung Test', 1, 1, 'active'), (2, 'tutup', 'Warung Tutup', 1, 1, 'suspended')",
   ).run();
 });

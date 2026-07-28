@@ -21,9 +21,6 @@ const CONTENT = {
 
 beforeAll(async () => {
   await env.DB.prepare(
-    "INSERT INTO themes (id, vertical_id, slug, name, tokens, status) VALUES (1, 1, 'sederhana', 'Sederhana', '{}', 'active')",
-  ).run();
-  await env.DB.prepare(
     "INSERT INTO tenants (id, slug, custom_domain, name, vertical_id, theme_id, status) VALUES " +
       "(1, 'warung-bu-sari', 'warungbusari.com', 'Warung Bu Sari', 1, 1, 'active'), " +
       "(2, 'tutup', NULL, 'Warung Tutup', 1, 1, 'suspended'), " +

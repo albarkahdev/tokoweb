@@ -6,6 +6,10 @@ export type Bindings = {
   STORAGE_ACCESS_KEY_ID: string;
   STORAGE_SECRET_ACCESS_KEY: string;
   TRACKER_SALT_SECRET: string;
+  AUTH_SECRET: string;
 };
 
-export type AppEnv = { Bindings: Bindings };
+export type AppEnv = {
+  Bindings: Bindings;
+  Variables: { session?: import("@/domain/session").SessionPayload };
+};

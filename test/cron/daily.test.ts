@@ -23,9 +23,6 @@ async function statCount(tenantId: number, date: string, type: string): Promise<
 
 beforeAll(async () => {
   await env.DB.prepare(
-    "INSERT INTO themes (id, vertical_id, slug, name, tokens, status) VALUES (1, 1, 'sederhana', 'Sederhana', '{}', 'active')",
-  ).run();
-  await env.DB.prepare(
     "INSERT INTO tenants (id, slug, name, vertical_id, theme_id, status) VALUES (1, 'warung', 'Warung', 1, 1, 'active'), (2, 'kedai', 'Kedai', 1, 1, 'active')",
   ).run();
 
