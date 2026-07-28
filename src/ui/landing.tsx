@@ -111,7 +111,7 @@ body {
 .phone-screen { border-radius: 2rem; overflow: hidden; display: block; background: #FFF; }
 .phone-screen img { width: 100%; display: block; }
 .float-chip {
-  position: absolute; background: var(--surface); border: 1px solid var(--border);
+  position: absolute; z-index: 2; background: var(--surface); border: 1px solid var(--border);
   border-radius: 1rem; box-shadow: var(--shadow-md);
   padding: 0.6rem 0.95rem; font-size: 0.82rem; font-weight: 700;
   display: inline-flex; align-items: center; gap: 0.45rem;

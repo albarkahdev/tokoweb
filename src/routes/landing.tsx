@@ -40,7 +40,7 @@ function landingJsonLd(baseDomain: string): string {
 export const landing = new Hono<AppEnv>()
   .get("/", async (c) => {
     const url = new URL(c.req.url);
-    const cached = await matchCachedPage(url.hostname, "/landing-v2");
+    const cached = await matchCachedPage(url.hostname, "/landing-v3");
     if (cached) return cached;
 
     const demoUrl = `https://demo.${c.env.BASE_DOMAIN}/kuliner`;
@@ -271,7 +271,7 @@ export const landing = new Hono<AppEnv>()
         "cache-control": "public, max-age=300, s-maxage=86400",
       },
     });
-    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/landing-v2", response.clone()));
+    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/landing-v3", response.clone()));
     return response;
   })
   .get("/robots.txt", (c) =>
