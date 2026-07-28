@@ -79,10 +79,14 @@ section > h2, .sec-title { font-size: clamp(1.7rem, 5vw, 2.5rem); margin-bottom:
 .hero.typo { background: var(--hero-bg); }
 .hero.typo .hero-inner { padding-top: clamp(5rem, 15vw, 8.5rem); }
 .hero.typo .hero-thumb {
-  width: clamp(9rem, 26vw, 13rem); border-radius: var(--r-card);
+  display: none; width: clamp(9rem, 18vw, 13rem); border-radius: var(--r-card);
   box-shadow: var(--shadow-pop); rotate: 2.5deg;
-  position: absolute; right: 1.4rem; bottom: -2.2rem; z-index: 3;
+  position: absolute; right: clamp(1.4rem, 6vw, 5rem); bottom: -2.2rem; z-index: 3;
   border: 4px solid var(--surface);
+}
+@media (min-width: 48rem) {
+  .hero.typo .hero-thumb { display: block; }
+  .hero.typo .hero-inner { padding-right: clamp(14rem, 24vw, 18rem); }
 }
 .hero.typo .hero-thumb img { border-radius: calc(var(--r-card) - 4px); aspect-ratio: 4/3; object-fit: cover; }
 

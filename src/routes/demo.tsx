@@ -72,7 +72,7 @@ async function serveDemo(c: Context<AppEnv>, pagePath: "/" | "/menu"): Promise<R
   const requested = c.req.query("tema") ?? DEFAULT_THEME;
   const themeSlug = requested in KULINER_THEMES ? requested : DEFAULT_THEME;
 
-  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=4`;
+  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=5`;
   const cached = await caches.default.match(cacheKey);
   if (cached) return cached;
 
