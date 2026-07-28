@@ -9,7 +9,7 @@ describe("health endpoint", () => {
   });
 
   it("returns 501 for unbuilt surfaces", async () => {
-    const response = await SELF.fetch("https://warung.tokoweb.id/");
+    const response = await SELF.fetch("https://app.tokoweb.id/");
     expect(response.status).toBe(501);
   });
 

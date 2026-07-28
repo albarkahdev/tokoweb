@@ -3,6 +3,7 @@ import { runDailyJobs } from "@/cron";
 import { resolveSurface } from "@/domain/hostname";
 import type { AppEnv, Bindings } from "@/env";
 import { health } from "@/routes/health";
+import { servePublicSite } from "@/routes/public-site";
 import { tracker } from "@/routes/tracker";
 
 const app = new Hono<AppEnv>();
@@ -20,7 +21,7 @@ app.all("*", (c) => {
       return c.text("Demo — segera hadir", 501);
     case "tenant-public":
     case "custom-domain":
-      return c.text("Situs tenant — segera hadir", 501);
+      return servePublicSite(c);
     case "unknown":
       return c.notFound();
   }

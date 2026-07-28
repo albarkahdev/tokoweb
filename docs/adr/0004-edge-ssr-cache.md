@@ -18,3 +18,4 @@ Opsi 3. Perilaku = situs statis, fleksibilitas = SSR.
 - (+) Edit konten terlihat live dalam hitungan detik (purge → render ulang).
 - (−) Disiplin purge wajib: SEMUA jalur tulis konten (CMS, admin, cron promo-expire, ganti tema, suspend) harus purge cache tenant terkait. Helper tunggal `invalidateTenantCache()` — dilarang purge manual tersebar.
 - (−) Halaman ber-state (preview tema, CMS) di-bypass dari cache (header no-store).
+- (−) Cache API per-datacenter: purge dari Worker hanya membersihkan colo tempat request purge mendarat. Mitigasi: `s-maxage=86400` (stale maksimal 24 jam di colo lain) + `max-age=60` di browser. Kalau terbukti mengganggu (klien komplain edit tidak muncul): tambah purge zone-wide via Cloudflare REST API (purge by URL, butuh API token) — tetap lewat `invalidateTenantCache()`.
