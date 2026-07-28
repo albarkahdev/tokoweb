@@ -23,7 +23,7 @@ const bits = await crypto.subtle.deriveBits(
 const toBase64 = (bytes) => Buffer.from(bytes).toString("base64");
 const hash = `pbkdf2$${ITERATIONS}$${toBase64(salt)}$${toBase64(new Uint8Array(bits))}`;
 
-const sql = `INSERT INTO users (email, password_hash, role, tenant_id) VALUES ('${email.toLowerCase()}', '${hash}', 'admin', NULL);`;
+const sql = `INSERT INTO users (email, password_hash, role, tenant_id) VALUES ('${email.toLowerCase()}', '${hash}', 'admin', NULL) ON CONFLICT (email) DO UPDATE SET password_hash = excluded.password_hash;`;
 console.log("SQL siap jalan:\n");
 console.log(sql);
 console.log(
