@@ -2,10 +2,12 @@ import { Hono } from "hono";
 import { resolveSurface } from "@/domain/hostname";
 import type { AppEnv } from "@/env";
 import { health } from "@/routes/health";
+import { tracker } from "@/routes/tracker";
 
 const app = new Hono<AppEnv>();
 
 app.route("/", health);
+app.route("/", tracker);
 
 app.all("*", (c) => {
   const surface = resolveSurface(new URL(c.req.url).hostname, c.env.BASE_DOMAIN);

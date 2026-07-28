@@ -29,6 +29,18 @@ Tracker milik sendiri. Tujuan: bukti nilai ke klien (alat retensi), bukan survei
 - Dedup pengunjung: `visitor_hash = SHA-256(IP + UA + tenant_id + salt_harian)` — salt berganti tiap hari, hash tidak bisa dibalik, otomatis "lupa" pengunjung setelah 24 jam.
 - IP mentah tidak pernah disimpan.
 - Bot filter sederhana: UA bot dikenal di-skip.
+- **Tanpa lokasi** — geo (kota/negara) tidak dikumpulkan. Keputusan final; kalau berubah, update spec ini dulu.
+
+## Anti-abuse
+
+Semua penolakan tetap balas `204` — tidak memberi sinyal ke penyerang.
+
+- Validasi keras: `t` wajib salah satu dari 5 type, `p` wajib diawali `/` max 200 char, `pid` wajib integer positif dan hanya untuk `click_promo`. Body > 1 KB = drop.
+- Tenant resolve server-side dari `Origin`/`Referer` — origin asing atau tenant non-aktif = drop.
+- Rate limit per `visitor_hash`: 60 event/menit, fixed window in-memory per isolate (bukan bulletproof lintas isolate — cukup untuk abuse kasar).
+- Botnet serius: Cloudflare WAF rate rule di `/t` (config dashboard, bukan kode).
+- Debounce client-side: flag "sudah kirim" per tombol per pageload — klik ganda = 1 event. (Masuk script tema saat tema dibangun.)
+- Opsi lanjutan saat agregasi: exclude hash dengan volume tidak wajar per hari (belum diimplementasi).
 
 ## Penulisan (tidak boleh memperlambat situs)
 

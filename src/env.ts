@@ -5,6 +5,7 @@ export type Bindings = {
   STORAGE_BUCKET: string;
   STORAGE_ACCESS_KEY_ID: string;
   STORAGE_SECRET_ACCESS_KEY: string;
+  TRACKER_SALT_SECRET: string;
 };
 
 export type AppEnv = { Bindings: Bindings };

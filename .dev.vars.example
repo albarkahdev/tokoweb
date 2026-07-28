@@ -1,0 +1,2 @@
+STORAGE_SECRET_ACCESS_KEY=isi-dari-idcloudhost
+TRACKER_SALT_SECRET=string-acak-panjang
