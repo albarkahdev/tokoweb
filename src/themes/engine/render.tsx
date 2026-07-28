@@ -40,7 +40,14 @@ function Hero(props: { data: RenderData; theme: ThemeConfig; waNumber: string })
   return (
     <section class={`hero ${props.theme.layout.hero}`} id="hero">
       {image ? (
-        <img class="hero-bg" src={image.src} alt={image.alt} width="1200" height="800" />
+        <img
+          class="hero-bg"
+          src={image.src}
+          alt={image.alt}
+          width="1200"
+          height="800"
+          fetchpriority="high"
+        />
       ) : null}
       <div class="hero-inner">
         <span id="open-badge" class="open-badge" data-hours={JSON.stringify(hours)}>
