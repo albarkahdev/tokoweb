@@ -5,6 +5,7 @@ import { invalidateTenantCache } from "@/db/edge-cache";
 import { verifyPayment } from "@/db/payments";
 import { listPayoutsForReferral, voidInstallment, voidUnpaidPayouts } from "@/db/payouts";
 import { findClosingByTenant } from "@/db/referrals";
+import { statTotalsBetween, topPromoBetween } from "@/db/stats-read";
 import { getSubscription, setSubscriptionCycle, upsertSubscription } from "@/db/subscriptions";
 import {
   createTenant,
@@ -20,6 +21,7 @@ import { formatRupiah } from "@/domain/money";
 import { generateOneTimeToken, INTAKE_TTL_MS, SET_PASSWORD_TTL_MS } from "@/domain/one-time-token";
 import { hashPassword } from "@/domain/password";
 import { isPlan, PLAN_PRICES } from "@/domain/plan";
+import { buildMonthlyReportText, previousMonthRange } from "@/domain/report";
 import { nextDueDateAfterPayment, wibDateOf } from "@/domain/subscription";
 import type { AppEnv } from "@/env";
 import { AdminPage, adminHtml } from "@/routes/admin/shared";
@@ -102,6 +104,24 @@ export const adminTenants = new Hono<AppEnv>()
     const content = await getSiteContent(c.env.DB, tenant.id);
     const hasContent = Boolean(content.info?.name);
 
+    const month = previousMonthRange(wibDateOf(Date.now()));
+    const monthBefore = previousMonthRange(month.from);
+    const totals = await statTotalsBetween(c.env.DB, tenant.id, month.from, month.to);
+    const prevTotals = await statTotalsBetween(
+      c.env.DB,
+      tenant.id,
+      monthBefore.from,
+      monthBefore.to,
+    );
+    const topPromo = await topPromoBetween(c.env.DB, tenant.id, `${month.from} 00:00:00`);
+    const reportText = buildMonthlyReportText(
+      tenant.name,
+      month.label,
+      totals,
+      prevTotals.pageViews > 0 ? prevTotals : null,
+      topPromo,
+    );
+
     return c.html(
       adminHtml(
         <AdminPage
@@ -164,6 +184,18 @@ export const adminTenants = new Hono<AppEnv>()
               <Field label="Email owner" name="email" type="email" required />
               <Button variant="secondary">Buat Akun + Link Atur Password</Button>
             </form>
+          </Card>
+          <Card>
+            <h2>Laporan Bulanan (siap-copy)</h2>
+            <p class="small muted">Salin, kirim via WA ke klien tiap tanggal 1.</p>
+            <textarea
+              rows={8}
+              style="width:100%; font-size:0.85rem;"
+              onclick="this.select()"
+              readonly
+            >
+              {reportText}
+            </textarea>
           </Card>
           {closing ? (
             <Card>

@@ -67,7 +67,10 @@ Semua tombol WA/telepon/Maps/promo memanggil tracker (lihat `tracker-spec.md`).
 - [ ] LCP < 2,5 dtk di throttling 4G, CLS < 0,1
 - [ ] Responsive 360 px → 1440 px, tanpa horizontal scroll
 - [ ] Gambar: WebP, `loading="lazy"` (kecuali hero), `width/height` eksplisit, `alt` terisi
-- [ ] Font: subset + `font-display: swap`, self-hosted (tanpa request ke Google Fonts)
+- [ ] Font: subset + `font-display: swap`, self-hosted (tanpa request ke Google Fonts).
+  *Status implementasi: tema memakai system font stack (nol request, nol byte font) dengan
+  font brand (Fraunces/Marcellus/Bricolage) di urutan pertama stack — file font self-hosted
+  ditambahkan nanti tanpa mengubah kode tema, cukup `@font-face` + file di storage.*
 - [ ] Kontras teks AA (4.5:1), fokus keyboard terlihat, HTML semantik + heading berurut
 - [ ] SEO otomatis dari data tenant (lihat bagian SEO di bawah)
 - [ ] Zero JavaScript blocking; total JS < 30 KB

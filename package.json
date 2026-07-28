@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "format": "biome check --write .",
+    "create-admin": "node scripts/create-admin.mjs",
     "prepare": "husky"
   },
   "dependencies": {
