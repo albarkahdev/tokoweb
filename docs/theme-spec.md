@@ -8,9 +8,10 @@ Tema = **konfigurasi**, bukan codebase terpisah. Satu engine render, tema hanya 
 src/themes/
   engine/          ← renderer section, shared components (header, footer, WA button)
   kuliner/
-    hangat/        ← tema 1: theme.json + layout varian + css
-    elegan/        ← tema 2
-    segar/         ← tema 3
+    hangat/        ← tema 1: warung keluarga, earth tone (theme.json + layout varian + css)
+    arang/         ← tema 2: premium gelap, charcoal + emas
+    ceria/         ← tema 3: kekinian playful, warna berani
+                     (arah desain: docs/theme-research.md)
 ```
 
 ### theme.json (design tokens)
