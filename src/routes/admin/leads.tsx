@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { findLeadById, listLeads, setLeadStatus } from "@/db/leads";
 import { createClosing } from "@/db/referrals";
 import { findReferrerById, listReferrers } from "@/db/referrers";
-import { getSubscription, upsertSubscription } from "@/db/subscriptions";
+import { upsertSubscription } from "@/db/subscriptions";
 import { createTenant, findTenantBySlug } from "@/db/tenants";
 import { formDataToValues } from "@/domain/cms";
 import { isPlan, PLAN_PRICES } from "@/domain/plan";

@@ -4,6 +4,7 @@ import { resolveSurface } from "@/domain/hostname";
 import type { AppEnv, Bindings } from "@/env";
 import { appHost } from "@/routes/app-host";
 import { assets } from "@/routes/assets";
+import { demo } from "@/routes/demo";
 import { health } from "@/routes/health";
 import { img } from "@/routes/img";
 import { servePublicSite } from "@/routes/public-site";
@@ -24,7 +25,7 @@ app.all("*", (c) => {
     case "app":
       return appHost.fetch(c.req.raw, c.env, c.executionCtx);
     case "demo":
-      return c.text("Demo — segera hadir", 501);
+      return demo.fetch(c.req.raw, c.env, c.executionCtx);
     case "tenant-public":
     case "custom-domain":
       return servePublicSite(c);

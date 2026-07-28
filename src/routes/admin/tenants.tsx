@@ -12,7 +12,6 @@ import {
   findTenantBySlug,
   listTenants,
   setTenantStatus,
-  type TenantRow,
   tenantHostnames,
 } from "@/db/tenants";
 import { createUser, findUserByEmail } from "@/db/users";
