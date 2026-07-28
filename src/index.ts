@@ -7,6 +7,7 @@ import { assets } from "@/routes/assets";
 import { demo } from "@/routes/demo";
 import { health } from "@/routes/health";
 import { img } from "@/routes/img";
+import { landing } from "@/routes/landing";
 import { servePublicSite } from "@/routes/public-site";
 import { referralPage } from "@/routes/referral-page";
 import { tracker } from "@/routes/tracker";
@@ -33,7 +34,7 @@ app.all("*", (c) => {
       if (new URL(c.req.url).pathname.startsWith("/r/")) {
         return referralPage.fetch(c.req.raw, c.env, c.executionCtx);
       }
-      return c.notFound();
+      return landing.fetch(c.req.raw, c.env, c.executionCtx);
   }
 });
 

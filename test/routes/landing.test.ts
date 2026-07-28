@@ -1,0 +1,36 @@
+import { createExecutionContext, env, waitOnExecutionContext } from "cloudflare:test";
+import { describe, expect, it } from "vitest";
+import app from "@/index";
+
+async function get(path: string): Promise<Response> {
+  const ctx = createExecutionContext();
+  const response = await app.fetch(new Request(`https://tokoweb.id${path}`), env, ctx);
+  await waitOnExecutionContext(ctx);
+  return response;
+}
+
+describe("landing tokoweb.id", () => {
+  it("renders marketing page with pricing and demo link", async () => {
+    const response = await get("/");
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain("Rp 75");
+    expect(html).toContain("Rp 200");
+    expect(html).toContain("https://demo.tokoweb.id/kuliner");
+    expect(html).toContain("Refund 7 hari");
+    expect(html).toContain('"@type":"Organization"');
+    expect(html).toContain('rel="canonical"');
+    expect(html).not.toContain("noindex");
+  });
+
+  it("serves robots and sitemap", async () => {
+    expect((await get("/robots.txt")).status).toBe(200);
+    const sitemap = await get("/sitemap.xml");
+    expect(await sitemap.text()).toContain("https://tokoweb.id/");
+  });
+
+  it("keeps 404 for unknown paths and /r page intact", async () => {
+    expect((await get("/halaman-aneh")).status).toBe(404);
+    expect((await get("/r/K7M3XR")).status).toBe(200);
+  });
+});

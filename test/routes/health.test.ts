@@ -8,8 +8,8 @@ describe("health endpoint", () => {
     expect(await response.json()).toEqual({ status: "ok" });
   });
 
-  it("returns 404 for apex domain", async () => {
+  it("serves landing page on apex domain", async () => {
     const response = await SELF.fetch("https://tokoweb.id/");
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(200);
   });
 });

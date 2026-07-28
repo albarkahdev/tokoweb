@@ -7,6 +7,7 @@ export type Bindings = {
   STORAGE_SECRET_ACCESS_KEY: string;
   TRACKER_SALT_SECRET: string;
   AUTH_SECRET: string;
+  CONTACT_WA_NUMBER: string;
 };
 
 export type AppEnv = {
