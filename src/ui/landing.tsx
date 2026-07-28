@@ -1,88 +1,287 @@
 import type { Child } from "hono/jsx";
 
+const DISPLAY_FONT = "'Fraunces', ui-serif, 'New York', Georgia, 'Times New Roman', serif";
+const BODY_FONT = "'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+
 export const LANDING_STYLES = `
 :root {
-  --ink: #1D1A16;
-  --paper: #FFFBF5;
+  --ink: #1C1917;
+  --ink-soft: #44403C;
+  --paper: #FBF7F0;
+  --cream: #F5EEE2;
   --brand: #C4501B;
-  --brand-dark: #9C3E13;
-  --accent: #E8A03C;
-  --muted: #6E675F;
+  --brand-hot: #E8632C;
+  --brand-deep: #8C3A12;
+  --gold: #E8A03C;
+  --muted: #78716C;
   --surface: #FFFFFF;
-  --border: #EBE4D9;
+  --border: #EBE2D4;
+  --shadow-sm: 0 1px 2px rgb(28 25 23 / 0.05);
+  --shadow-md: 0 10px 30px -8px rgb(28 25 23 / 0.14);
+  --shadow-lg: 0 24px 60px -16px rgb(140 58 18 / 0.28);
+  --display: ${DISPLAY_FONT};
+  --body: ${BODY_FONT};
 }
 * { box-sizing: border-box; margin: 0; }
+html { scroll-behavior: smooth; }
 body {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--body);
   background: var(--paper);
   color: var(--ink);
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
-main { display: block; }
-section { padding: clamp(3.5rem, 9vw, 6rem) 1.25rem; max-width: 68rem; margin: 0 auto; }
-h1 { font-size: clamp(2.1rem, 8vw, 3.8rem); line-height: 1.1; letter-spacing: -0.02em; }
-h2 { font-size: clamp(1.5rem, 5vw, 2.3rem); line-height: 1.2; margin-bottom: 1.25rem; }
-h3 { font-size: 1.1rem; }
-.lead { font-size: clamp(1.05rem, 3.5vw, 1.3rem); color: var(--muted); max-width: 34rem; }
-.hero { text-align: center; padding-top: clamp(4rem, 12vw, 7rem); }
-.hero .lead { margin: 1.25rem auto 2rem; }
-.hero .eyebrow {
-  display: inline-block; background: #FBF0DA; color: var(--brand-dark);
-  padding: 0.3rem 1rem; border-radius: 9999px; font-weight: 700; font-size: 0.85rem;
-  margin-bottom: 1.25rem;
+::selection { background: var(--gold); color: var(--ink); }
+
+.wrap { max-width: 72rem; margin: 0 auto; padding: 0 1.5rem; }
+.section { padding: clamp(4rem, 10vw, 7rem) 0; }
+.section-tight { padding: clamp(2.5rem, 6vw, 4rem) 0; }
+
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
 }
-.cta-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
-.btn-primary {
-  display: inline-block; background: var(--brand); color: #fff; text-decoration: none;
-  padding: 0.95rem 2rem; border-radius: 9999px; font-weight: 700; font-size: 1.05rem;
+.topbar .wrap { display: flex; align-items: center; justify-content: space-between; padding-top: 0.8rem; padding-bottom: 0.8rem; }
+.brand { font-family: var(--display); font-weight: 700; font-size: 1.25rem; letter-spacing: -0.01em; text-decoration: none; color: var(--ink); }
+.brand em { color: var(--brand); font-style: normal; }
+
+.hero { position: relative; padding: clamp(3.5rem, 8vw, 6.5rem) 0 clamp(3rem, 7vw, 5rem); }
+.hero-bg {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(42rem 42rem at 88% 8%, color-mix(in srgb, var(--gold) 20%, transparent), transparent 60%),
+    radial-gradient(36rem 36rem at -8% 82%, color-mix(in srgb, var(--brand-hot) 12%, transparent), transparent 55%);
 }
-.btn-primary:hover { background: var(--brand-dark); }
-.btn-outline {
-  display: inline-block; border: 2px solid var(--brand); color: var(--brand-dark);
-  text-decoration: none; padding: 0.85rem 1.9rem; border-radius: 9999px; font-weight: 700;
+.hero-grid { display: grid; gap: 3rem; align-items: center; grid-template-columns: 1fr; }
+@media (min-width: 56rem) { .hero-grid { grid-template-columns: 1.15fr 0.85fr; } }
+
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--brand-deep); box-shadow: var(--shadow-sm);
+  padding: 0.35rem 1rem; border-radius: 9999px; font-weight: 700; font-size: 0.8rem;
+  letter-spacing: 0.02em; text-transform: uppercase;
 }
-.trust { margin-top: 1.5rem; font-size: 0.9rem; color: var(--muted); }
-.grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
-.feature {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem;
+.display {
+  font-family: var(--display);
+  font-size: clamp(2.6rem, 7.5vw, 4.6rem);
+  line-height: 1.04; letter-spacing: -0.03em; font-weight: 640;
+  margin: 1.1rem 0 1.25rem;
 }
-.feature .emoji { font-size: 1.8rem; display: block; margin-bottom: 0.5rem; }
-.feature p { color: var(--muted); font-size: 0.95rem; }
-.steps { counter-reset: step; }
-.step { display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: flex-start; }
-.step .num {
-  counter-increment: step; background: var(--brand); color: #fff; font-weight: 800;
-  width: 2.2rem; height: 2.2rem; border-radius: 9999px; display: flex; align-items: center;
-  justify-content: center; flex-shrink: 0;
+.display .accent {
+  color: var(--brand); font-style: italic; font-weight: 600;
+  background: linear-gradient(120deg, var(--brand) 0%, var(--brand-hot) 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
+.lede { font-size: clamp(1.05rem, 2.6vw, 1.25rem); color: var(--ink-soft); max-width: 32rem; }
+.lede strong { color: var(--ink); }
+
+.cta-row { display: flex; gap: 0.85rem; flex-wrap: wrap; margin-top: 2rem; }
+.btn {
+  display: inline-flex; align-items: center; gap: 0.55rem;
+  font: inherit; font-weight: 700; text-decoration: none; cursor: pointer;
+  border-radius: 9999px; padding: 0.95rem 1.9rem; font-size: 1rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.btn:active { transform: translateY(1px) scale(0.99); }
+.btn-fill {
+  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-hot) 100%);
+  color: #FFF7F2; border: none; box-shadow: 0 10px 24px -8px rgb(196 80 27 / 0.55);
+}
+.btn-fill:hover { transform: translateY(-2px); box-shadow: 0 16px 32px -10px rgb(196 80 27 / 0.6); }
+.btn-line { background: var(--surface); color: var(--ink); border: 1.5px solid var(--border); box-shadow: var(--shadow-sm); }
+.btn-line:hover { border-color: var(--brand); color: var(--brand-deep); transform: translateY(-2px); }
+.btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+.trust-row { display: flex; gap: 1.2rem 1.6rem; flex-wrap: wrap; margin-top: 1.9rem; }
+.trust-item { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.88rem; color: var(--muted); font-weight: 600; }
+.trust-item svg { color: var(--brand); flex-shrink: 0; }
+
+.phone-stage { position: relative; display: flex; justify-content: center; padding: 1rem 0; }
+.phone {
+  width: min(19rem, 78vw); border-radius: 2.6rem; background: var(--ink);
+  padding: 0.65rem; box-shadow: var(--shadow-lg);
+  transform: rotate(2.5deg);
+  transition: transform 0.4s ease;
+}
+.phone:hover { transform: rotate(0.5deg) translateY(-6px); }
+.phone-screen { border-radius: 2rem; overflow: hidden; display: block; background: #FFF; }
+.phone-screen img { width: 100%; display: block; }
+.float-chip {
+  position: absolute; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 1rem; box-shadow: var(--shadow-md);
+  padding: 0.6rem 0.95rem; font-size: 0.82rem; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  animation: floaty 5s ease-in-out infinite;
+}
+.float-chip.a { top: 12%; left: 2%; animation-delay: 0s; }
+.float-chip.b { bottom: 18%; right: 0%; animation-delay: 2.2s; }
+.float-chip .dot { width: 0.55rem; height: 0.55rem; border-radius: 9999px; background: #22A05A; }
+@keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+
+.metric-band { background: var(--ink); color: #FAF5EC; }
+.metric-band .wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 1.5rem; padding-top: 2.2rem; padding-bottom: 2.2rem; }
+.metric { text-align: center; }
+.metric .num { font-family: var(--display); font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 650; color: var(--gold); display: block; line-height: 1.1; }
+.metric .cap { font-size: 0.85rem; color: #C9C1B4; }
+
+.kicker { color: var(--brand-deep); font-weight: 800; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.12em; }
+.title-2 { font-family: var(--display); font-size: clamp(1.8rem, 5vw, 2.8rem); letter-spacing: -0.02em; line-height: 1.12; margin: 0.5rem 0 1rem; font-weight: 640; }
+.sub { color: var(--muted); max-width: 36rem; }
+
+.feature-grid { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(15.5rem, 1fr)); margin-top: 2.5rem; }
+.feature-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 1.4rem;
+  padding: 1.6rem; box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.feature-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.feature-icon {
+  width: 3rem; height: 3rem; border-radius: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--brand) 14%, #fff), color-mix(in srgb, var(--gold) 22%, #fff));
+  color: var(--brand-deep); margin-bottom: 1rem;
+}
+.feature-card h3 { font-size: 1.05rem; margin-bottom: 0.4rem; letter-spacing: -0.01em; }
+.feature-card p { color: var(--muted); font-size: 0.93rem; }
+
+.steps { position: relative; margin-top: 2.5rem; display: grid; gap: 0; max-width: 38rem; }
+.step { display: grid; grid-template-columns: 3rem 1fr; gap: 1.1rem; position: relative; padding-bottom: 2rem; }
+.step:last-child { padding-bottom: 0; }
+.step::before {
+  content: ""; position: absolute; left: 1.45rem; top: 3rem; bottom: 0.4rem; width: 2px;
+  background: linear-gradient(var(--border), transparent);
+}
+.step:last-child::before { display: none; }
+.step-num {
+  width: 3rem; height: 3rem; border-radius: 9999px; z-index: 1;
+  background: var(--surface); border: 2px solid var(--brand);
+  color: var(--brand-deep); font-weight: 800; font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center; font-family: var(--display);
+}
+.step h3 { font-size: 1.1rem; padding-top: 0.6rem; }
 .step p { color: var(--muted); font-size: 0.95rem; }
-.pricing { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); max-width: 46rem; margin: 0 auto; }
+
+.theme-strip { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); margin-top: 2.5rem; }
+.theme-card {
+  border-radius: 1.4rem; overflow: hidden; text-decoration: none;
+  border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.theme-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.theme-swatch { height: 7.5rem; display: flex; align-items: flex-end; padding: 1rem; }
+.theme-swatch .name { font-family: var(--display); font-size: 1.5rem; font-weight: 650; }
+.theme-card .meta { padding: 1rem 1.2rem; color: var(--muted); font-size: 0.88rem; }
+.theme-card .meta strong { display: block; color: var(--ink); font-size: 0.95rem; margin-bottom: 0.15rem; }
+
+.pricing { display: grid; gap: 1.4rem; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); max-width: 48rem; margin: 2.5rem auto 0; align-items: stretch; }
 .price-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 1.25rem;
-  padding: 2rem 1.5rem; text-align: center;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 1.6rem;
+  padding: 2.2rem 1.8rem; display: flex; flex-direction: column; box-shadow: var(--shadow-sm);
 }
-.price-card.featured { border: 2px solid var(--brand); position: relative; }
+.price-card.featured {
+  border: 2px solid var(--brand); box-shadow: var(--shadow-md); position: relative;
+  background: linear-gradient(180deg, #FFF, #FFF9F3);
+}
 .price-card .tag {
-  position: absolute; top: -0.8rem; left: 50%; transform: translateX(-50%);
-  background: var(--brand); color: #fff; font-size: 0.75rem; font-weight: 700;
-  padding: 0.2rem 0.9rem; border-radius: 9999px; white-space: nowrap;
+  position: absolute; top: -0.85rem; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--brand), var(--brand-hot)); color: #FFF;
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.28rem 1rem; border-radius: 9999px; white-space: nowrap;
 }
-.price-card .amount { font-size: 2.2rem; font-weight: 800; margin: 0.5rem 0 0; }
-.price-card .per { color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem; }
-.price-card ul { list-style: none; padding: 0; text-align: left; margin: 1rem 0 1.5rem; }
-.price-card li { padding: 0.35rem 0; font-size: 0.92rem; }
-.price-card li::before { content: "✓ "; color: var(--brand); font-weight: 700; }
+.price-card .plan-name { font-weight: 800; font-size: 0.9rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.price-card .amount { font-family: var(--display); font-size: 2.9rem; font-weight: 650; letter-spacing: -0.02em; margin-top: 0.4rem; line-height: 1; }
+.price-card .amount .rp { font-size: 1.1rem; vertical-align: super; font-weight: 700; }
+.price-card .per { color: var(--muted); font-size: 0.85rem; margin: 0.4rem 0 1.4rem; }
+.price-list { list-style: none; padding: 0; margin: 0 0 1.8rem; flex: 1; }
+.price-list li { display: flex; gap: 0.6rem; padding: 0.42rem 0; font-size: 0.93rem; align-items: flex-start; }
+.price-list li svg { color: var(--brand); flex-shrink: 0; margin-top: 0.22rem; }
+
+.faq { max-width: 44rem; }
 .faq details {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem;
-  padding: 1rem 1.25rem; margin-bottom: 0.75rem;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 1.1rem;
+  padding: 1.1rem 1.4rem; margin-bottom: 0.8rem; transition: box-shadow 0.2s ease;
 }
-.faq summary { font-weight: 700; cursor: pointer; }
-.faq p { color: var(--muted); margin-top: 0.5rem; font-size: 0.95rem; }
-footer { text-align: center; padding: 2.5rem 1.25rem 3rem; color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--border); }
-.section-alt { background: var(--surface); max-width: none; }
-.section-alt > div { max-width: 68rem; margin: 0 auto; }
+.faq details[open] { box-shadow: var(--shadow-sm); }
+.faq summary {
+  font-weight: 700; cursor: pointer; list-style: none;
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font-size: 1.4rem; color: var(--brand); transition: transform 0.2s ease; line-height: 1; }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq p { color: var(--muted); margin-top: 0.6rem; font-size: 0.95rem; }
+
+.cta-band {
+  background: linear-gradient(135deg, var(--ink) 0%, #2C2420 100%);
+  border-radius: 2rem; color: #FAF5EC; text-align: center;
+  padding: clamp(3rem, 7vw, 4.5rem) 1.5rem; position: relative; overflow: hidden;
+}
+.cta-band::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(30rem 18rem at 78% -20%, color-mix(in srgb, var(--gold) 26%, transparent), transparent 65%);
+}
+.cta-band .title-2 { color: #FAF5EC; position: relative; }
+.cta-band .sub { color: #C9C1B4; margin: 0 auto 1.8rem; position: relative; }
+.cta-band .cta-row { justify-content: center; position: relative; margin-top: 0; }
+
+.footer { padding: 3rem 0 3.5rem; color: var(--muted); font-size: 0.9rem; }
+.footer .wrap { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; align-items: center; }
+.footer a { color: var(--ink-soft); text-decoration: none; font-weight: 600; }
+.footer a:hover { color: var(--brand-deep); }
+
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .float-chip { animation: none; }
+}
 `;
+
+export const LANDING_REVEAL_SCRIPT = `(function(){if(!("IntersectionObserver" in window))return;
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}})},{threshold:0.1});
+document.querySelectorAll(".reveal").forEach(function(el){io.observe(el)})})();`;
+
+export function CheckIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M20 6L9 17l-5-5"
+        stroke="currentColor"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  );
+}
+
+const ICON_PATHS: Record<string, string> = {
+  search: "M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm10 2-4.35-4.35",
+  chat: "M21 11.5a8.38 8.38 0 0 1-9 8.36 8.5 8.5 0 0 1-3.9-.94L3 20l1.08-4.1A8.5 8.5 0 1 1 21 11.5Z",
+  chart: "M18 20V10M12 20V4M6 20v-6",
+  bolt: "M13 2 3 14h7l-1 8 11-13h-7l1-7Z",
+  phone: "M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Zm3 17h4",
+  palette: "M12 21a9 9 0 1 1 9-9c0 2-1.5 3-3 3h-2a2 2 0 0 0-2 2c0 1 .5 1.5.5 2.5S13.5 21 12 21Z",
+};
+
+export function FeatureIcon(props: { name: string }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d={ICON_PATHS[props.name] ?? ICON_PATHS.bolt}
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  );
+}
 
 export function LandingShell(props: {
   title: string;
@@ -106,29 +305,289 @@ export function LandingShell(props: {
         <style dangerouslySetInnerHTML={{ __html: LANDING_STYLES }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: props.jsonLd }} />
       </head>
-      <body>{props.children}</body>
+      <body>
+        {props.children}
+        <script dangerouslySetInnerHTML={{ __html: LANDING_REVEAL_SCRIPT }} />
+      </body>
     </html>
   );
 }
 
-export function Feature(props: { emoji: string; title: string; children: Child }) {
+export function TopBar(props: { ctaHref: string; ctaLabel: string }) {
   return (
-    <div class="feature">
-      <span class="emoji">{props.emoji}</span>
-      <h3>{props.title}</h3>
-      <p>{props.children}</p>
+    <header class="topbar">
+      <div class="wrap">
+        <a class="brand" href="/">
+          toko<em>web</em>.id
+        </a>
+        <a
+          class="btn btn-fill"
+          href={props.ctaHref}
+          style="padding:0.6rem 1.3rem; font-size:0.9rem;"
+        >
+          {props.ctaLabel}
+        </a>
+      </div>
+    </header>
+  );
+}
+
+export function Hero(props: {
+  eyebrow: string;
+  headline: Child;
+  lede: Child;
+  primary: { href: string; label: string };
+  secondary: { href: string; label: string };
+  trust: string[];
+  screenshotUrl: string;
+  chipA: string;
+  chipB: string;
+}) {
+  return (
+    <section class="hero">
+      <div class="hero-bg" />
+      <div class="wrap hero-grid">
+        <div>
+          <span class="eyebrow">{props.eyebrow}</span>
+          <h1 class="display">{props.headline}</h1>
+          <p class="lede">{props.lede}</p>
+          <div class="cta-row">
+            <a class="btn btn-fill" href={props.primary.href}>
+              {props.primary.label}
+            </a>
+            <a class="btn btn-line" href={props.secondary.href}>
+              {props.secondary.label}
+            </a>
+          </div>
+          <div class="trust-row">
+            {props.trust.map((item) => (
+              <span class="trust-item">
+                <CheckIcon />
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div class="phone-stage">
+          <span class="float-chip a">
+            <span class="dot" />
+            {props.chipA}
+          </span>
+          <div class="phone">
+            <span class="phone-screen">
+              <img
+                src={props.screenshotUrl}
+                alt="Contoh website warung di HP"
+                width="390"
+                height="844"
+                fetchpriority="high"
+              />
+            </span>
+          </div>
+          <span class="float-chip b">📊 {props.chipB}</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function MetricBand(props: { metrics: { num: string; cap: string }[] }) {
+  return (
+    <div class="metric-band">
+      <div class="wrap">
+        {props.metrics.map((metric) => (
+          <div class="metric">
+            <span class="num">{metric.num}</span>
+            <span class="cap">{metric.cap}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-export function Step(props: { title: string; children: Child }) {
+export function SectionHeader(props: { kicker: string; title: Child; sub?: Child }) {
   return (
-    <div class="step">
-      <span class="num" />
-      <div>
-        <h3>{props.title}</h3>
-        <p>{props.children}</p>
+    <>
+      <span class="kicker">{props.kicker}</span>
+      <h2 class="title-2">{props.title}</h2>
+      {props.sub ? <p class="sub">{props.sub}</p> : null}
+    </>
+  );
+}
+
+export function LandingSection(props: { children: Child; alt?: boolean; id?: string }) {
+  return (
+    <section class={props.alt ? "section section-alt" : "section"} id={props.id}>
+      <div class="wrap">{props.children}</div>
+    </section>
+  );
+}
+
+export function FeatureGrid(props: { features: { icon: string; title: string; body: string }[] }) {
+  return (
+    <div class="feature-grid">
+      {props.features.map((feature) => (
+        <div class="feature-card reveal">
+          <div class="feature-icon">
+            <FeatureIcon name={feature.icon} />
+          </div>
+          <h3>{feature.title}</h3>
+          <p>{feature.body}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function StepList(props: { steps: { title: string; body: string }[] }) {
+  return (
+    <div class="steps">
+      {props.steps.map((step, index) => (
+        <div class="step reveal">
+          <span class="step-num">{index + 1}</span>
+          <div>
+            <h3>{step.title}</h3>
+            <p>{step.body}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function ThemeStrip(props: {
+  themes: {
+    slug: string;
+    name: string;
+    character: string;
+    gradient: string;
+    textColor: string;
+    demoUrl: string;
+  }[];
+}) {
+  return (
+    <div class="theme-strip">
+      {props.themes.map((theme) => (
+        <a class="theme-card reveal" href={theme.demoUrl}>
+          <div
+            class="theme-swatch"
+            style={`background:${theme.gradient}; color:${theme.textColor};`}
+          >
+            <span class="name">{theme.name}</span>
+          </div>
+          <div class="meta">
+            <strong>Tema {theme.name}</strong>
+            {theme.character}
+          </div>
+        </a>
+      ))}
+    </div>
+  );
+}
+
+export function PriceCard(props: {
+  plan: string;
+  amount: string;
+  per: string;
+  items: string[];
+  cta: { href: string; label: string };
+  featured?: boolean;
+  tag?: string;
+}) {
+  return (
+    <div class={props.featured ? "price-card featured" : "price-card"}>
+      {props.tag ? <span class="tag">{props.tag}</span> : null}
+      <span class="plan-name">{props.plan}</span>
+      <p class="amount">
+        <span class="rp">Rp</span> {props.amount}
+      </p>
+      <p class="per">{props.per}</p>
+      <ul class="price-list">
+        {props.items.map((item) => (
+          <li>
+            <CheckIcon />
+            {item}
+          </li>
+        ))}
+      </ul>
+      <a
+        class={props.featured ? "btn btn-fill" : "btn btn-line"}
+        href={props.cta.href}
+        style="justify-content:center;"
+      >
+        {props.cta.label}
+      </a>
+    </div>
+  );
+}
+
+export function PricingGrid(props: { children: Child }) {
+  return <div class="pricing">{props.children}</div>;
+}
+
+export function FaqList(props: { items: { q: string; a: string }[] }) {
+  return (
+    <div class="faq">
+      {props.items.map((item) => (
+        <details>
+          <summary>{item.q}</summary>
+          <p>{item.a}</p>
+        </details>
+      ))}
+    </div>
+  );
+}
+
+export function CtaBand(props: {
+  title: Child;
+  sub: Child;
+  primary: { href: string; label: string };
+  secondary?: { href: string; label: string };
+}) {
+  return (
+    <div class="wrap">
+      <div class="cta-band reveal">
+        <h2 class="title-2">{props.title}</h2>
+        <p class="sub">{props.sub}</p>
+        <div class="cta-row">
+          <a class="btn btn-fill" href={props.primary.href}>
+            {props.primary.label}
+          </a>
+          {props.secondary ? (
+            <a
+              class="btn btn-line"
+              href={props.secondary.href}
+              style="background:transparent; color:#FAF5EC; border-color:#57504A;"
+            >
+              {props.secondary.label}
+            </a>
+          ) : null}
+        </div>
       </div>
     </div>
+  );
+}
+
+export function LandingFooter(props: { links: { href: string; label: string }[] }) {
+  return (
+    <footer class="footer">
+      <div class="wrap">
+        <span>
+          <a class="brand" href="/">
+            toko<em>web</em>.id
+          </a>{" "}
+          — website kilat untuk UMKM Indonesia
+        </span>
+        <span>
+          {props.links.map((link, index) => (
+            <>
+              {index > 0 ? " · " : ""}
+              <a href={link.href}>{link.label}</a>
+            </>
+          ))}
+        </span>
+      </div>
+    </footer>
   );
 }

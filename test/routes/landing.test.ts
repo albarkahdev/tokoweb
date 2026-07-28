@@ -14,8 +14,8 @@ describe("landing tokoweb.id", () => {
     const response = await get("/");
     expect(response.status).toBe(200);
     const html = await response.text();
-    expect(html).toContain("Rp 75");
-    expect(html).toContain("Rp 200");
+    expect(html).toContain("75rb");
+    expect(html).toContain("200rb");
     expect(html).toContain("https://demo.tokoweb.id/kuliner");
     expect(html).toContain("Refund 7 hari");
     expect(html).toContain('"@type":"Organization"');

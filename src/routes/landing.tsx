@@ -1,177 +1,29 @@
 import { Hono } from "hono";
 import { matchCachedPage, putCachedPage } from "@/db/edge-cache";
 import type { AppEnv } from "@/env";
-import { Feature, LandingShell, Step } from "@/ui/landing";
+import {
+  CtaBand,
+  FaqList,
+  FeatureGrid,
+  Hero,
+  LandingFooter,
+  LandingSection,
+  LandingShell,
+  MetricBand,
+  PriceCard,
+  PricingGrid,
+  SectionHeader,
+  StepList,
+  ThemeStrip,
+  TopBar,
+} from "@/ui/landing";
+
+const TITLE = "tokoweb.id — Website untuk Warung & UMKM, Jadi ≤ 3 Hari, Mulai Rp 75rb/bulan";
+const DESCRIPTION =
+  "Jasa pembuatan website UMKM kuliner: menu online, promo otomatis, tombol WhatsApp, statistik pengunjung. Jadi 3 hari, kelola sendiri dari HP, mulai Rp 75rb/bulan.";
 
 function waLink(number: string, text: string): string {
   return `https://wa.me/${number}?text=${encodeURIComponent(text)}`;
-}
-
-function LandingPage(props: { baseDomain: string; contactWa: string }) {
-  const demoUrl = `https://demo.${props.baseDomain}/kuliner`;
-  const wa = props.contactWa
-    ? waLink(props.contactWa, "Halo tokoweb, saya mau tanya website untuk usaha saya.")
-    : demoUrl;
-  return (
-    <main>
-      <section class="hero">
-        <span class="eyebrow">Untuk warung, kedai &amp; resto di Indonesia</span>
-        <h1>
-          Website keren untuk usahamu.
-          <br />
-          Jadi ≤ 3 hari.
-        </h1>
-        <p class="lead">
-          Pembeli makin sering cari lewat Google dan link Instagram. Punya website profesional
-          sekarang tidak perlu mahal — mulai <strong>Rp 75 ribu/bulan</strong>, semua kami urus.
-        </p>
-        <div class="cta-row">
-          <a class="btn-primary" href={wa}>
-            {props.contactWa ? "Chat Kami di WhatsApp" : "Lihat Contoh Website"}
-          </a>
-          <a class="btn-outline" href={demoUrl}>
-            Coba Demo Langsung
-          </a>
-        </div>
-        <p class="trust">
-          Tanpa kontrak jangka panjang · Refund 7 hari · Data usahamu tetap milikmu
-        </p>
-      </section>
-
-      <div class="section-alt">
-        <section>
-          <div>
-            <h2>Kenapa usaha kuliner butuh website?</h2>
-            <div class="grid">
-              <Feature emoji="🔍" title="Ditemukan di Google">
-                Orang ketik "ayam bakar dekat sini" — yang muncul yang punya website. Menu, jam
-                buka, dan lokasimu langsung terbaca Google.
-              </Feature>
-              <Feature emoji="💬" title="Pembeli langsung chat WA">
-                Setiap menu ada tombol "Tanya via WA". Dari lihat menu ke chat kamu: satu ketuk.
-              </Feature>
-              <Feature emoji="📊" title="Kamu tahu hasilnya">
-                Laporan tiap bulan: berapa orang berkunjung, berapa yang klik WhatsApp. Bukan
-                sekadar "punya website" — kelihatan kerjanya.
-              </Feature>
-              <Feature emoji="⚡" title="Ngebut di sinyal jelek">
-                Dibangun untuk HP dan sinyal pas-pasan. Buka di bawah 1 detik — pembeli tidak kabur
-                duluan.
-              </Feature>
-              <Feature emoji="📱" title="Update sendiri dari HP">
-                Ganti harga, pasang promo, upload foto — semua dari HP-mu. Promo hilang otomatis pas
-                masa berlakunya habis.
-              </Feature>
-              <Feature emoji="🎨" title="Ganti tampilan sekali klik">
-                3 tema desain premium. Bosan? Ganti sendiri, data tidak berubah.
-              </Feature>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <section>
-        <h2>Caranya gampang</h2>
-        <div class="steps">
-          <Step title="Chat kami">
-            Ceritakan usahamu. Kami tunjukkan demo langsung dengan nama usahamu terpasang.
-          </Step>
-          <Step title="Isi form dari HP (± 10 menit)">
-            Nama menu, harga, foto, jam buka. Tim kami yang merapikan semuanya sampai layak tayang.
-          </Step>
-          <Step title="Website tayang ≤ 3 hari">
-            Kamu terima link website + akses kelola. Bayar lewat QRIS, beres.
-          </Step>
-        </div>
-      </section>
-
-      <div class="section-alt">
-        <section>
-          <div>
-            <h2 style="text-align:center;">Harga jujur, tanpa biaya tersembunyi</h2>
-            <div class="pricing" style="margin-top:2.5rem;">
-              <div class="price-card">
-                <h3>Basic</h3>
-                <p class="amount">Rp 75rb</p>
-                <p class="per">/bulan · setup sekali Rp 300rb</p>
-                <ul>
-                  <li>Website lengkap: menu, promo, galeri, testimoni</li>
-                  <li>Alamat namausahamu.tokoweb.id</li>
-                  <li>Kelola sendiri dari HP</li>
-                  <li>Statistik pengunjung &amp; klik WA</li>
-                  <li>Laporan bulanan via WA</li>
-                </ul>
-                <a class="btn-outline" href={wa}>
-                  Pilih Basic
-                </a>
-              </div>
-              <div class="price-card featured">
-                <span class="tag">Paling lengkap</span>
-                <h3>Pro</h3>
-                <p class="amount">Rp 200rb</p>
-                <p class="per">/bulan · setup sekali Rp 1jt</p>
-                <ul>
-                  <li>Semua fitur Basic</li>
-                  <li>Domain sendiri (namausahamu.com)</li>
-                  <li>Konten ditulis penuh oleh tim kami</li>
-                  <li>Google Business Profile dioptimasi</li>
-                </ul>
-                <a class="btn-primary" href={wa}>
-                  Pilih Pro
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <section class="faq">
-        <h2>Pertanyaan yang sering muncul</h2>
-        <details>
-          <summary>Saya gaptek, bisa?</summary>
-          <p>
-            Bisa. Kamu cuma isi form dari HP — sisanya kami yang kerjakan. Update harian (ganti
-            harga, promo) semudah pakai WhatsApp.
-          </p>
-        </details>
-        <details>
-          <summary>Perlu beli domain atau hosting?</summary>
-          <p>
-            Tidak. Paket Basic sudah termasuk alamat namausahamu.tokoweb.id. Mau domain sendiri
-            (.com)? Ada di paket Pro.
-          </p>
-        </details>
-        <details>
-          <summary>Kalau mau berhenti?</summary>
-          <p>
-            Berhenti kapan saja, tanpa penalti. 7 hari pertama tidak puas → uang setup kembali 100%.
-            Konten dan fotomu tetap milikmu.
-          </p>
-        </details>
-        <details>
-          <summary>Websitenya cepat tidak?</summary>
-          <p>
-            Skor Google PageSpeed 100/100 di HP. Coba sendiri demonya — buka dari sinyal paling
-            jelek sekalipun.
-          </p>
-        </details>
-      </section>
-
-      <footer>
-        <p>
-          <strong>tokoweb.id</strong> — website kilat untuk UMKM Indonesia
-          <br />
-          <a href={demoUrl}>Demo</a>
-          {props.contactWa ? (
-            <>
-              {" · "}
-              <a href={wa}>WhatsApp</a>
-            </>
-          ) : null}
-        </p>
-      </footer>
-    </main>
-  );
 }
 
 function landingJsonLd(baseDomain: string): string {
@@ -185,15 +37,17 @@ function landingJsonLd(baseDomain: string): string {
   });
 }
 
-const TITLE = "tokoweb.id — Website untuk Warung & UMKM, Jadi ≤ 3 Hari, Mulai Rp 75rb/bulan";
-const DESCRIPTION =
-  "Jasa pembuatan website UMKM kuliner: menu online, promo otomatis, tombol WhatsApp, statistik pengunjung. Jadi 3 hari, kelola sendiri dari HP, mulai Rp 75rb/bulan.";
-
 export const landing = new Hono<AppEnv>()
   .get("/", async (c) => {
     const url = new URL(c.req.url);
     const cached = await matchCachedPage(url.hostname, "/");
     if (cached) return cached;
+
+    const demoUrl = `https://demo.${c.env.BASE_DOMAIN}/kuliner`;
+    const wa = c.env.CONTACT_WA_NUMBER
+      ? waLink(c.env.CONTACT_WA_NUMBER, "Halo tokoweb, saya mau tanya website untuk usaha saya.")
+      : demoUrl;
+    const ctaLabel = c.env.CONTACT_WA_NUMBER ? "Chat WhatsApp" : "Lihat Demo";
 
     const html = `<!doctype html>${String(
       <LandingShell
@@ -202,9 +56,215 @@ export const landing = new Hono<AppEnv>()
         canonical={`https://${c.env.BASE_DOMAIN}/`}
         jsonLd={landingJsonLd(c.env.BASE_DOMAIN)}
       >
-        <LandingPage baseDomain={c.env.BASE_DOMAIN} contactWa={c.env.CONTACT_WA_NUMBER} />
+        <TopBar ctaHref={wa} ctaLabel={ctaLabel} />
+        <Hero
+          eyebrow="🍜 Untuk warung, kedai & resto"
+          headline={
+            <>
+              Websitemu jadi <span class="accent">≤ 3 hari.</span>
+              <br />
+              Pembeli tinggal klik WA.
+            </>
+          }
+          lede={
+            <>
+              Pembeli sekarang cari makan lewat Google dan link Instagram. Website profesional tidak
+              lagi mahal — <strong>mulai Rp 75 ribu/bulan</strong>, semua kami urus, kamu tinggal
+              jualan.
+            </>
+          }
+          primary={{
+            href: wa,
+            label: c.env.CONTACT_WA_NUMBER ? "Chat Kami Sekarang" : "Coba Demo Langsung",
+          }}
+          secondary={{ href: demoUrl, label: "Lihat Contoh Website →" }}
+          trust={["Refund 7 hari", "Tanpa kontrak", "Datamu tetap milikmu"]}
+          screenshotUrl="/img/t/demo/gallery/landing-shot.webp"
+          chipA="Buka < 1 detik"
+          chipB="12 klik WA minggu ini"
+        />
+        <MetricBand
+          metrics={[
+            { num: "≤ 3 hari", cap: "dari data masuk sampai tayang" },
+            { num: "100/100", cap: "skor kecepatan Google PageSpeed" },
+            { num: "< 1 dtk", cap: "terbuka bahkan di sinyal jelek" },
+            { num: "Rp 75rb", cap: "per bulan, tanpa biaya tersembunyi" },
+          ]}
+        />
+        <LandingSection>
+          <SectionHeader
+            kicker="Kenapa perlu"
+            title="Website yang benar-benar kerja untukmu"
+            sub="Bukan sekadar pajangan — tiap bagian dirancang supaya pengunjung jadi pembeli."
+          />
+          <FeatureGrid
+            features={[
+              {
+                icon: "search",
+                title: "Ditemukan di Google",
+                body: 'Orang ketik "ayam bakar dekat sini" — menu, jam buka, dan lokasimu langsung terbaca Google.',
+              },
+              {
+                icon: "chat",
+                title: "Satu ketuk langsung chat WA",
+                body: 'Setiap menu punya tombol "Tanya via WA" yang sudah menyebut nama menunya. Pembeli tidak perlu mikir.',
+              },
+              {
+                icon: "chart",
+                title: "Kamu tahu hasilnya",
+                body: "Laporan bulanan: berapa yang berkunjung, berapa yang klik WhatsApp. Kelihatan kerjanya, bukan katanya.",
+              },
+              {
+                icon: "bolt",
+                title: "Ngebut di sinyal jelek",
+                body: "Terbuka di bawah 1 detik bahkan di 4G pas-pasan. Pembeli tidak sempat kabur.",
+              },
+              {
+                icon: "phone",
+                title: "Update sendiri dari HP",
+                body: "Ganti harga, pasang promo, upload foto — semudah pakai WhatsApp. Promo hilang otomatis saat masanya habis.",
+              },
+              {
+                icon: "palette",
+                title: "Ganti tampilan sekali klik",
+                body: "Tiga tema desain premium. Ganti kapan pun, data dan fotomu tidak berubah.",
+              },
+            ]}
+          />
+        </LandingSection>
+        <LandingSection>
+          <SectionHeader
+            kicker="Pilih gayamu"
+            title="Tiga kepribadian, satu klik ganti"
+            sub="Klik untuk melihat demo hidup — masing-masing bisa dicoba dengan nama usahamu."
+          />
+          <ThemeStrip
+            themes={[
+              {
+                slug: "hangat",
+                name: "Hangat",
+                character: "Earth tone membumi — untuk warung & rumah makan keluarga.",
+                gradient: "linear-gradient(135deg, #FFFBF5 0%, #E8A03C 60%, #C4501B 100%)",
+                textColor: "#3B2413",
+                demoUrl: `${demoUrl}?tema=hangat`,
+              },
+              {
+                slug: "arang",
+                name: "Arang",
+                character: "Gelap elegan berlapis emas — untuk grill, kopi, dining malam.",
+                gradient: "linear-gradient(135deg, #1A1815 0%, #242019 55%, #C9A227 130%)",
+                textColor: "#EDE6DA",
+                demoUrl: `${demoUrl}?tema=arang`,
+              },
+              {
+                slug: "ceria",
+                name: "Ceria",
+                character: "Cerah playful — untuk kedai kekinian, dessert & minuman.",
+                gradient: "linear-gradient(135deg, #FFFDF7 0%, #4ECDC4 55%, #FF6B57 115%)",
+                textColor: "#27221C",
+                demoUrl: `${demoUrl}?tema=ceria`,
+              },
+            ]}
+          />
+        </LandingSection>
+        <LandingSection>
+          <SectionHeader kicker="Caranya" title="Tiga langkah, tidak pakai ribet" />
+          <StepList
+            steps={[
+              {
+                title: "Chat kami",
+                body: "Ceritakan usahamu. Kami tunjukkan demo hidup dengan nama usahamu langsung terpasang.",
+              },
+              {
+                title: "Isi form dari HP — ± 10 menit",
+                body: "Nama menu, harga, foto, jam buka. Tim kami yang merapikan sampai layak tayang.",
+              },
+              {
+                title: "Tayang ≤ 3 hari",
+                body: "Terima link website + akses kelola. Bayar lewat QRIS, langsung jalan.",
+              },
+            ]}
+          />
+        </LandingSection>
+        <LandingSection>
+          <SectionHeader
+            kicker="Investasi"
+            title="Harga jujur, tanpa biaya tersembunyi"
+            sub="Setup sekali di awal, langganan bulanan bisa berhenti kapan saja. Refund 7 hari kalau tidak puas."
+          />
+          <PricingGrid>
+            <PriceCard
+              plan="Basic"
+              amount="75rb"
+              per="/bulan · setup sekali Rp 300rb"
+              items={[
+                "Website lengkap: menu, promo, galeri, testimoni",
+                "Alamat namausahamu.tokoweb.id",
+                "Kelola sendiri dari HP",
+                "Statistik pengunjung & klik WA",
+                "Laporan bulanan via WA",
+              ]}
+              cta={{ href: wa, label: "Pilih Basic" }}
+            />
+            <PriceCard
+              plan="Pro"
+              amount="200rb"
+              per="/bulan · setup sekali Rp 1jt"
+              items={[
+                "Semua fitur Basic",
+                "Domain sendiri (namausahamu.com)",
+                "Konten ditulis penuh oleh tim kami",
+                "Google Business Profile dioptimasi",
+              ]}
+              cta={{ href: wa, label: "Pilih Pro" }}
+              featured
+              tag="Paling lengkap"
+            />
+          </PricingGrid>
+        </LandingSection>
+        <LandingSection>
+          <SectionHeader kicker="FAQ" title="Pertanyaan yang sering muncul" />
+          <FaqList
+            items={[
+              {
+                q: "Saya gaptek, bisa?",
+                a: "Bisa. Kamu cuma isi form dari HP — sisanya kami kerjakan. Update harian (ganti harga, pasang promo) semudah pakai WhatsApp.",
+              },
+              {
+                q: "Perlu beli domain atau hosting?",
+                a: "Tidak. Paket Basic sudah termasuk alamat namausahamu.tokoweb.id. Mau domain sendiri (.com)? Ada di paket Pro.",
+              },
+              {
+                q: "Kalau mau berhenti?",
+                a: "Berhenti kapan saja tanpa penalti. 7 hari pertama tidak puas → uang setup kembali 100%. Konten dan fotomu tetap milikmu.",
+              },
+              {
+                q: "Websitenya cepat tidak?",
+                a: "Skor Google PageSpeed 100/100 di HP. Coba sendiri demonya dari sinyal paling jelek sekalipun.",
+              },
+            ]}
+          />
+        </LandingSection>
+        <LandingSection>
+          <CtaBand
+            title="Websitemu bisa tayang minggu ini."
+            sub="Mulai dari demo — coba dengan nama usahamu sendiri, gratis, tanpa daftar."
+            primary={{
+              href: wa,
+              label: c.env.CONTACT_WA_NUMBER ? "Chat Kami di WhatsApp" : "Buka Demo Sekarang",
+            }}
+            secondary={{ href: demoUrl, label: "Lihat Demo" }}
+          />
+        </LandingSection>
+        <LandingFooter
+          links={[
+            { href: demoUrl, label: "Demo" },
+            { href: "/robots.txt", label: "" },
+          ].filter((link) => link.label !== "")}
+        />
       </LandingShell>,
     )}`;
+
     const response = new Response(html, {
       headers: {
         "content-type": "text/html; charset=utf-8",
