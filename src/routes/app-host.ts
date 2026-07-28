@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import type { AppEnv } from "@/env";
+import { admin } from "@/routes/admin";
 import { auth } from "@/routes/auth";
 import { cmsGaleri } from "@/routes/cms/galeri";
 import { cmsHome } from "@/routes/cms/home";
@@ -15,6 +16,7 @@ export const appHost = new Hono<AppEnv>()
   .use("*", rejectCrossOriginWrites)
   .use("*", attachSession)
   .route("/", auth)
+  .route("/admin", admin)
   .route("/", cmsHome)
   .route("/", cmsInfo)
   .route("/", cmsMenu)

@@ -25,6 +25,38 @@ export function tenantHostnames(tenant: TenantRow, baseDomain: string): string[]
   return hostnames;
 }
 
+export async function listTenants(db: D1Database): Promise<TenantRow[]> {
+  const rows = await db
+    .prepare(
+      "SELECT id, slug, custom_domain, name, vertical_id, theme_id, status FROM tenants ORDER BY created_at DESC",
+    )
+    .all<TenantRow>();
+  return rows.results;
+}
+
+export async function findTenantBySlug(db: D1Database, slug: string): Promise<TenantRow | null> {
+  return db
+    .prepare(
+      "SELECT id, slug, custom_domain, name, vertical_id, theme_id, status FROM tenants WHERE slug = ?1",
+    )
+    .bind(slug)
+    .first<TenantRow>();
+}
+
+export async function createTenant(
+  db: D1Database,
+  data: { slug: string; name: string; verticalId: number; themeId: number },
+): Promise<number> {
+  const row = await db
+    .prepare(
+      "INSERT INTO tenants (slug, name, vertical_id, theme_id, status) VALUES (?1, ?2, ?3, ?4, 'draft') RETURNING id",
+    )
+    .bind(data.slug, data.name, data.verticalId, data.themeId)
+    .first<{ id: number }>();
+  if (!row) throw new Error("Failed to create tenant");
+  return row.id;
+}
+
 export async function setTenantStatus(
   db: D1Database,
   tenantId: number,
