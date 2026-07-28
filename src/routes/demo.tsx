@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { type Context, Hono } from "hono";
 import { createLead, findLeadByWa } from "@/db/leads";
 import { recordScan } from "@/db/referrals";
 import { findReferrerByCode } from "@/db/referrers";
@@ -96,7 +96,12 @@ input.addEventListener("input",function(){
 </script>`;
 }
 
-function renderDemoPage(themeSlug: string, baseDomain: string, todayWib: string): string {
+function renderDemoPage(
+  themeSlug: string,
+  baseDomain: string,
+  todayWib: string,
+  pagePath: "/" | "/menu",
+): string {
   const html = renderKulinerPage({
     site: {
       tenantId: 0,
@@ -131,32 +136,35 @@ function renderDemoPage(themeSlug: string, baseDomain: string, todayWib: string)
     ],
     baseUrl: `https://demo.${baseDomain}`,
     appBaseUrl: `https://app.${baseDomain}`,
-    path: "/",
+    path: pagePath,
     todayWib,
     noindex: true,
   });
   return html.replace("</body>", `${demoChrome(themeSlug, baseDomain)}</body>`);
 }
 
+async function serveDemo(c: Context<AppEnv>, pagePath: "/" | "/menu"): Promise<Response> {
+  const requested = c.req.query("tema") ?? DEFAULT_THEME;
+  const themeSlug = requested in KULINER_THEMES ? requested : DEFAULT_THEME;
+
+  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=3`;
+  const cached = await caches.default.match(cacheKey);
+  if (cached) return cached;
+
+  const html = renderDemoPage(themeSlug, c.env.BASE_DOMAIN, wibDateOf(Date.now()), pagePath);
+  const response = new Response(html, {
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "public, max-age=60, s-maxage=86400",
+    },
+  });
+  c.executionCtx.waitUntil(caches.default.put(cacheKey, response.clone()));
+  return response;
+}
+
 export const demo = new Hono<AppEnv>()
-  .get("/kuliner", async (c) => {
-    const requested = c.req.query("tema") ?? DEFAULT_THEME;
-    const themeSlug = requested in KULINER_THEMES ? requested : DEFAULT_THEME;
-
-    const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner?tema=${themeSlug}&v=2`;
-    const cached = await caches.default.match(cacheKey);
-    if (cached) return cached;
-
-    const html = renderDemoPage(themeSlug, c.env.BASE_DOMAIN, wibDateOf(Date.now()));
-    const response = new Response(html, {
-      headers: {
-        "content-type": "text/html; charset=utf-8",
-        "cache-control": "public, max-age=60, s-maxage=86400",
-      },
-    });
-    c.executionCtx.waitUntil(caches.default.put(cacheKey, response.clone()));
-    return response;
-  })
+  .get("/kuliner", (c) => serveDemo(c, "/"))
+  .get("/menu", (c) => serveDemo(c, "/menu"))
   .post("/scan", async (c) => {
     const ip = c.req.header("cf-connecting-ip") ?? "0.0.0.0";
     if (!scanLimiter.allow(ip, Date.now())) return c.body(null, 204);

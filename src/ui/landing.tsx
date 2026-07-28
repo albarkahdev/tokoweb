@@ -1,9 +1,11 @@
 import type { Child } from "hono/jsx";
+import { FONTS_CSS } from "@/ui/fonts-css";
 
 const DISPLAY_FONT = "'Fraunces', ui-serif, 'New York', Georgia, 'Times New Roman', serif";
 const BODY_FONT = "'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
 export const LANDING_STYLES = `
+${FONTS_CSS}
 :root {
   --ink: #1C1917;
   --ink-soft: #44403C;
@@ -44,11 +46,15 @@ body {
   backdrop-filter: blur(12px);
   border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
 }
-.topbar .wrap { display: flex; align-items: center; justify-content: space-between; padding-top: 0.8rem; padding-bottom: 0.8rem; }
+.topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: 0.8rem; padding-bottom: 0.8rem; }
+.topnav { display: flex; gap: 1.4rem; margin-left: auto; margin-right: 1.2rem; }
+.topnav a { color: var(--ink-soft); text-decoration: none; font-weight: 600; font-size: 0.92rem; }
+.topnav a:hover { color: var(--brand-deep); }
+@media (max-width: 44rem) { .topnav { display: none; } }
 .brand { font-family: var(--display); font-weight: 700; font-size: 1.25rem; letter-spacing: -0.01em; text-decoration: none; color: var(--ink); }
 .brand em { color: var(--brand); font-style: normal; }
 
-.hero { position: relative; padding: clamp(3.5rem, 8vw, 6.5rem) 0 clamp(3rem, 7vw, 5rem); }
+.hero { position: relative; padding: clamp(1.5rem, 4vw, 3rem) 0 clamp(2.5rem, 6vw, 4rem); }
 .hero-bg {
   position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background:
@@ -313,13 +319,24 @@ export function LandingShell(props: {
   );
 }
 
-export function TopBar(props: { ctaHref: string; ctaLabel: string }) {
+export function TopBar(props: {
+  ctaHref: string;
+  ctaLabel: string;
+  links?: { href: string; label: string }[];
+}) {
   return (
     <header class="topbar">
       <div class="wrap">
         <a class="brand" href="/">
           toko<em>web</em>.id
         </a>
+        {props.links ? (
+          <nav class="topnav">
+            {props.links.map((link) => (
+              <a href={link.href}>{link.label}</a>
+            ))}
+          </nav>
+        ) : null}
         <a
           class="btn btn-fill"
           href={props.ctaHref}

@@ -125,3 +125,14 @@ describe("halaman demo kuliner", () => {
     expect(response.status).toBe(400);
   });
 });
+
+describe("halaman demo /menu", () => {
+  it("renders full menu with categories and demo chrome", async () => {
+    const response = await send(new Request(`${DEMO}/menu?tema=ceria`));
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain("Makanan");
+    expect(html).toContain("Es Teh Manis");
+    expect(html).toContain("Coba tema:");
+  });
+});

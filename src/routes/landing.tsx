@@ -40,7 +40,7 @@ function landingJsonLd(baseDomain: string): string {
 export const landing = new Hono<AppEnv>()
   .get("/", async (c) => {
     const url = new URL(c.req.url);
-    const cached = await matchCachedPage(url.hostname, "/landing-v3");
+    const cached = await matchCachedPage(url.hostname, "/landing-v4");
     if (cached) return cached;
 
     const demoUrl = `https://demo.${c.env.BASE_DOMAIN}/kuliner`;
@@ -56,7 +56,16 @@ export const landing = new Hono<AppEnv>()
         canonical={`https://${c.env.BASE_DOMAIN}/`}
         jsonLd={landingJsonLd(c.env.BASE_DOMAIN)}
       >
-        <TopBar ctaHref={wa} ctaLabel={ctaLabel} />
+        <TopBar
+          ctaHref={wa}
+          ctaLabel={ctaLabel}
+          links={[
+            { href: "#fitur", label: "Fitur" },
+            { href: "#tema", label: "Tema" },
+            { href: "#harga", label: "Harga" },
+            { href: "#faq", label: "FAQ" },
+          ]}
+        />
         <Hero
           eyebrow="🍜 Untuk warung, kedai & resto"
           headline={
@@ -85,13 +94,13 @@ export const landing = new Hono<AppEnv>()
         />
         <MetricBand
           metrics={[
-            { num: "≤ 3 hari", cap: "dari data masuk sampai tayang" },
+            { num: "≤ 3 hari", cap: "janji maksimal — biasanya jauh lebih cepat" },
             { num: "100/100", cap: "skor kecepatan Google PageSpeed" },
             { num: "< 1 dtk", cap: "terbuka bahkan di sinyal jelek" },
             { num: "Rp 75rb", cap: "per bulan, tanpa biaya tersembunyi" },
           ]}
         />
-        <LandingSection>
+        <LandingSection id="fitur">
           <SectionHeader
             kicker="Kenapa perlu"
             title="Website yang benar-benar kerja untukmu"
@@ -132,7 +141,7 @@ export const landing = new Hono<AppEnv>()
             ]}
           />
         </LandingSection>
-        <LandingSection>
+        <LandingSection id="tema">
           <SectionHeader
             kicker="Pilih gayamu"
             title="Tiga kepribadian, satu klik ganti"
@@ -186,7 +195,7 @@ export const landing = new Hono<AppEnv>()
             ]}
           />
         </LandingSection>
-        <LandingSection>
+        <LandingSection id="harga">
           <SectionHeader
             kicker="Investasi"
             title="Harga jujur, tanpa biaya tersembunyi"
@@ -222,7 +231,7 @@ export const landing = new Hono<AppEnv>()
             />
           </PricingGrid>
         </LandingSection>
-        <LandingSection>
+        <LandingSection id="faq">
           <SectionHeader kicker="FAQ" title="Pertanyaan yang sering muncul" />
           <FaqList
             items={[
@@ -271,7 +280,7 @@ export const landing = new Hono<AppEnv>()
         "cache-control": "public, max-age=300, s-maxage=86400",
       },
     });
-    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/landing-v3", response.clone()));
+    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/landing-v4", response.clone()));
     return response;
   })
   .get("/robots.txt", (c) =>

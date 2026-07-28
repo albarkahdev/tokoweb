@@ -1,7 +1,9 @@
 import type { ThemeConfig } from "@/themes/engine/types";
+import { FONTS_CSS } from "@/ui/fonts-css";
 
 export function siteCss(theme: ThemeConfig): string {
   return `
+${FONTS_CSS}
 :root {
   --bg: ${theme.colors.bg};
   --surface: ${theme.colors.surface};
