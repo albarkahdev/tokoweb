@@ -1,4 +1,5 @@
 import { webcrypto as crypto } from "node:crypto";
+import { writeFileSync } from "node:fs";
 
 const [email, password] = process.argv.slice(2);
 if (!email || !password || password.length < 8) {
@@ -23,16 +24,10 @@ const bits = await crypto.subtle.deriveBits(
 const toBase64 = (bytes) => Buffer.from(bytes).toString("base64");
 const hash = `pbkdf2$${ITERATIONS}$${toBase64(salt)}$${toBase64(new Uint8Array(bits))}`;
 
-const sql = `INSERT INTO users (email, password_hash, role, tenant_id) VALUES ('${email.toLowerCase()}', '${hash}', 'admin', NULL) ON CONFLICT (email) DO UPDATE SET password_hash = excluded.password_hash;`;
-console.log("SQL siap jalan:\n");
-console.log(sql);
-console.log(
-  '\nLokal :  npx wrangler d1 execute tokoweb --local --command "' +
-    sql.replaceAll('"', '\\"') +
-    '"',
-);
-console.log(
-  'Prod  :  npx wrangler d1 execute tokoweb --remote --command "' +
-    sql.replaceAll('"', '\\"') +
-    '"',
-);
+const sql = `INSERT INTO users (email, password_hash, role, tenant_id) VALUES ('${email.toLowerCase()}', '${hash}', 'admin', NULL) ON CONFLICT (email) DO UPDATE SET password_hash = excluded.password_hash;\n`;
+writeFileSync("admin-user.sql", sql);
+
+console.log("SQL ditulis ke admin-user.sql. Jalankan salah satu:\n");
+console.log("Lokal :  npx wrangler d1 execute tokoweb --local --file=admin-user.sql");
+console.log("Prod  :  npx wrangler d1 execute tokoweb --remote --file=admin-user.sql");
+console.log("\nSetelah berhasil, hapus filenya:  rm admin-user.sql");
