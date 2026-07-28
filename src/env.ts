@@ -1,0 +1,10 @@
+export type Bindings = {
+  DB: D1Database;
+  BASE_DOMAIN: string;
+  STORAGE_ENDPOINT: string;
+  STORAGE_BUCKET: string;
+  STORAGE_ACCESS_KEY_ID: string;
+  STORAGE_SECRET_ACCESS_KEY: string;
+};
+
+export type AppEnv = { Bindings: Bindings };
