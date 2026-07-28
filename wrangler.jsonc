@@ -10,7 +10,7 @@
     {
       "binding": "DB",
       "database_name": "tokoweb",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "3b01ad89-4385-4159-b51f-32b572f2ffc5",
       "migrations_dir": "migrations"
     }
   ],
