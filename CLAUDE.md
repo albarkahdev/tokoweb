@@ -29,9 +29,16 @@ Semua sesi coding WAJIB baca file ini + ADR terkait sebelum menulis kode.
 ## Konvensi kode
 
 - TypeScript strict. Runtime: Cloudflare Workers. Framework HTTP: Hono.
-- Monorepo sederhana: `src/domain/` (logika bisnis murni, tanpa dependensi framework), `src/routes/`, `src/themes/`, `src/db/`.
-- Logika bisnis = fungsi murni yang bisa dites tanpa Miniflare.
-- Test: Vitest + `@cloudflare/vitest-pool-workers`. Logika bisnis baru tanpa test = tidak selesai.
+- Monorepo sederhana: `src/domain/` (logika bisnis murni, tanpa dependensi framework), `src/routes/`, `src/themes/`, `src/ui/`, `src/db/`.
+- Logika bisnis = fungsi murni di `src/domain/`, input → output tervalidasi, bisa dites tanpa Miniflare.
+- Test: Vitest + `@cloudflare/vitest-pool-workers`. **Unit test wajib** — logika bisnis tanpa test = tidak selesai.
+- **Tanpa komentar kode.** Kode harus terbaca sendiri: nama jelas, fungsi kecil, satu tanggung jawab. Test = dokumentasi perilaku.
+- **UI shared component wajib**: semua elemen UI (teks, heading, tombol/CTA, container, section) diimpor dari `src/ui/`. Dilarang markup custom di tema/halaman di luar `src/ui/`.
+- **Import absolute path** via alias `@/` (tsconfig paths). Dilarang import relatif `../`.
+- Kode reusable: duplikasi ketiga = wajib ekstrak jadi fungsi/komponen shared.
+- Commit: Conventional Commits, **tanpa Co-Authored-By / co-author apa pun**.
+- Husky pre-commit wajib: typecheck + lint + test — commit gagal kalau merah.
+- PR wajib pakai template `.github/PULL_REQUEST_TEMPLATE.md`.
 - Bahasa: kode & identifier Inggris, copy/UI Bahasa Indonesia, dokumen Bahasa Indonesia.
 
 ## Perintah (diisi final saat scaffolding)
@@ -50,6 +57,10 @@ Semua sesi coding WAJIB baca file ini + ADR terkait sebelum menulis kode.
 ## Larangan
 
 - ❌ Dependensi baru tanpa ADR.
+- ❌ Komentar di kode (kode harus jelas tanpa komentar).
+- ❌ Co-author di commit message.
+- ❌ Elemen UI custom di luar `src/ui/`.
+- ❌ Import relatif — selalu `@/`.
 - ❌ Fitur di luar scope Fase 1 tanpa konfirmasi eksplisit user (ingatkan kalau diminta pun).
 - ❌ Logika bisnis di dalam route handler (harus di `src/domain/`).
 - ❌ Menyimpan data pribadi pengunjung di tracker (lihat `docs/tracker-spec.md`).
