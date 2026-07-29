@@ -1,4 +1,4 @@
-const ITERATIONS = 100_000;
+const ITERATIONS = 600_000;
 const KEY_BYTES = 32;
 
 function toBase64(bytes: Uint8Array): string {

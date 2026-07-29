@@ -1,5 +1,6 @@
 import type { MiddlewareHandler } from "hono";
 import { getCookie } from "hono/cookie";
+import { getSessionVersion } from "@/db/users";
 import { verifySessionToken } from "@/domain/session";
 import type { AppEnv } from "@/env";
 
@@ -9,9 +10,19 @@ export const attachSession: MiddlewareHandler<AppEnv> = async (c, next) => {
   const token = getCookie(c, SESSION_COOKIE);
   if (token) {
     const payload = await verifySessionToken(token, c.env.AUTH_SECRET, Date.now());
-    if (payload) c.set("session", payload);
+    if (payload) {
+      const currentVersion = await getSessionVersion(c.env.DB, payload.userId);
+      if (currentVersion !== null && currentVersion === payload.ver) c.set("session", payload);
+    }
   }
   await next();
+};
+
+export const securityHeaders: MiddlewareHandler<AppEnv> = async (c, next) => {
+  await next();
+  c.header("X-Frame-Options", "DENY");
+  c.header("X-Content-Type-Options", "nosniff");
+  c.header("Referrer-Policy", "strict-origin-when-cross-origin");
 };
 
 export const requireOwner: MiddlewareHandler<AppEnv> = async (c, next) => {

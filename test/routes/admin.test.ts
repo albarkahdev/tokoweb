@@ -1,5 +1,6 @@
 import { createExecutionContext, env, waitOnExecutionContext } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
+import { releaseMaturedFirstInstallments } from "@/db/payouts";
 import { hashPassword } from "@/domain/password";
 import app from "@/index";
 
@@ -54,7 +55,7 @@ describe("admin panel — alur referral end-to-end", () => {
     const response = await post("/admin/referrer", {
       name: "Pak Ojol",
       wa_number: "6289900112233",
-      pin: "4321",
+      pin: "432198",
     });
     expect(response.status).toBe(302);
     const referrer = await env.DB.prepare("SELECT code, pin_hash FROM referrers LIMIT 1").first<{
@@ -116,7 +117,7 @@ describe("admin panel — alur referral end-to-end", () => {
     expect(response.headers.get("location")).toContain("self-referral");
   });
 
-  it("setup payment unlocks installment 1", async () => {
+  it("setup payment holds installment 1 pending until 7-day refund window passes", async () => {
     const tenant = await env.DB.prepare(
       "SELECT id FROM tenants WHERE slug = 'warungbusari'",
     ).first<{
@@ -129,10 +130,34 @@ describe("admin panel — alur referral end-to-end", () => {
     });
     expect(response.status).toBe(302);
 
-    const payout = await env.DB.prepare(
+    let payout = await env.DB.prepare(
+      "SELECT status FROM commission_payouts WHERE installment = 1",
+    ).first<{ status: string }>();
+    expect(payout?.status).toBe("pending");
+
+    await releaseMaturedFirstInstallments(env.DB, "2999-01-01 00:00:00");
+    payout = await env.DB.prepare(
       "SELECT status FROM commission_payouts WHERE installment = 1",
     ).first<{ status: string }>();
     expect(payout?.status).toBe("payable");
+  });
+
+  it("rejects a duplicate payment for the same period", async () => {
+    const tenant = await env.DB.prepare(
+      "SELECT id FROM tenants WHERE slug = 'warungbusari'",
+    ).first<{ id: number }>();
+    const dup = await post(`/admin/tenant/${tenant?.id}/bayar`, {
+      kind: "setup",
+      amount: "300000",
+      period: "2026-07",
+    });
+    expect(dup.headers.get("location")).toContain("sudah pernah dicatat");
+    const count = await env.DB.prepare(
+      "SELECT COUNT(*) AS n FROM payments WHERE tenant_id = ?1 AND kind = 'setup' AND period = '2026-07'",
+    )
+      .bind(tenant?.id)
+      .first<{ n: number }>();
+    expect(count?.n).toBe(1);
   });
 
   it("goes live after content is curated", async () => {

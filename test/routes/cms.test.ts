@@ -296,3 +296,33 @@ describe("Mode admin di CMS", () => {
     expect(exit.headers.get("location")).toBe("/admin/tenant/1");
   });
 });
+
+describe("Hardening R16", () => {
+  it("sends anti-clickjacking + nosniff headers on login", async () => {
+    const response = await send(new Request(`${APP}/masuk`));
+    expect(response.headers.get("X-Frame-Options")).toBe("DENY");
+    expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
+  });
+
+  it("revokes a session on logout so the old cookie stops working", async () => {
+    await env.DB.prepare(
+      "INSERT INTO users (email, password_hash, role, tenant_id) VALUES ('revoke@sari.id', ?1, 'owner', 1)",
+    )
+      .bind(await hashPassword("password-kuat"))
+      .run();
+    const login = await post("/masuk", { email: "revoke@sari.id", password: "password-kuat" });
+    const c = (login.headers.get("set-cookie") ?? "").split(";")[0] ?? "";
+
+    const before = await send(new Request(`${APP}/`, { headers: { cookie: c } }));
+    expect(before.status).toBe(200);
+
+    const logout = await send(
+      new Request(`${APP}/keluar`, { method: "POST", headers: { cookie: c, origin: APP } }),
+    );
+    expect(logout.status).toBe(302);
+
+    const after = await send(new Request(`${APP}/`, { headers: { cookie: c } }));
+    expect(after.status).toBe(302);
+    expect(after.headers.get("location")).toBe("/masuk");
+  });
+});

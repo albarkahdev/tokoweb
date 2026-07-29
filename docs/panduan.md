@@ -17,7 +17,7 @@ Alamat penting:
 |-------|-------|-------------|--------------|
 | **Admin** | Kamu (pemilik platform) | `app.tokoweb.id/masuk` | Ya — email + password |
 | **Owner / Klien** | Pemilik warung pelanggan | `app.tokoweb.id/masuk` | Ya — email + password |
-| **Mitra** | Pembawa klien (ojol, sales, siapa pun) | `tokoweb.id/r/KODE` | Tidak — cukup kode + PIN 4 digit |
+| **Mitra** | Pembawa klien (ojol, sales, siapa pun) | `tokoweb.id/r/KODE` | Tidak — cukup kode + PIN 6 digit |
 | **Pengunjung** | Calon pembeli warung | `namausaha.tokoweb.id` | Tidak |
 
 Aturan penting: **klien & mitra tidak bisa daftar akun login sendiri**. Owner dibuatkan akun oleh admin. Mitra mendaftar (form) tapi harus disetujui admin dulu.
@@ -53,7 +53,7 @@ Calon klien yang mengisi form dari demo atau brosur QR mitra. Dari sini kamu **c
 ### 2.4 Mitra `/admin/referrer`
 - Daftar mitra + jumlah scan brosur.
 - Mitra yang daftar sendiri muncul badge **menunggu ✋** → tombol **Setujui ✓** / **Tolak**. Sebelum disetujui, kodenya belum berlaku dan halaman komisinya terkunci.
-- **Daftarkan Mitra Baru** manual: nama, no WA, rekening, PIN 4 digit → sistem buat kode unik + URL brosur QR.
+- **Daftarkan Mitra Baru** manual: nama, no WA, rekening, PIN 6 digit → sistem buat kode unik + URL brosur QR.
 - Nonaktifkan/aktifkan mitra kapan saja.
 
 ### 2.5 Payout `/admin/payout`
@@ -85,7 +85,7 @@ Nama usaha, tagline, tentang (cerita usaha), alamat, link Google Maps, no WhatsA
 
 ### 3.3 Menu `/menu`
 - Tambah item: nama, harga, deskripsi, tandai **andalan** (tampil di beranda).
-- Tiap item punya halaman **Kelola**: edit, unggah sampai **3 foto** (otomatis dikompres), tandai **Spesial Hari Ini ⭐** (tampil menonjol di atas), atau **nonaktifkan** (hilang dari website tapi tetap tersimpan — untuk menu musiman).
+- Tiap item punya halaman **Kelola**: edit, unggah sampai **3 foto** (otomatis dikompres), atur **andalan 🔥** on/off (ganti item mana yang tampil di depan kapan pun), tandai **Spesial Hari Ini ⭐** (tampil menonjol di atas), atau **nonaktifkan** (hilang dari website tapi tetap tersimpan — untuk menu musiman).
 
 ### 3.4 Promo `/promo`
 Judul, deskripsi, tanggal mulai & berakhir. Promo tampil di website hanya dalam rentang tanggalnya, lalu hilang otomatis. Promo kadaluarsa tetap tersimpan — bisa diaktifkan ulang dengan tanggal baru.
@@ -115,7 +115,7 @@ Belum ada reset mandiri via email. Hubungi admin via WA → admin kirim link atu
 Siapa pun boleh: ojol, kurir, sales, mahasiswa. Tanpa modal, bukan MLM. Komisi per klien yang **membayar** (bukan sekadar scan).
 
 ### 4.1 Daftar
-`tokoweb.id/mitra` → isi nama, no WA (`62…`), PIN 4 digit → submit. Status **pending** dulu; admin verifikasi (anti-spam) lalu hubungi via WA ≤ 1 hari dengan kode unik + brosur QR. Simpan kode & PIN baik-baik.
+`tokoweb.id/mitra` → isi nama, no WA (`62…`), PIN 6 digit → submit. Status **pending** dulu; admin verifikasi (anti-spam) lalu hubungi via WA ≤ 1 hari dengan kode unik + brosur QR. Simpan kode & PIN baik-baik.
 
 ### 4.2 Cara kerja
 1. Tunjukkan brosur QR-mu ke pemilik warung.
@@ -125,11 +125,11 @@ Siapa pun boleh: ojol, kurir, sales, mahasiswa. Tanpa modal, bukan MLM. Komisi p
 ### 4.3 Komisi
 - **Basic**: Rp 50.000 × 3 = Rp 150.000
 - **Pro**: Rp 100.000 × 3 = Rp 300.000
-- Cicilan-1 cair setelah klien bayar setup fee (≤ 1 hari). Cicilan berikutnya mengikuti pembayaran langganan bulanan klien.
+- Cicilan-1 cair setelah masa refund klien 7 hari lewat (aman dari pembatalan). Cicilan berikutnya mengikuti pembayaran langganan bulanan klien.
 - Klien berhenti/nunggak → cicilan tersisa hangus. Scan doang = Rp 0.
 
 ### 4.4 Cek komisi
-`tokoweb.id/r/KODEKAMU` → masukkan PIN 4 digit → lihat scan, closing, komisi cair. Read-only, tanpa aplikasi. Salah PIN 5×/menit → tunggu sebentar.
+`tokoweb.id/r/KODEKAMU` → masukkan PIN 6 digit → lihat scan, closing, komisi cair. Read-only, tanpa aplikasi. Salah PIN 5×/menit → tunggu sebentar.
 
 ---
 

@@ -43,7 +43,7 @@ function PinPage(props: { code: string; error?: string }) {
         </Text>
         {props.error ? <Alert tone="danger">{props.error}</Alert> : null}
         <Form action={`/r/${props.code}`}>
-          <Field label="PIN 4 digit" name="pin" type="password" inputmode="numeric" required />
+          <Field label="PIN 6 digit" name="pin" type="password" inputmode="numeric" required />
           <Button block>Lihat Komisi</Button>
         </Form>
       </Card>

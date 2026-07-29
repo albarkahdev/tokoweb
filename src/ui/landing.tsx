@@ -497,7 +497,7 @@ export function CtaRow(props: { links: { href: string; label: string; fill?: boo
   );
 }
 
-export function MitraForm(props: { action: string }) {
+export function MitraForm(props: { action: string; siteKey?: string }) {
   return (
     <form class="mitra-form" method="post" action={props.action}>
       <label>
@@ -510,10 +510,16 @@ export function MitraForm(props: { action: string }) {
         <span class="hint">Format 62xxxxxxxxxx — kami hubungi ke nomor ini.</span>
       </label>
       <label>
-        PIN 4 digit
-        <input name="pin" inputmode="numeric" type="password" maxlength={4} required />
+        PIN 6 digit
+        <input name="pin" inputmode="numeric" type="password" maxlength={6} required />
         <span class="hint">Untuk membuka halaman komisimu nanti. Jangan lupa!</span>
       </label>
+      {props.siteKey ? (
+        <>
+          <div class="cf-turnstile" data-sitekey={props.siteKey} />
+          <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
+        </>
+      ) : null}
       <button class="btn btn-fill" type="submit">
         Daftar Jadi Mitra →
       </button>

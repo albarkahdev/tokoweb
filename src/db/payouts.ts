@@ -24,6 +24,23 @@ export async function makeInstallmentPayable(
     .run();
 }
 
+export async function releaseMaturedFirstInstallments(
+  db: D1Database,
+  setupPaidCutoffUtc: string,
+): Promise<void> {
+  await db
+    .prepare(
+      `UPDATE commission_payouts SET status = 'payable'
+       WHERE installment = 1 AND status = 'pending' AND referral_id IN (
+         SELECT r.id FROM referrals r
+         JOIN subscriptions s ON s.tenant_id = r.tenant_id
+         WHERE s.setup_paid_at IS NOT NULL AND s.setup_paid_at <= ?1
+       )`,
+    )
+    .bind(setupPaidCutoffUtc)
+    .run();
+}
+
 export async function markPayoutPaid(
   db: D1Database,
   payoutId: number,

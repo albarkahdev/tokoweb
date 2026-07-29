@@ -184,7 +184,9 @@ export const demo = new Hono<AppEnv>()
     if (
       !leadLimiter.allow(ip, Date.now()) ||
       !name ||
+      name.length > 80 ||
       !businessName ||
+      businessName.length > 80 ||
       !/^62\d{8,13}$/.test(waNumber)
     ) {
       return c.html(thanksPage("Nomor WA harus diawali 62. Coba lagi ya!"), 400);

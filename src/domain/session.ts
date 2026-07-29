@@ -3,6 +3,7 @@ export type SessionPayload = {
   role: "admin" | "owner";
   tenantId: number | null;
   expiresAtMs: number;
+  ver: number;
 };
 
 export const SESSION_TTL_MS = 30 * 86_400_000;
@@ -25,7 +26,7 @@ async function hmacKey(secret: string): Promise<CryptoKey> {
 }
 
 function encodePayload(payload: SessionPayload): string {
-  return `${payload.userId}.${payload.role}.${payload.tenantId ?? ""}.${payload.expiresAtMs}`;
+  return `${payload.userId}.${payload.role}.${payload.tenantId ?? ""}.${payload.expiresAtMs}.${payload.ver}`;
 }
 
 export async function createSessionToken(payload: SessionPayload, secret: string): Promise<string> {
@@ -44,8 +45,8 @@ export async function verifySessionToken(
   if (lastDot < 0) return null;
   const body = token.slice(0, lastDot);
   const parts = body.split(".");
-  if (parts.length !== 4) return null;
-  const [rawUserId, rawRole, rawTenantId, rawExpires] = parts;
+  if (parts.length !== 5) return null;
+  const [rawUserId, rawRole, rawTenantId, rawExpires, rawVer] = parts;
 
   const expected = await createSessionToken(
     {
@@ -53,6 +54,7 @@ export async function verifySessionToken(
       role: rawRole as SessionPayload["role"],
       tenantId: rawTenantId === "" ? null : Number(rawTenantId),
       expiresAtMs: Number(rawExpires),
+      ver: Number(rawVer),
     },
     secret,
   );
@@ -60,7 +62,10 @@ export async function verifySessionToken(
 
   const userId = Number(rawUserId);
   const expiresAtMs = Number(rawExpires);
-  if (!Number.isInteger(userId) || !Number.isFinite(expiresAtMs)) return null;
+  const ver = Number(rawVer);
+  if (!Number.isInteger(userId) || !Number.isFinite(expiresAtMs) || !Number.isInteger(ver)) {
+    return null;
+  }
   if (rawRole !== "admin" && rawRole !== "owner") return null;
   if (expiresAtMs <= nowMs) return null;
 
@@ -69,6 +74,7 @@ export async function verifySessionToken(
     role: rawRole,
     tenantId: rawTenantId === "" ? null : Number(rawTenantId),
     expiresAtMs,
+    ver,
   };
 }
 

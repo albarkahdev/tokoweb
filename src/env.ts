@@ -8,6 +8,8 @@ export type Bindings = {
   TRACKER_SALT_SECRET: string;
   AUTH_SECRET: string;
   CONTACT_WA_NUMBER: string;
+  TURNSTILE_SECRET?: string;
+  TURNSTILE_SITE_KEY?: string;
 };
 
 export type AppEnv = {

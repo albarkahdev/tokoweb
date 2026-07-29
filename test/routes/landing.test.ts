@@ -74,7 +74,7 @@ describe("landing tokoweb.id", () => {
 
   it("registers mitra as pending, blocks duplicates, gates /r until approved", async () => {
     const ok = await daftarMitra(
-      { name: "Bang Kurir", wa_number: "6289911223344", pin: "4321" },
+      { name: "Bang Kurir", wa_number: "6289911223344", pin: "432198" },
       "9.9.9.1",
     );
     expect(ok.status).toBe(200);
@@ -86,7 +86,7 @@ describe("landing tokoweb.id", () => {
     expect(row?.status).toBe("pending");
 
     const duplicate = await daftarMitra(
-      { name: "Bang Kurir", wa_number: "6289911223344", pin: "4321" },
+      { name: "Bang Kurir", wa_number: "6289911223344", pin: "432198" },
       "9.9.9.2",
     );
     expect(duplicate.status).toBe(409);
@@ -97,7 +97,7 @@ describe("landing tokoweb.id", () => {
     const locked = await send(
       new Request(`https://tokoweb.id/r/${row?.code}`, {
         method: "POST",
-        body: new URLSearchParams({ pin: "4321" }),
+        body: new URLSearchParams({ pin: "432198" }),
         headers: { origin: "https://tokoweb.id", "cf-connecting-ip": "9.9.9.4" },
       }),
     );
@@ -110,7 +110,7 @@ describe("landing tokoweb.id", () => {
     const opened = await send(
       new Request(`https://tokoweb.id/r/${row?.code}`, {
         method: "POST",
-        body: new URLSearchParams({ pin: "4321" }),
+        body: new URLSearchParams({ pin: "432198" }),
         headers: { origin: "https://tokoweb.id", "cf-connecting-ip": "9.9.9.5" },
       }),
     );

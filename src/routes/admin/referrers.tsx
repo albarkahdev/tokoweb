@@ -8,7 +8,7 @@ import {
 } from "@/db/referrers";
 import { formDataToValues } from "@/domain/cms";
 import { hashOneTimeToken } from "@/domain/one-time-token";
-import { generateReferralCode } from "@/domain/referral-code";
+import { generateReferralCode, isValidPin } from "@/domain/referral-code";
 import type { AppEnv } from "@/env";
 import { AdminPage, adminHtml } from "@/routes/admin/shared";
 import {
@@ -101,7 +101,7 @@ export const adminReferrers = new Hono<AppEnv>()
               <Field label="No WA" name="wa_number" inputmode="numeric" required hint="62xxx" />
               <Field label="Rekening (bank + nomor)" name="bank_account" />
               <Field
-                label="PIN 4 digit"
+                label="PIN 6 digit"
                 name="pin"
                 inputmode="numeric"
                 required
@@ -119,8 +119,8 @@ export const adminReferrers = new Hono<AppEnv>()
     const name = (values.name ?? "").trim();
     const waNumber = (values.wa_number ?? "").replace(/\D/g, "");
     const pin = (values.pin ?? "").trim();
-    if (!name || !/^62\d{8,13}$/.test(waNumber) || !/^\d{4}$/.test(pin)) {
-      return c.redirect("/admin/referrer?err=Nama, no WA (62xxx), dan PIN 4 digit wajib.");
+    if (!name || !/^62\d{8,13}$/.test(waNumber) || !isValidPin(pin)) {
+      return c.redirect("/admin/referrer?err=Nama, no WA (62xxx), dan PIN 6 digit wajib.");
     }
     let code = generateReferralCode(Math.random);
     for (let attempt = 0; attempt < 5 && (await findReferrerByCode(c.env.DB, code)); attempt++) {

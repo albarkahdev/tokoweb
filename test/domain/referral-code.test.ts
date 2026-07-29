@@ -29,10 +29,10 @@ describe("isValidReferralCode", () => {
 });
 
 describe("isValidPin", () => {
-  it("accepts exactly 4 digits", () => {
-    expect(isValidPin("0417")).toBe(true);
-    expect(isValidPin("123")).toBe(false);
+  it("accepts exactly 6 digits", () => {
+    expect(isValidPin("041739")).toBe(true);
     expect(isValidPin("12345")).toBe(false);
-    expect(isValidPin("12a4")).toBe(false);
+    expect(isValidPin("1234567")).toBe(false);
+    expect(isValidPin("12a456")).toBe(false);
   });
 });
