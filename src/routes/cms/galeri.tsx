@@ -7,8 +7,8 @@ import { buildImageKey } from "@/domain/image-key";
 import { generateOneTimeToken } from "@/domain/one-time-token";
 import type { AppEnv } from "@/env";
 import { type CmsContext, CmsPage, html, loadCms, purgeTenantPages } from "@/routes/cms/shared";
-import { Card } from "@/ui/display";
-import { Button, Field } from "@/ui/form";
+import { Card, CardTitle, EmptyState, MediaRow } from "@/ui/display";
+import { Button, Field, FileField, Form, HiddenInput } from "@/ui/form";
 
 const MAX_UPLOAD_BYTES = 512_000;
 const MAX_GALLERY_ITEMS = 12;
@@ -29,40 +29,37 @@ function GaleriPage(props: {
       error={props.error}
     >
       <Card>
-        <h2>
+        <CardTitle>
           Galeri ({gallery.length}/{MAX_GALLERY_ITEMS})
-        </h2>
-        {gallery.length === 0 ? <p class="muted">Belum ada foto.</p> : null}
+        </CardTitle>
+        {gallery.length === 0 ? (
+          <EmptyState
+            icon="📷"
+            title="Belum ada foto"
+            hint="Foto suasana dan makanan bikin websitemu jauh lebih meyakinkan."
+          />
+        ) : null}
         {gallery.map((photo, index) => (
-          <div class="row-actions" style="align-items:center; margin-bottom:0.75rem;">
-            <img
-              src={`/img/${photo.image_key ?? ""}`}
-              alt={photo.alt ?? ""}
-              width="96"
-              height="96"
-              style="object-fit:cover; border-radius:0.5rem;"
-              loading="lazy"
-            />
-            <span class="small">{photo.alt ?? ""}</span>
-            <form method="post" action="/galeri/hapus">
-              <input type="hidden" name="i" value={String(index)} />
+          <MediaRow src={`/img/${photo.image_key ?? ""}`} alt={photo.alt ?? ""}>
+            <Form action="/galeri/hapus" confirm="Hapus foto ini?">
+              <HiddenInput name="i" value={String(index)} />
               <Button variant="danger">Hapus</Button>
-            </form>
-          </div>
+            </Form>
+          </MediaRow>
         ))}
       </Card>
       <Card>
-        <h2>Tambah Foto</h2>
-        <form method="post" action="/galeri" enctype="multipart/form-data" data-webp-upload>
-          <label class="field">
-            <span>Foto</span>
-            <input type="file" name="photo" accept="image/*" required />
-            <div class="hint">Otomatis dikompres sebelum diunggah.</div>
-          </label>
+        <CardTitle>Tambah Foto</CardTitle>
+        <Form action="/galeri" multipart webpUpload>
+          <FileField
+            label="Foto"
+            name="photo"
+            required
+            hint="Otomatis dikompres sebelum diunggah."
+          />
           <Field label="Keterangan foto" name="alt" placeholder="Suasana warung" required />
           <Button block>Unggah</Button>
-        </form>
-        <script src="/assets/upload.js" defer />
+        </Form>
       </Card>
     </CmsPage>
   );

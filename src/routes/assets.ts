@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { storageFromEnv } from "@/db/storage-env";
 import type { AppEnv } from "@/env";
+import { APP_SCRIPT } from "@/ui/app-script";
 import { APP_STYLES } from "@/ui/app-styles";
 import { FONT_FILES } from "@/ui/fonts-css";
 import { UPLOAD_SCRIPT } from "@/ui/upload-script";
@@ -11,6 +12,12 @@ export const assets = new Hono<AppEnv>()
   .get("/assets/app.css", (c) =>
     c.text(APP_STYLES, 200, {
       "content-type": "text/css; charset=utf-8",
+      "cache-control": "public, max-age=3600",
+    }),
+  )
+  .get("/assets/app.js", (c) =>
+    c.text(APP_SCRIPT, 200, {
+      "content-type": "text/javascript; charset=utf-8",
       "cache-control": "public, max-age=3600",
     }),
   )

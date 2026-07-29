@@ -87,6 +87,31 @@ describe("tema kuliner — halaman utama", () => {
     expect(html).not.toContain('name="robots"');
   });
 
+  it("shows sticky promo ticker linking to promo section", async () => {
+    const html = await (await get("/")).text();
+    expect(html).toContain('class="promo-ticker"');
+    expect(html).toContain('href="#promo"');
+    expect(html).toContain("Diskon Merdeka 20%");
+  });
+
+  it("embeds gallery lightbox script", async () => {
+    const html = await (await get("/")).text();
+    expect(html).toContain("lightbox");
+    expect(html).toContain("lb-close");
+  });
+
+  it("renders rich contact card with hours, phone, and instagram", async () => {
+    const html = await (await get("/")).text();
+    expect(html).toContain("Jam buka hari ini");
+    expect(html).toContain('class="c-row"');
+    expect(html).toContain("Chat WhatsApp");
+  });
+
+  it("renders testimonials in a grid", async () => {
+    const html = await (await get("/")).text();
+    expect(html).toContain('class="testi-grid"');
+  });
+
   it("embeds tracker beacon and open-now script", async () => {
     const html = await (await get("/")).text();
     expect(html).toContain("sendBeacon");
@@ -124,6 +149,27 @@ describe("tema kuliner — preview & switcher", () => {
     expect(hangat).toContain("#C4501B");
     expect(arang).toContain("#C9A227");
     expect(ceria).toContain("#FF6B57");
+  });
+
+  it("renders 5 bold themes with their signature layouts", async () => {
+    const neon = await (await get("/?preview_theme=neon")).text();
+    expect(neon).toContain("#FF3D8A");
+    expect(neon).toContain("poster-echo");
+
+    const pasar = await (await get("/?preview_theme=pasar")).text();
+    expect(pasar).toContain("#FFD335");
+    expect(pasar).toContain("menu-polaroid");
+
+    const kertas = await (await get("/?preview_theme=kertas")).text();
+    expect(kertas).toContain('class="hero frame"');
+
+    const tropis = await (await get("/?preview_theme=tropis")).text();
+    expect(tropis).toContain('class="hero split"');
+    expect(tropis).toContain("hero-side");
+
+    const batik = await (await get("/?preview_theme=batik")).text();
+    expect(batik).toContain("menu-magazine");
+    expect(batik).toContain("#3F4C8A");
   });
 
   it("ignores unknown preview theme and serves cacheable default", async () => {

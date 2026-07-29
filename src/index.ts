@@ -11,8 +11,14 @@ import { landing } from "@/routes/landing";
 import { servePublicSite } from "@/routes/public-site";
 import { referralPage } from "@/routes/referral-page";
 import { tracker } from "@/routes/tracker";
+import { serverErrorHtml } from "@/ui/error-page";
 
 const app = new Hono<AppEnv>();
+
+app.onError((error, c) => {
+  console.error(error);
+  return c.html(serverErrorHtml(c.req.path), 500);
+});
 
 app.route("/", health);
 app.route("/", tracker);

@@ -11,8 +11,18 @@ import { hashOneTimeToken } from "@/domain/one-time-token";
 import { generateReferralCode } from "@/domain/referral-code";
 import type { AppEnv } from "@/env";
 import { AdminPage, adminHtml } from "@/routes/admin/shared";
-import { Badge, Card, ListTable } from "@/ui/display";
-import { Button, Field } from "@/ui/form";
+import {
+  Badge,
+  Card,
+  CardTitle,
+  Cell,
+  CellStack,
+  EmptyState,
+  ListTable,
+  Row,
+  Strong,
+} from "@/ui/display";
+import { Button, Field, Form, HiddenInput } from "@/ui/form";
 
 export async function hashPin(pin: string, secret: string): Promise<string> {
   return hashOneTimeToken(`${pin}:${secret}`);
@@ -33,38 +43,44 @@ export const adminReferrers = new Hono<AppEnv>()
           error={c.req.query("err")}
         >
           <Card>
-            <h2>Mitra Ojol ({referrers.length})</h2>
-            <ListTable headers={["Nama", "Kode", "Scan", ""]}>
-              {referrers.map((referrer, index) => (
-                <tr>
-                  <td>
-                    {referrer.name}
-                    <div class="small muted">{referrer.wa_number}</div>
-                  </td>
-                  <td>
-                    <strong>{referrer.code}</strong>
-                    {referrer.status === "inactive" ? <Badge tone="danger">nonaktif</Badge> : null}
-                  </td>
-                  <td>{scanCounts[index]}</td>
-                  <td>
-                    <form method="post" action={`/admin/referrer/${referrer.id}/status`}>
-                      <input
-                        type="hidden"
-                        name="status"
-                        value={referrer.status === "active" ? "inactive" : "active"}
-                      />
-                      <Button variant="secondary">
-                        {referrer.status === "active" ? "Nonaktifkan" : "Aktifkan"}
-                      </Button>
-                    </form>
-                  </td>
-                </tr>
-              ))}
-            </ListTable>
+            <CardTitle>Mitra Ojol ({referrers.length})</CardTitle>
+            {referrers.length === 0 ? (
+              <EmptyState
+                icon="🛵"
+                title="Belum ada mitra ojol"
+                hint="Daftarkan ojol pertamamu — kode unik + brosur QR jadi mesin distribusimu."
+              />
+            ) : (
+              <ListTable headers={["Nama", "Kode", "Scan", ""]}>
+                {referrers.map((referrer, index) => (
+                  <Row>
+                    <CellStack top={referrer.name} bottom={referrer.wa_number} />
+                    <Cell>
+                      <Strong>{referrer.code}</Strong>{" "}
+                      {referrer.status === "inactive" ? (
+                        <Badge tone="danger">nonaktif</Badge>
+                      ) : null}
+                    </Cell>
+                    <Cell>{scanCounts[index]}</Cell>
+                    <Cell>
+                      <Form action={`/admin/referrer/${referrer.id}/status`}>
+                        <HiddenInput
+                          name="status"
+                          value={referrer.status === "active" ? "inactive" : "active"}
+                        />
+                        <Button variant="secondary">
+                          {referrer.status === "active" ? "Nonaktifkan" : "Aktifkan"}
+                        </Button>
+                      </Form>
+                    </Cell>
+                  </Row>
+                ))}
+              </ListTable>
+            )}
           </Card>
           <Card>
-            <h2>Daftarkan Ojol Baru</h2>
-            <form method="post" action="/admin/referrer">
+            <CardTitle>Daftarkan Ojol Baru</CardTitle>
+            <Form action="/admin/referrer">
               <Field label="Nama" name="name" required />
               <Field label="No WA" name="wa_number" inputmode="numeric" required hint="62xxx" />
               <Field label="Rekening (bank + nomor)" name="bank_account" />
@@ -76,7 +92,7 @@ export const adminReferrers = new Hono<AppEnv>()
                 hint="Untuk halaman komisi /r/KODE"
               />
               <Button block>Daftarkan + buat kode</Button>
-            </form>
+            </Form>
           </Card>
         </AdminPage>,
       ),

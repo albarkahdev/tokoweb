@@ -6,8 +6,8 @@ import { isPromoActive } from "@/domain/promo";
 import { wibDateOf } from "@/domain/subscription";
 import type { AppEnv } from "@/env";
 import { type CmsContext, CmsPage, html, loadCms, purgeTenantPages } from "@/routes/cms/shared";
-import { Badge, Card, ListTable } from "@/ui/display";
-import { Button, Field, TextAreaField } from "@/ui/form";
+import { Badge, Card, CardTitle, Cell, EmptyState, ListTable, Row, Text } from "@/ui/display";
+import { Button, Field, Form, HiddenInput, TextAreaField } from "@/ui/form";
 
 function PromoPage(props: {
   cms: CmsContext;
@@ -25,14 +25,18 @@ function PromoPage(props: {
       error={props.error}
     >
       <Card>
-        <h2>Promo</h2>
+        <CardTitle>Promo</CardTitle>
         {props.promos.length === 0 ? (
-          <p class="muted">Belum ada promo. Promo aktif tampil otomatis di websitemu.</p>
+          <EmptyState
+            icon="🏷️"
+            title="Belum ada promo"
+            hint="Promo aktif tampil otomatis di websitemu — cara ampuh menarik pembeli."
+          />
         ) : (
           <ListTable headers={["Promo", "Periode", ""]}>
             {props.promos.map((promo) => (
-              <tr>
-                <td>
+              <Row>
+                <Cell>
                   {promo.title}{" "}
                   {isPromoActive(promo, props.today) ? (
                     <Badge tone="success">aktif</Badge>
@@ -41,33 +45,33 @@ function PromoPage(props: {
                   ) : (
                     <Badge tone="muted">selesai</Badge>
                   )}
-                </td>
-                <td class="small">
+                </Cell>
+                <Cell small>
                   {promo.start_date} s/d {promo.end_date}
-                </td>
-                <td>
-                  <form method="post" action="/promo/hapus">
-                    <input type="hidden" name="id" value={String(promo.id)} />
+                </Cell>
+                <Cell>
+                  <Form action="/promo/hapus" confirm={`Hapus promo "${promo.title}"?`}>
+                    <HiddenInput name="id" value={String(promo.id)} />
                     <Button variant="danger">Hapus</Button>
-                  </form>
-                </td>
-              </tr>
+                  </Form>
+                </Cell>
+              </Row>
             ))}
           </ListTable>
         )}
       </Card>
       <Card>
-        <h2>Pasang Promo Baru</h2>
-        <form method="post" action="/promo">
+        <CardTitle>Pasang Promo Baru</CardTitle>
+        <Form action="/promo">
           <Field label="Judul" name="title" placeholder="Diskon 20% semua menu" required />
           <TextAreaField label="Deskripsi (opsional)" name="description" rows={2} />
           <Field label="Mulai" name="start_date" type="date" required />
           <Field label="Berakhir" name="end_date" type="date" required />
           <Button block>Pasang</Button>
-        </form>
-        <p class="small muted mb-0">
+        </Form>
+        <Text small muted last>
           Promo tampil otomatis mulai tanggal mulai dan hilang otomatis setelah tanggal berakhir.
-        </p>
+        </Text>
       </Card>
     </CmsPage>
   );

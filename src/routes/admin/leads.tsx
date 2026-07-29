@@ -8,8 +8,19 @@ import { formDataToValues } from "@/domain/cms";
 import { isPlan, PLAN_PRICES } from "@/domain/plan";
 import type { AppEnv } from "@/env";
 import { AdminPage, adminHtml } from "@/routes/admin/shared";
-import { Badge, Card, ListTable } from "@/ui/display";
-import { Button, Field, SelectField } from "@/ui/form";
+import {
+  Actions,
+  Badge,
+  Card,
+  CardTitle,
+  Cell,
+  CellStack,
+  EmptyState,
+  ListTable,
+  Row,
+  Text,
+} from "@/ui/display";
+import { Button, Field, Form, HiddenInput, SelectField } from "@/ui/form";
 
 const SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{1,40}[a-z0-9])?$/;
 
@@ -27,55 +38,61 @@ export const adminLeads = new Hono<AppEnv>()
           error={c.req.query("err")}
         >
           <Card>
-            <h2>Lead masuk ({leads.length})</h2>
-            <ListTable headers={["Prospek", "Ojol", "Status", ""]}>
-              {leads.map((lead) => (
-                <tr>
-                  <td>
-                    <strong>{lead.business_name}</strong>
-                    <div class="small muted">
-                      {lead.name} · {lead.wa_number}
-                    </div>
-                  </td>
-                  <td class="small">
-                    {lead.referrer_id ? (referrerName.get(lead.referrer_id) ?? "?") : "—"}
-                  </td>
-                  <td>
-                    <Badge
-                      tone={
-                        lead.status === "closed"
-                          ? "success"
-                          : lead.status === "new"
-                            ? "warning"
-                            : lead.status === "lost"
-                              ? "danger"
-                              : "muted"
-                      }
-                    >
-                      {lead.status}
-                    </Badge>
-                  </td>
-                  <td>
-                    {lead.status === "new" || lead.status === "contacted" ? (
-                      <div class="row-actions">
-                        <form method="post" action={`/admin/lead/${lead.id}/status`}>
-                          <input type="hidden" name="status" value="contacted" />
-                          <Button variant="secondary">Sudah di-WA</Button>
-                        </form>
-                        <form method="post" action={`/admin/lead/${lead.id}/status`}>
-                          <input type="hidden" name="status" value="lost" />
-                          <Button variant="secondary">Lost</Button>
-                        </form>
-                      </div>
-                    ) : null}
-                  </td>
-                </tr>
-              ))}
-            </ListTable>
+            <CardTitle>Lead masuk ({leads.length})</CardTitle>
+            {leads.length === 0 ? (
+              <EmptyState
+                icon="🎯"
+                title="Belum ada lead"
+                hint="Lead dari form demo dan brosur QR ojol muncul di sini."
+              />
+            ) : (
+              <ListTable headers={["Prospek", "Ojol", "Status", ""]}>
+                {leads.map((lead) => (
+                  <Row>
+                    <CellStack
+                      top={lead.business_name}
+                      bottom={`${lead.name} · ${lead.wa_number}`}
+                    />
+                    <Cell small>
+                      {lead.referrer_id ? (referrerName.get(lead.referrer_id) ?? "?") : "—"}
+                    </Cell>
+                    <Cell>
+                      <Badge
+                        tone={
+                          lead.status === "closed"
+                            ? "success"
+                            : lead.status === "new"
+                              ? "warning"
+                              : lead.status === "lost"
+                                ? "danger"
+                                : "muted"
+                        }
+                      >
+                        {lead.status}
+                      </Badge>
+                    </Cell>
+                    <Cell>
+                      {lead.status === "new" || lead.status === "contacted" ? (
+                        <Actions>
+                          <Form action={`/admin/lead/${lead.id}/status`}>
+                            <HiddenInput name="status" value="contacted" />
+                            <Button variant="secondary">Sudah di-WA</Button>
+                          </Form>
+                          <Form action={`/admin/lead/${lead.id}/status`}>
+                            <HiddenInput name="status" value="lost" />
+                            <Button variant="secondary">Lost</Button>
+                          </Form>
+                        </Actions>
+                      ) : null}
+                    </Cell>
+                  </Row>
+                ))}
+              </ListTable>
+            )}
           </Card>
           <Card>
-            <h2>Closing Lead → Tenant</h2>
-            <form method="post" action="/admin/lead/closing">
+            <CardTitle>Closing Lead → Tenant</CardTitle>
+            <Form action="/admin/lead/closing">
               <Field label="ID Lead" name="lead_id" inputmode="numeric" required />
               <Field label="Subdomain" name="slug" required hint="cth: warungbusari" />
               <SelectField
@@ -87,11 +104,11 @@ export const adminLeads = new Hono<AppEnv>()
                 ]}
               />
               <Button block>Closing — buat tenant + komisi</Button>
-            </form>
-            <p class="small muted mb-0">
+            </Form>
+            <Text small muted last>
               Komisi 3 cicilan dibuat otomatis kalau lead terikat kode ojol. Tarif terkunci sesuai
               paket saat closing.
-            </p>
+            </Text>
           </Card>
         </AdminPage>,
       ),

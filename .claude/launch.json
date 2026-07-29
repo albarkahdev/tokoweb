@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tokoweb-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--var", "BASE_DOMAIN:localhost"],
+      "port": 8787,
+      "url": "http://app.localhost:8787"
+    }
+  ]
+}

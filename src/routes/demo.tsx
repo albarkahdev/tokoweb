@@ -5,6 +5,7 @@ import { findReferrerByCode } from "@/db/referrers";
 import { formDataToValues } from "@/domain/cms";
 import { createFixedWindowLimiter } from "@/domain/rate-limit";
 import { isValidReferralCode } from "@/domain/referral-code";
+import { addDays } from "@/domain/stats";
 import { wibDateOf } from "@/domain/subscription";
 import type { AppEnv } from "@/env";
 import { renderKulinerPage } from "@/themes/engine/render";
@@ -12,7 +13,7 @@ import { KULINER_THEMES } from "@/themes/kuliner/configs";
 import { DEMO_BUSINESS_NAME, DEMO_CONTENT } from "@/themes/kuliner/demo-content";
 import { AppLayout } from "@/ui/app-layout";
 import { demoChromeHtml } from "@/ui/demo-chrome";
-import { Card } from "@/ui/display";
+import { Card, PageTitle, Text, TextLink } from "@/ui/display";
 
 const leadLimiter = createFixedWindowLimiter(5, 60_000);
 const scanLimiter = createFixedWindowLimiter(10, 60_000);
@@ -39,10 +40,28 @@ function renderDemoPage(
         id: 0,
         tenant_id: 0,
         title: "Diskon 20% Menu Andalan",
-        description: "Khusus minggu ini — contoh promo yang bisa kamu pasang sendiri.",
+        description: "Khusus minggu ini — contoh promo yang bisa kamu pasang sendiri dari HP.",
         image_key: null,
         start_date: todayWib,
-        end_date: todayWib,
+        end_date: addDays(todayWib, 6),
+      },
+      {
+        id: 0,
+        tenant_id: 0,
+        title: "Gratis Es Teh Tiap Pesan Paket Keluarga",
+        description: "Minimal pesan 4 porsi, berlaku makan di tempat maupun dibungkus.",
+        image_key: null,
+        start_date: todayWib,
+        end_date: addDays(todayWib, 13),
+      },
+      {
+        id: 0,
+        tenant_id: 0,
+        title: "Paket Nasi Ayam Bakar + Es Jeruk cuma Rp 22.000",
+        description: "Promo pembuka tiap hari sebelum jam 11 siang.",
+        image_key: null,
+        start_date: todayWib,
+        end_date: addDays(todayWib, 20),
       },
     ],
     testimonials: [
@@ -51,6 +70,42 @@ function renderDemoPage(
         tenant_id: 0,
         author_name: "Budi",
         body: "Ayam bakarnya juara, websitenya bikin gampang pesan!",
+        rating: 5,
+        status: "approved",
+        created_at: "",
+      },
+      {
+        id: 0,
+        tenant_id: 0,
+        author_name: "Rina",
+        body: "Lihat menunya dulu di website, sampai warung tinggal tunjuk. Praktis banget.",
+        rating: 5,
+        status: "approved",
+        created_at: "",
+      },
+      {
+        id: 0,
+        tenant_id: 0,
+        author_name: "Pak Dedi",
+        body: "Rendangnya bener-bener kayak masakan rumah. Langganan tiap Jumat.",
+        rating: 5,
+        status: "approved",
+        created_at: "",
+      },
+      {
+        id: 0,
+        tenant_id: 0,
+        author_name: "Maya",
+        body: "Pesan lewat WA dari websitenya, 15 menit langsung siap diambil. Mantap.",
+        rating: 4,
+        status: "approved",
+        created_at: "",
+      },
+      {
+        id: 0,
+        tenant_id: 0,
+        author_name: "Bang Jaka",
+        body: "Tempatnya bersih, harga masuk akal, promonya sering. Rekomendasi!",
         rating: 5,
         status: "approved",
         created_at: "",
@@ -72,7 +127,7 @@ async function serveDemo(c: Context<AppEnv>, pagePath: "/" | "/menu"): Promise<R
   const requested = c.req.query("tema") ?? DEFAULT_THEME;
   const themeSlug = requested in KULINER_THEMES ? requested : DEFAULT_THEME;
 
-  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=5`;
+  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=8`;
   const cached = await caches.default.match(cacheKey);
   if (cached) return cached;
 
@@ -147,22 +202,22 @@ function thanksPage(error?: string): string {
       <Card>
         {error ? (
           <>
-            <h1>Ups!</h1>
-            <p>{error}</p>
-            <p>
-              <a href="/kuliner">← Kembali ke demo</a>
-            </p>
+            <PageTitle>Ups!</PageTitle>
+            <Text>{error}</Text>
+            <Text last>
+              <TextLink href="/kuliner">← Kembali ke demo</TextLink>
+            </Text>
           </>
         ) : (
           <>
-            <h1>Siap! 🎉</h1>
-            <p>
+            <PageTitle>Siap! 🎉</PageTitle>
+            <Text>
               Data kamu sudah masuk. Kami hubungi via WhatsApp hari ini juga untuk mulai bikin
               websitemu.
-            </p>
-            <p>
-              <a href="/kuliner">← Kembali ke demo</a>
-            </p>
+            </Text>
+            <Text last>
+              <TextLink href="/kuliner">← Kembali ke demo</TextLink>
+            </Text>
           </>
         )}
       </Card>

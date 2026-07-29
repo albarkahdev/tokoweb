@@ -8,8 +8,8 @@ import { buildImageKey } from "@/domain/image-key";
 import { generateOneTimeToken } from "@/domain/one-time-token";
 import type { AppEnv } from "@/env";
 import { AppLayout } from "@/ui/app-layout";
-import { Card } from "@/ui/display";
-import { Button, Field, TextAreaField } from "@/ui/form";
+import { Alert, Card, PageTitle, SubTitle, Text } from "@/ui/display";
+import { Button, Field, FileField, Form, InputPairRow, TextAreaField, TimeRow } from "@/ui/form";
 
 const MENU_ROWS = 8;
 const MAX_PHOTOS = 6;
@@ -24,18 +24,13 @@ function IntakePage(props: {
   return (
     <AppLayout title={`Form Data Usaha — ${props.businessName}`}>
       <Card>
-        <h1>Data Usaha: {props.businessName}</h1>
-        <p class="small muted">
+        <PageTitle>Data Usaha: {props.businessName}</PageTitle>
+        <Text small muted>
           Isi santai saja dari HP — nanti kami rapikan sebelum website tayang. Butuh ± 10 menit.
-        </p>
-        {props.notice ? <p class="alert success">{props.notice}</p> : null}
-        {props.error ? <p class="alert danger">{props.error}</p> : null}
-        <form
-          method="post"
-          action={`/intake/${props.token}`}
-          enctype="multipart/form-data"
-          data-webp-upload
-        >
+        </Text>
+        {props.notice ? <Alert tone="success">{props.notice}</Alert> : null}
+        {props.error ? <Alert tone="danger">{props.error}</Alert> : null}
+        <Form action={`/intake/${props.token}`} multipart webpUpload>
           <Field label="Nama usaha" name="name" required />
           <TextAreaField
             label="Ceritakan usahamu"
@@ -53,41 +48,36 @@ function IntakePage(props: {
             required
             hint="Untuk login mengelola website"
           />
-          <h3>Jam buka</h3>
+          <SubTitle>Jam buka</SubTitle>
           {DAY_KEYS.map((day) => (
-            <div class="field">
-              <span>{DAY_LABELS[day]}</span>
-              <div class="row-actions">
-                <input type="time" name={`${day}_open`} value="08:00" />
-                <input type="time" name={`${day}_close`} value="21:00" />
-                <label class="small">
-                  <input type="checkbox" name={`${day}_closed`} /> Tutup
-                </label>
-              </div>
-            </div>
+            <TimeRow
+              label={DAY_LABELS[day]}
+              openName={`${day}_open`}
+              closeName={`${day}_close`}
+              closedName={`${day}_closed`}
+              open="08:00"
+              close="21:00"
+            />
           ))}
-          <h3>Menu andalanmu</h3>
-          <p class="small muted">Isi yang paling laku dulu. Bisa ditambah lagi nanti.</p>
+          <SubTitle>Menu andalanmu</SubTitle>
+          <Text small muted>
+            Isi yang paling laku dulu. Bisa ditambah lagi nanti.
+          </Text>
           {Array.from({ length: MENU_ROWS }, (_, index) => (
-            <div class="row-actions">
-              <input type="text" name={`menu_name_${index}`} placeholder={`Menu ${index + 1}`} />
-              <input
-                type="text"
-                name={`menu_price_${index}`}
-                placeholder="Harga"
-                inputmode="numeric"
-              />
-            </div>
+            <InputPairRow
+              first={{ name: `menu_name_${index}`, placeholder: `Menu ${index + 1}` }}
+              second={{ name: `menu_price_${index}`, placeholder: "Harga", numeric: true }}
+            />
           ))}
-          <h3>Foto</h3>
-          <label class="field">
-            <span>Foto makanan / tempat (maks {MAX_PHOTOS})</span>
-            <input type="file" name="photos" accept="image/*" multiple />
-            <div class="hint">Foto terang dan jelas ya — otomatis dikompres.</div>
-          </label>
+          <SubTitle>Foto</SubTitle>
+          <FileField
+            label={`Foto makanan / tempat (maks ${MAX_PHOTOS})`}
+            name="photos"
+            multiple
+            hint="Foto terang dan jelas ya — otomatis dikompres."
+          />
           <Button block>Kirim</Button>
-        </form>
-        <script src="/assets/upload.js" defer />
+        </Form>
       </Card>
     </AppLayout>
   );
@@ -107,10 +97,12 @@ export const intake = new Hono<AppEnv>()
     if (!resolved) {
       return c.html(
         `<!doctype html>${String(
-          <AppLayout title="Link kadaluarsa — tokoweb">
+          <AppLayout title="Link kadaluarsa — tokoweb" centered>
             <Card>
-              <h1>Link tidak berlaku</h1>
-              <p>Link ini kadaluarsa atau salah. Hubungi kami via WhatsApp untuk link baru.</p>
+              <PageTitle>Link tidak berlaku</PageTitle>
+              <Text last>
+                Link ini kadaluarsa atau salah. Hubungi kami via WhatsApp untuk link baru.
+              </Text>
             </Card>
           </AppLayout>,
         )}`,
@@ -195,13 +187,13 @@ export const intake = new Hono<AppEnv>()
 
     return c.html(
       `<!doctype html>${String(
-        <AppLayout title="Terkirim — tokoweb">
+        <AppLayout title="Terkirim — tokoweb" centered>
           <Card>
-            <h1>Terkirim! 🎉</h1>
-            <p>
+            <PageTitle>Terkirim! 🎉</PageTitle>
+            <Text last>
               Data usahamu sudah kami terima. Kami rapikan dulu, lalu websitemu tayang — kami kabari
               via WhatsApp. Kalau ada yang mau ditambah, buka lagi link yang sama.
-            </p>
+            </Text>
           </Card>
         </AppLayout>,
       )}`,

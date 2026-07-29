@@ -8,13 +8,13 @@ import { AppLayout, type NavItem } from "@/ui/app-layout";
 import { Alert } from "@/ui/display";
 
 export const CMS_NAV: NavItem[] = [
-  { href: "/", label: "Beranda" },
-  { href: "/info", label: "Info" },
-  { href: "/menu", label: "Menu" },
-  { href: "/promo", label: "Promo" },
-  { href: "/galeri", label: "Galeri" },
-  { href: "/pesan", label: "Pesan" },
-  { href: "/statistik", label: "Statistik" },
+  { href: "/", label: "Beranda", icon: "home" },
+  { href: "/info", label: "Info", icon: "info" },
+  { href: "/menu", label: "Menu", icon: "menu" },
+  { href: "/promo", label: "Promo", icon: "tag" },
+  { href: "/galeri", label: "Galeri", icon: "image" },
+  { href: "/pesan", label: "Pesan", icon: "chat" },
+  { href: "/statistik", label: "Statistik", icon: "chart" },
 ];
 
 export type CmsContext = {
@@ -50,13 +50,7 @@ export function CmsPage(props: {
       heading={props.cms.tenant.name}
       nav={CMS_NAV}
       currentPath={props.currentPath}
-      headerAction={
-        <form method="post" action="/keluar">
-          <button class="btn secondary" type="submit">
-            Keluar
-          </button>
-        </form>
-      }
+      logout
     >
       {props.cms.tenant.status === "grace" ? (
         <Alert tone="warning">

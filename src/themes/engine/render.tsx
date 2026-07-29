@@ -1,7 +1,12 @@
 import { DAY_KEYS, DAY_LABELS } from "@/domain/cms";
 import type { MenuItem } from "@/domain/content";
 import { formatRupiah } from "@/domain/money";
-import { OPEN_NOW_SCRIPT, REVEAL_SCRIPT, trackerScript } from "@/themes/engine/client-scripts";
+import {
+  LIGHTBOX_SCRIPT,
+  OPEN_NOW_SCRIPT,
+  REVEAL_SCRIPT,
+  trackerScript,
+} from "@/themes/engine/client-scripts";
 import { jsonLd, metaDescription, ogImageUrl, pageTitle } from "@/themes/engine/seo";
 import { siteCss } from "@/themes/engine/site-css";
 import type { RenderData, ThemeConfig } from "@/themes/engine/types";
@@ -15,12 +20,14 @@ import {
   MenuItemCard,
   MoreMenuLink,
   PromoCard,
+  PromoTicker,
   SiteDocument,
   SiteFooter,
   SiteHero,
   SiteMain,
   SiteSection,
   TestimonialCard,
+  TestimonialGrid,
   WaFloat,
 } from "@/ui/site";
 
@@ -75,6 +82,16 @@ function hoursRows(data: RenderData) {
   });
 }
 
+function todayHoursSummary(data: RenderData): string | undefined {
+  const hours = data.site.content.hours;
+  if (!hours) return undefined;
+  const dayIndex = new Date(`${data.todayWib}T00:00:00Z`).getUTCDay();
+  const key = DAY_KEYS[(dayIndex + 6) % 7];
+  if (!key) return undefined;
+  const window = hours[key];
+  return window ? `${window[0]} – ${window[1]} WIB` : "Hari ini tutup";
+}
+
 function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: string }) {
   const { data, theme, waNumber } = props;
   const info = data.site.content.info ?? {};
@@ -90,6 +107,9 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
 
   return (
     <>
+      {data.promos.length > 0 ? (
+        <PromoTicker titles={data.promos.map((promo) => promo.title)} />
+      ) : null}
       <SiteHero
         variant={theme.layout.hero}
         name={businessName}
@@ -129,12 +149,14 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
       ) : null}
       {data.testimonials.length > 0 ? (
         <SiteSection id="testimoni" kicker="Kata pelanggan" title="Kata Mereka">
-          {data.testimonials.map((testimonial) => (
-            <TestimonialCard
-              body={testimonial.body}
-              who={`${testimonial.author_name}${testimonial.rating ? ` · ${"★".repeat(testimonial.rating)}` : ""}`}
-            />
-          ))}
+          <TestimonialGrid>
+            {data.testimonials.map((testimonial) => (
+              <TestimonialCard
+                body={testimonial.body}
+                who={`${testimonial.author_name}${testimonial.rating ? ` · ${"★".repeat(testimonial.rating)}` : ""}`}
+              />
+            ))}
+          </TestimonialGrid>
         </SiteSection>
       ) : null}
       <SiteSection id="kontak" kicker="Mampir atau pesan" title="Lokasi & Kontak">
@@ -142,7 +164,11 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
           address={info.address}
           mapsHref={info.maps_url}
           phoneHref={info.phone ? `tel:${info.phone}` : undefined}
+          phoneLabel={info.phone}
+          instagram={info.instagram}
+          todayHours={todayHoursSummary(data)}
           waHref={waLink(waNumber, `Halo ${businessName}!`)}
+          businessName={businessName}
         />
       </SiteSection>
     </>
@@ -203,7 +229,7 @@ export function renderKulinerPage(data: RenderData): string {
       ogImage={ogImageUrl(data)}
       css={siteCss(theme)}
       jsonLd={jsonLd(data)}
-      scripts={[trackerScript(data.appBaseUrl), OPEN_NOW_SCRIPT, REVEAL_SCRIPT]}
+      scripts={[trackerScript(data.appBaseUrl), OPEN_NOW_SCRIPT, REVEAL_SCRIPT, LIGHTBOX_SCRIPT]}
     >
       <SiteMain>
         {data.path === "/" ? (

@@ -12,8 +12,19 @@ import type { SiteContent } from "@/domain/content";
 import { formatRupiah } from "@/domain/money";
 import type { AppEnv } from "@/env";
 import { type CmsContext, CmsPage, html, loadCms, purgeTenantPages } from "@/routes/cms/shared";
-import { Badge, Card, ListTable } from "@/ui/display";
-import { Button, Field } from "@/ui/form";
+import {
+  Badge,
+  Card,
+  CardTitle,
+  Cell,
+  CellStack,
+  EmptyState,
+  ListTable,
+  Row,
+  SubTitle,
+  Text,
+} from "@/ui/display";
+import { Button, CheckboxField, Field, Form, HiddenInput } from "@/ui/form";
 
 function MenuPage(props: {
   cms: CmsContext;
@@ -32,53 +43,60 @@ function MenuPage(props: {
       error={props.error}
     >
       <Card>
-        <h2>
+        <CardTitle>
           Menu{" "}
           <Badge tone={featured > 0 ? "success" : "muted"}>
             {featured}/{MAX_FEATURED_ITEMS} andalan
           </Badge>
-        </h2>
-        <p class="small muted">
+        </CardTitle>
+        <Text small muted>
           Item "andalan" tampil di halaman depan (maksimal {MAX_FEATURED_ITEMS}).
-        </p>
+        </Text>
+        {menu.length === 0 ? (
+          <EmptyState
+            icon="🍽️"
+            title="Belum ada menu"
+            hint="Tambahkan menu pertamamu lewat form di bawah."
+          />
+        ) : null}
         {menu.map((category, categoryIndex) => (
-          <div>
-            <h3>{category.category}</h3>
+          <>
+            <SubTitle>{category.category}</SubTitle>
             <ListTable headers={["Item", "Harga", ""]}>
               {(category.items ?? []).map((item, itemIndex) => (
-                <tr>
-                  <td>
-                    {item.name} {item.featured ? <Badge tone="success">andalan</Badge> : null}
-                    {item.desc ? <div class="small muted">{item.desc}</div> : null}
-                  </td>
-                  <td>{formatRupiah(item.price ?? 0)}</td>
-                  <td>
-                    <form method="post" action="/menu/hapus">
-                      <input type="hidden" name="c" value={String(categoryIndex)} />
-                      <input type="hidden" name="i" value={String(itemIndex)} />
+                <Row>
+                  <CellStack
+                    top={
+                      <>
+                        {item.name} {item.featured ? <Badge tone="success">andalan</Badge> : null}
+                      </>
+                    }
+                    bottom={item.desc}
+                  />
+                  <Cell>{formatRupiah(item.price ?? 0)}</Cell>
+                  <Cell>
+                    <Form action="/menu/hapus" confirm={`Hapus ${item.name}?`}>
+                      <HiddenInput name="c" value={String(categoryIndex)} />
+                      <HiddenInput name="i" value={String(itemIndex)} />
                       <Button variant="danger">Hapus</Button>
-                    </form>
-                  </td>
-                </tr>
+                    </Form>
+                  </Cell>
+                </Row>
               ))}
             </ListTable>
-          </div>
+          </>
         ))}
       </Card>
       <Card>
-        <h2>Tambah Item</h2>
-        <form method="post" action="/menu">
+        <CardTitle>Tambah Item</CardTitle>
+        <Form action="/menu">
           <Field label="Kategori" name="category" placeholder="Makanan / Minuman" required />
           <Field label="Nama item" name="item_name" required />
           <Field label="Harga (Rp)" name="price" inputmode="numeric" required />
           <Field label="Deskripsi singkat" name="desc" />
-          <label class="field">
-            <span>
-              <input type="checkbox" name="featured" /> Jadikan andalan (tampil di halaman depan)
-            </span>
-          </label>
+          <CheckboxField label="Jadikan andalan (tampil di halaman depan)" name="featured" />
           <Button block>Tambah</Button>
-        </form>
+        </Form>
       </Card>
     </CmsPage>
   );

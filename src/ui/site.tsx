@@ -47,6 +47,18 @@ export function SiteMain(props: { children: Child }) {
   return <main>{props.children}</main>;
 }
 
+export function PromoTicker(props: { titles: string[] }) {
+  const line = props.titles.map((title) => `🔥 ${title}`).join("   ✦   ");
+  return (
+    <a class="promo-ticker" href="#promo" aria-label="Lihat semua promo">
+      <span class="tk" style={`--tk-dur: ${Math.max(14, line.length * 0.35)}s`}>
+        <span>{line}</span>
+        <span aria-hidden="true">{line}</span>
+      </span>
+    </a>
+  );
+}
+
 export function OpenBadge(props: { hoursJson: string }) {
   return (
     <span id="open-badge" class="open-badge" data-hours={props.hoursJson}>
@@ -56,7 +68,7 @@ export function OpenBadge(props: { hoursJson: string }) {
 }
 
 export function SiteHero(props: {
-  variant: "photo" | "typo" | "color-block";
+  variant: "photo" | "typo" | "color-block" | "split" | "poster" | "frame";
   name: string;
   tagline?: string;
   image?: { src: string; alt: string } | null;
@@ -64,13 +76,12 @@ export function SiteHero(props: {
   waHref: string;
   menuAnchor?: string;
 }) {
-  const showBackdropImage = props.variant === "photo" && props.image;
-  const showThumb = props.variant === "typo" && props.image;
+  const variant = props.variant === "photo" && !props.image ? "typo" : props.variant;
+  const showBackdropImage = variant === "photo" && props.image;
+  const showThumb = variant === "typo" && props.image;
+  const showSide = variant === "split";
   return (
-    <section
-      class={`hero ${props.variant === "photo" && !props.image ? "typo" : props.variant}`}
-      id="hero"
-    >
+    <section class={`hero ${variant}`} id="hero">
       {showBackdropImage ? (
         <img
           class="hero-img"
@@ -82,6 +93,11 @@ export function SiteHero(props: {
         />
       ) : null}
       {showBackdropImage ? <span class="scrim" /> : null}
+      {variant === "poster" ? (
+        <span class="poster-echo" aria-hidden="true">
+          {`${props.name} · ${props.name} · ${props.name}`}
+        </span>
+      ) : null}
       <div class="hero-inner">
         <OpenBadge hoursJson={props.hoursJson} />
         <h1>{props.name}</h1>
@@ -97,6 +113,19 @@ export function SiteHero(props: {
           ) : null}
         </div>
       </div>
+      {showSide ? (
+        <span class={`hero-side${props.image ? "" : " pattern"}`}>
+          {props.image ? (
+            <img
+              src={props.image.src}
+              alt={props.image.alt}
+              width="800"
+              height="1000"
+              fetchpriority="high"
+            />
+          ) : null}
+        </span>
+      ) : null}
       {showThumb ? (
         <span class="hero-thumb">
           <img src={props.image?.src} alt={props.image?.alt} width="480" height="360" />
@@ -227,6 +256,10 @@ export function GalleryGrid(props: { photos: { src: string; alt: string }[] }) {
   );
 }
 
+export function TestimonialGrid(props: { children: Child }) {
+  return <div class="testi-grid">{props.children}</div>;
+}
+
 export function TestimonialCard(props: { body: string; who: string }) {
   return (
     <div class="testi reveal">
@@ -237,29 +270,88 @@ export function TestimonialCard(props: { body: string; who: string }) {
   );
 }
 
+function ContactRow(props: { icon: string; label: string; value: Child }) {
+  return (
+    <div class="c-row">
+      <span class="c-ico" aria-hidden="true">
+        {props.icon}
+      </span>
+      <span class="c-body">
+        <span class="c-label">{props.label}</span>
+        <span class="c-value">{props.value}</span>
+      </span>
+    </div>
+  );
+}
+
 export function ContactCard(props: {
   address?: string;
   mapsHref?: string;
   phoneHref?: string;
+  phoneLabel?: string;
+  instagram?: string;
+  todayHours?: string;
   waHref: string;
+  businessName: string;
 }) {
   return (
     <div class="contact-card reveal">
-      {props.address ? <p class="addr">{props.address}</p> : null}
-      <div class="row-cta">
-        {props.mapsHref ? (
-          <a class="btn-ghost" data-track="click_maps" href={props.mapsHref} rel="noopener">
-            📍 Buka Maps
-          </a>
+      <div class="c-info">
+        {props.address ? (
+          <ContactRow
+            icon="📍"
+            label="Alamat"
+            value={
+              props.mapsHref ? (
+                <a data-track="click_maps" href={props.mapsHref} rel="noopener">
+                  {props.address}
+                </a>
+              ) : (
+                props.address
+              )
+            }
+          />
         ) : null}
-        {props.phoneHref ? (
-          <a class="btn-ghost" data-track="click_phone" href={props.phoneHref}>
-            📞 Telepon
-          </a>
+        {props.todayHours ? (
+          <ContactRow icon="🕐" label="Jam buka hari ini" value={props.todayHours} />
         ) : null}
+        {props.phoneLabel ? (
+          <ContactRow
+            icon="📞"
+            label="Telepon"
+            value={
+              props.phoneHref ? (
+                <a data-track="click_phone" href={props.phoneHref}>
+                  {props.phoneLabel}
+                </a>
+              ) : (
+                props.phoneLabel
+              )
+            }
+          />
+        ) : null}
+        {props.instagram ? (
+          <ContactRow
+            icon="📸"
+            label="Instagram"
+            value={
+              <a href={`https://instagram.com/${props.instagram}`} rel="noopener">
+                @{props.instagram}
+              </a>
+            }
+          />
+        ) : null}
+      </div>
+      <div class="c-cta">
+        <p class="c-pitch">Paling cepat lewat WhatsApp — {props.businessName} balas langsung.</p>
         <a class="btn-wa" data-track="click_wa" href={props.waHref}>
           💬 Chat WhatsApp
         </a>
+        {props.mapsHref ? (
+          <a class="btn-ghost" data-track="click_maps" href={props.mapsHref} rel="noopener">
+            📍 Buka di Maps
+          </a>
+        ) : null}
       </div>
     </div>
   );

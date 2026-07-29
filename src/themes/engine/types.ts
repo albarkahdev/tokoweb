@@ -27,9 +27,10 @@ export type ThemeConfig = {
     button: string;
   };
   layout: {
-    hero: "photo" | "typo" | "color-block";
-    menu: "cards" | "list" | "grid-2";
+    hero: "photo" | "typo" | "color-block" | "split" | "poster" | "frame";
+    menu: "cards" | "list" | "grid-2" | "magazine" | "polaroid";
   };
+  flair?: "batik" | "neon" | "brutal" | "zen" | "tropis";
 };
 
 export type RenderData = {

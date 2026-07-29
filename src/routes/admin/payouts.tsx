@@ -4,8 +4,8 @@ import { formDataToValues } from "@/domain/cms";
 import { formatRupiah } from "@/domain/money";
 import type { AppEnv } from "@/env";
 import { AdminPage, adminHtml } from "@/routes/admin/shared";
-import { Card, ListTable } from "@/ui/display";
-import { Button } from "@/ui/form";
+import { Card, CardTitle, Cell, EmptyState, ListTable, Row, Strong, Text } from "@/ui/display";
+import { Button, Form, HiddenInput } from "@/ui/form";
 
 export const adminPayouts = new Hono<AppEnv>()
   .get("/payout", async (c) => {
@@ -15,31 +15,40 @@ export const adminPayouts = new Hono<AppEnv>()
       adminHtml(
         <AdminPage title="Payout" currentPath="/admin/payout" notice={c.req.query("ok")}>
           <Card>
-            <h2>Siap cair ({payable.length})</h2>
+            <CardTitle>Siap cair ({payable.length})</CardTitle>
             {payable.length > 0 ? (
-              <p>
-                Total transfer: <strong>{formatRupiah(total)}</strong> — target ≤ 1 hari kerja.
-              </p>
+              <>
+                <Text>
+                  Total transfer: <Strong>{formatRupiah(total)}</Strong> — target ≤ 1 hari kerja.
+                </Text>
+                <ListTable headers={["Ojol", "Klien", "Cicilan", ""]}>
+                  {payable.map((payout) => (
+                    <Row>
+                      <Cell>{payout.referrer_name}</Cell>
+                      <Cell small>{payout.tenant_name}</Cell>
+                      <Cell>
+                        #{payout.installment} · {formatRupiah(payout.amount)}
+                      </Cell>
+                      <Cell>
+                        <Form
+                          action="/admin/payout/paid"
+                          confirm={`Tandai cicilan #${payout.installment} ${payout.referrer_name} (${formatRupiah(payout.amount)}) sudah ditransfer?`}
+                        >
+                          <HiddenInput name="id" value={String(payout.id)} />
+                          <Button>Sudah ditransfer</Button>
+                        </Form>
+                      </Cell>
+                    </Row>
+                  ))}
+                </ListTable>
+              </>
             ) : (
-              <p class="muted">Tidak ada cicilan menunggu transfer.</p>
+              <EmptyState
+                icon="💸"
+                title="Tidak ada cicilan menunggu transfer"
+                hint="Cicilan komisi jadi siap cair setelah pembayaran klien diverifikasi."
+              />
             )}
-            <ListTable headers={["Ojol", "Klien", "Cicilan", ""]}>
-              {payable.map((payout) => (
-                <tr>
-                  <td>{payout.referrer_name}</td>
-                  <td class="small">{payout.tenant_name}</td>
-                  <td>
-                    #{payout.installment} · {formatRupiah(payout.amount)}
-                  </td>
-                  <td>
-                    <form method="post" action="/admin/payout/paid">
-                      <input type="hidden" name="id" value={String(payout.id)} />
-                      <Button>Sudah ditransfer</Button>
-                    </form>
-                  </td>
-                </tr>
-              ))}
-            </ListTable>
           </Card>
         </AdminPage>,
       ),

@@ -25,8 +25,21 @@ import { buildMonthlyReportText, previousMonthRange } from "@/domain/report";
 import { nextDueDateAfterPayment, wibDateOf } from "@/domain/subscription";
 import type { AppEnv } from "@/env";
 import { AdminPage, adminHtml } from "@/routes/admin/shared";
-import { Badge, Card, ListTable } from "@/ui/display";
-import { Button, Field, SelectField } from "@/ui/form";
+import {
+  Actions,
+  Badge,
+  Card,
+  CardTitle,
+  Cell,
+  CellStack,
+  CopyArea,
+  DataList,
+  ListTable,
+  Row,
+  Text,
+  TextLink,
+} from "@/ui/display";
+import { Button, Field, Form, SelectField } from "@/ui/form";
 
 const SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{1,40}[a-z0-9])?$/;
 
@@ -44,25 +57,22 @@ export const adminTenants = new Hono<AppEnv>()
       adminHtml(
         <AdminPage title="Tenant" currentPath="/admin/tenant" notice={c.req.query("ok")}>
           <Card>
-            <h2>Tenant ({tenants.length})</h2>
+            <CardTitle>Tenant ({tenants.length})</CardTitle>
             <ListTable headers={["Usaha", "Status", ""]}>
               {tenants.map((tenant) => (
-                <tr>
-                  <td>
-                    {tenant.name}
-                    <div class="small muted">{tenant.slug}</div>
-                  </td>
-                  <td>{statusBadge(tenant.status)}</td>
-                  <td>
-                    <a href={`/admin/tenant/${tenant.id}`}>Kelola</a>
-                  </td>
-                </tr>
+                <Row>
+                  <CellStack top={tenant.name} bottom={tenant.slug} />
+                  <Cell>{statusBadge(tenant.status)}</Cell>
+                  <Cell>
+                    <TextLink href={`/admin/tenant/${tenant.id}`}>Kelola</TextLink>
+                  </Cell>
+                </Row>
               ))}
             </ListTable>
           </Card>
           <Card>
-            <h2>Buat Tenant Baru</h2>
-            <form method="post" action="/admin/tenant">
+            <CardTitle>Buat Tenant Baru</CardTitle>
+            <Form action="/admin/tenant">
               <Field label="Nama usaha" name="name" required />
               <Field label="Subdomain" name="slug" required hint="cth: warungbusari" />
               <SelectField
@@ -74,7 +84,7 @@ export const adminTenants = new Hono<AppEnv>()
                 ]}
               />
               <Button block>Buat (status draft)</Button>
-            </form>
+            </Form>
           </Card>
         </AdminPage>,
       ),
@@ -131,37 +141,51 @@ export const adminTenants = new Hono<AppEnv>()
           error={c.req.query("err")}
         >
           <Card>
-            <h2>
+            <CardTitle>
               {tenant.name} {statusBadge(tenant.status)}
-            </h2>
-            <p class="small">
-              {tenant.slug}.{c.env.BASE_DOMAIN} · Paket {subscription?.plan ?? "?"} ·{" "}
-              {formatRupiah(subscription?.monthly_price ?? 0)}/bln
-              <br />
-              Setup dibayar: {subscription?.setup_paid_at ?? "belum"} · Jatuh tempo:{" "}
-              {subscription?.next_due_date ?? "-"}
-            </p>
-            <div class="row-actions">
+            </CardTitle>
+            <DataList
+              rows={[
+                {
+                  label: "Website",
+                  value: (
+                    <TextLink href={`https://${tenant.slug}.${c.env.BASE_DOMAIN}`} external>
+                      {tenant.slug}.{c.env.BASE_DOMAIN}
+                    </TextLink>
+                  ),
+                },
+                {
+                  label: "Paket",
+                  value: `${subscription?.plan ?? "?"} · ${formatRupiah(subscription?.monthly_price ?? 0)}/bln`,
+                },
+                { label: "Setup dibayar", value: subscription?.setup_paid_at ?? "belum" },
+                { label: "Jatuh tempo", value: subscription?.next_due_date ?? "-" },
+              ]}
+            />
+            <Actions>
               {tenant.status === "draft" && hasContent && subscription?.setup_paid_at ? (
-                <form method="post" action={`/admin/tenant/${tenant.id}/golive`}>
+                <Form action={`/admin/tenant/${tenant.id}/golive`}>
                   <Button>Go Live 🚀</Button>
-                </form>
+                </Form>
               ) : null}
               {tenant.status === "suspended" ? (
-                <form method="post" action={`/admin/tenant/${tenant.id}/pulihkan`}>
+                <Form action={`/admin/tenant/${tenant.id}/pulihkan`}>
                   <Button>Pulihkan</Button>
-                </form>
+                </Form>
               ) : null}
               {tenant.status === "active" || tenant.status === "grace" ? (
-                <form method="post" action={`/admin/tenant/${tenant.id}/suspend`}>
+                <Form
+                  action={`/admin/tenant/${tenant.id}/suspend`}
+                  confirm={`Suspend ${tenant.name}? Situs publiknya langsung nonaktif.`}
+                >
                   <Button variant="danger">Suspend</Button>
-                </form>
+                </Form>
               ) : null}
-            </div>
+            </Actions>
           </Card>
           <Card>
-            <h2>Verifikasi Pembayaran QRIS</h2>
-            <form method="post" action={`/admin/tenant/${tenant.id}/bayar`}>
+            <CardTitle>Verifikasi Pembayaran QRIS</CardTitle>
+            <Form action={`/admin/tenant/${tenant.id}/bayar`}>
               <SelectField
                 label="Jenis"
                 name="kind"
@@ -173,39 +197,34 @@ export const adminTenants = new Hono<AppEnv>()
               <Field label="Nominal (Rp)" name="amount" inputmode="numeric" required />
               <Field label="Periode" name="period" placeholder="2026-08" required />
               <Button block>Tandai Lunas</Button>
-            </form>
+            </Form>
           </Card>
           <Card>
-            <h2>Akses Klien</h2>
-            <form method="post" action={`/admin/tenant/${tenant.id}/link-intake`}>
+            <CardTitle>Akses Klien</CardTitle>
+            <Form action={`/admin/tenant/${tenant.id}/link-intake`}>
               <Button variant="secondary">Buat Link Intake (3 hari)</Button>
-            </form>
-            <form method="post" action={`/admin/tenant/${tenant.id}/link-sandi`}>
+            </Form>
+            <Form action={`/admin/tenant/${tenant.id}/link-sandi`}>
               <Field label="Email owner" name="email" type="email" required />
               <Button variant="secondary">Buat Akun + Link Atur Password</Button>
-            </form>
+            </Form>
           </Card>
           <Card>
-            <h2>Laporan Bulanan (siap-copy)</h2>
-            <p class="small muted">Salin, kirim via WA ke klien tiap tanggal 1.</p>
-            <textarea
-              rows={8}
-              style="width:100%; font-size:0.85rem;"
-              onclick="this.select()"
-              readonly
-            >
-              {reportText}
-            </textarea>
+            <CardTitle>Laporan Bulanan (siap-copy)</CardTitle>
+            <Text small muted>
+              Salin, kirim via WA ke klien tiap tanggal 1.
+            </Text>
+            <CopyArea text={reportText} />
           </Card>
           {closing ? (
             <Card>
-              <h2>Komisi Referral</h2>
+              <CardTitle>Komisi Referral</CardTitle>
               <ListTable headers={["Cicilan", "Nominal", "Status"]}>
                 {payouts.map((payout) => (
-                  <tr>
-                    <td>#{payout.installment}</td>
-                    <td>{formatRupiah(payout.amount)}</td>
-                    <td>
+                  <Row>
+                    <Cell>#{payout.installment}</Cell>
+                    <Cell>{formatRupiah(payout.amount)}</Cell>
+                    <Cell>
                       <Badge
                         tone={
                           payout.status === "paid"
@@ -219,13 +238,16 @@ export const adminTenants = new Hono<AppEnv>()
                       >
                         {payout.status}
                       </Badge>
-                    </td>
-                  </tr>
+                    </Cell>
+                  </Row>
                 ))}
               </ListTable>
-              <form method="post" action={`/admin/tenant/${tenant.id}/refund`}>
+              <Form
+                action={`/admin/tenant/${tenant.id}/refund`}
+                confirm="Refund? Tenant diarsip dan komisi belum cair di-void. Tidak bisa dibatalkan."
+              >
                 <Button variant="danger">Refund ≤ 7 hari (void cicilan-1)</Button>
-              </form>
+              </Form>
             </Card>
           ) : null}
         </AdminPage>,

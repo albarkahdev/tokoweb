@@ -4,8 +4,8 @@ import { findThemeById, listActiveThemes, type ThemeRow } from "@/db/themes";
 import { formDataToValues } from "@/domain/cms";
 import type { AppEnv } from "@/env";
 import { type CmsContext, CmsPage, html, loadCms, purgeTenantPages } from "@/routes/cms/shared";
-import { Badge, Card } from "@/ui/display";
-import { Button, LinkButton } from "@/ui/form";
+import { Actions, Badge, Card, CardTitle } from "@/ui/display";
+import { Button, Form, HiddenInput, LinkButton } from "@/ui/form";
 
 function TemaPage(props: {
   cms: CmsContext;
@@ -24,24 +24,25 @@ function TemaPage(props: {
     >
       {props.themes.map((theme) => (
         <Card>
-          <h2>
+          <CardTitle>
             {theme.name}{" "}
             {theme.id === props.cms.tenant.theme_id ? <Badge tone="success">dipakai</Badge> : null}
-          </h2>
-          <div class="row-actions">
+          </CardTitle>
+          <Actions>
             <LinkButton
               variant="secondary"
+              external
               href={`https://${props.publicHost}/?preview_theme=${theme.slug}`}
             >
               Preview dengan datamu
             </LinkButton>
             {theme.id !== props.cms.tenant.theme_id ? (
-              <form method="post" action="/tema">
-                <input type="hidden" name="theme_id" value={String(theme.id)} />
+              <Form action="/tema">
+                <HiddenInput name="theme_id" value={String(theme.id)} />
                 <Button>Pakai Tema Ini</Button>
-              </form>
+              </Form>
             ) : null}
-          </div>
+          </Actions>
         </Card>
       ))}
     </CmsPage>

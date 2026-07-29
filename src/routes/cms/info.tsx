@@ -10,8 +10,8 @@ import {
 import type { SiteContent } from "@/domain/content";
 import type { AppEnv } from "@/env";
 import { type CmsContext, CmsPage, html, loadCms, purgeTenantPages } from "@/routes/cms/shared";
-import { Card } from "@/ui/display";
-import { Button, Field, TextAreaField } from "@/ui/form";
+import { Card, CardTitle, SubTitle } from "@/ui/display";
+import { Button, Field, Form, TextAreaField, TimeRow } from "@/ui/form";
 
 function InfoPage(props: {
   cms: CmsContext;
@@ -30,8 +30,8 @@ function InfoPage(props: {
       error={props.error}
     >
       <Card>
-        <h2>Info Usaha</h2>
-        <form method="post" action="/info">
+        <CardTitle>Info Usaha</CardTitle>
+        <Form action="/info">
           <Field label="Nama usaha" name="name" value={info.name} required />
           <Field label="Tagline" name="tagline" value={info.tagline} />
           <TextAreaField label="Tentang" name="about" value={info.about} />
@@ -47,24 +47,23 @@ function InfoPage(props: {
           />
           <Field label="Telepon" name="phone" value={info.phone} inputmode="numeric" />
           <Field label="Instagram" name="instagram" value={info.instagram} hint="Tanpa @" />
-          <h3>Jam buka</h3>
+          <SubTitle>Jam buka</SubTitle>
           {DAY_KEYS.map((day) => {
             const entry = hours[day];
             return (
-              <div class="field">
-                <span>{DAY_LABELS[day]}</span>
-                <div class="row-actions">
-                  <input type="time" name={`${day}_open`} value={entry?.[0] ?? "08:00"} />
-                  <input type="time" name={`${day}_close`} value={entry?.[1] ?? "21:00"} />
-                  <label class="small">
-                    <input type="checkbox" name={`${day}_closed`} checked={entry === null} /> Tutup
-                  </label>
-                </div>
-              </div>
+              <TimeRow
+                label={DAY_LABELS[day]}
+                openName={`${day}_open`}
+                closeName={`${day}_close`}
+                closedName={`${day}_closed`}
+                open={entry?.[0] ?? "08:00"}
+                close={entry?.[1] ?? "21:00"}
+                closed={entry === null}
+              />
             );
           })}
           <Button block>Simpan</Button>
-        </form>
+        </Form>
       </Card>
     </CmsPage>
   );

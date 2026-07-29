@@ -3,12 +3,12 @@ import { AppLayout, type NavItem } from "@/ui/app-layout";
 import { Alert } from "@/ui/display";
 
 export const ADMIN_NAV: NavItem[] = [
-  { href: "/admin", label: "Ringkasan" },
-  { href: "/admin/tenant", label: "Tenant" },
-  { href: "/admin/lead", label: "Lead" },
-  { href: "/admin/intake", label: "Intake" },
-  { href: "/admin/referrer", label: "Ojol" },
-  { href: "/admin/payout", label: "Payout" },
+  { href: "/admin", label: "Ringkasan", icon: "gauge" },
+  { href: "/admin/tenant", label: "Tenant", icon: "store" },
+  { href: "/admin/lead", label: "Lead", icon: "lead" },
+  { href: "/admin/intake", label: "Intake", icon: "inbox" },
+  { href: "/admin/referrer", label: "Ojol", icon: "bike" },
+  { href: "/admin/payout", label: "Payout", icon: "cash" },
 ];
 
 export function AdminPage(props: {
@@ -21,16 +21,10 @@ export function AdminPage(props: {
   return (
     <AppLayout
       title={`${props.title} — Admin tokoweb`}
-      heading="Admin tokoweb"
+      heading="Admin"
       nav={ADMIN_NAV}
       currentPath={props.currentPath}
-      headerAction={
-        <form method="post" action="/keluar">
-          <button class="btn secondary" type="submit">
-            Keluar
-          </button>
-        </form>
-      }
+      logout
     >
       {props.notice ? <Alert tone="success">{props.notice}</Alert> : null}
       {props.error ? <Alert tone="danger">{props.error}</Alert> : null}

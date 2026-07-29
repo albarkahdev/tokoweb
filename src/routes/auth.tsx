@@ -6,24 +6,25 @@ import { hashPassword, isAcceptablePassword, verifyPassword } from "@/domain/pas
 import { createSessionToken, SESSION_TTL_MS } from "@/domain/session";
 import type { AppEnv } from "@/env";
 import { SESSION_COOKIE } from "@/routes/middleware";
-import { AppLayout } from "@/ui/app-layout";
-import { Alert, Card } from "@/ui/display";
-import { Button, Field } from "@/ui/form";
+import { AppLayout, AuthBrand } from "@/ui/app-layout";
+import { Alert, Card, PageTitle, Text } from "@/ui/display";
+import { Button, Field, Form, HiddenInput } from "@/ui/form";
 
 function LoginPage(props: { error?: string }) {
   return (
-    <AppLayout title="Masuk — tokoweb">
+    <AppLayout title="Masuk — tokoweb" centered>
+      <AuthBrand tagline="Kelola websitemu dari sini" />
       <Card>
-        <h1>Masuk</h1>
+        <PageTitle>Masuk</PageTitle>
         {props.error ? <Alert tone="danger">{props.error}</Alert> : null}
-        <form method="post" action="/masuk">
+        <Form action="/masuk">
           <Field label="Email" name="email" type="email" required />
           <Field label="Password" name="password" type="password" required />
           <Button block>Masuk</Button>
-        </form>
-        <p class="small muted">
+        </Form>
+        <Text small muted last>
           Lupa password? Hubungi kami via WhatsApp — kami kirim link atur ulang.
-        </p>
+        </Text>
       </Card>
     </AppLayout>
   );
@@ -31,12 +32,13 @@ function LoginPage(props: { error?: string }) {
 
 function SetPasswordPage(props: { token: string; error?: string }) {
   return (
-    <AppLayout title="Atur Password — tokoweb">
+    <AppLayout title="Atur Password — tokoweb" centered>
+      <AuthBrand tagline="Satu langkah lagi — buat password" />
       <Card>
-        <h1>Atur Password</h1>
+        <PageTitle>Atur Password</PageTitle>
         {props.error ? <Alert tone="danger">{props.error}</Alert> : null}
-        <form method="post" action="/atur-sandi">
-          <input type="hidden" name="token" value={props.token} />
+        <Form action="/atur-sandi">
+          <HiddenInput name="token" value={props.token} />
           <Field
             label="Password baru"
             name="password"
@@ -45,7 +47,7 @@ function SetPasswordPage(props: { token: string; error?: string }) {
             hint="Minimal 8 karakter"
           />
           <Button block>Simpan &amp; Masuk</Button>
-        </form>
+        </Form>
       </Card>
     </AppLayout>
   );

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { AppEnv } from "@/env";
 import { AdminPage, adminHtml } from "@/routes/admin/shared";
-import { Card, StatRow, StatTile } from "@/ui/display";
+import { Card, CardTitle, StatRow, StatTile, Text, TextLink } from "@/ui/display";
 
 export const adminDashboard = new Hono<AppEnv>().get("/", async (c) => {
   const [tenants, leads, intakes, payouts] = await Promise.all([
@@ -29,13 +29,13 @@ export const adminDashboard = new Hono<AppEnv>().get("/", async (c) => {
           <StatTile value={String(payouts?.n ?? 0)} label="payout siap cair" />
         </StatRow>
         <Card>
-          <h2>Alur kerja harian</h2>
-          <p class="small mb-0">
-            1. Cek <a href="/admin/lead">lead baru</a> → follow-up WA. 2. Cek{" "}
-            <a href="/admin/intake">intake</a> → kurasi → Go Live. 3. Cek{" "}
-            <a href="/admin/payout">payout</a> → transfer ≤ 1 hari. 4. Verifikasi pembayaran QRIS di
-            halaman <a href="/admin/tenant">tenant</a>.
-          </p>
+          <CardTitle>Alur kerja harian</CardTitle>
+          <Text small last>
+            1. Cek <TextLink href="/admin/lead">lead baru</TextLink> → follow-up WA. 2. Cek{" "}
+            <TextLink href="/admin/intake">intake</TextLink> → kurasi → Go Live. 3. Cek{" "}
+            <TextLink href="/admin/payout">payout</TextLink> → transfer ≤ 1 hari. 4. Verifikasi
+            pembayaran QRIS di halaman <TextLink href="/admin/tenant">tenant</TextLink>.
+          </Text>
         </Card>
       </AdminPage>,
     ),

@@ -12,8 +12,14 @@ import { cmsStatistik } from "@/routes/cms/statistik";
 import { cmsTema } from "@/routes/cms/tema";
 import { intake } from "@/routes/intake";
 import { attachSession, rejectCrossOriginWrites } from "@/routes/middleware";
+import { notFoundHtml, serverErrorHtml } from "@/ui/error-page";
 
 export const appHost = new Hono<AppEnv>()
+  .notFound((c) => c.html(notFoundHtml("/"), 404))
+  .onError((error, c) => {
+    console.error(error);
+    return c.html(serverErrorHtml(c.req.path), 500);
+  })
   .use("*", rejectCrossOriginWrites)
   .use("*", attachSession)
   .route("/", auth)

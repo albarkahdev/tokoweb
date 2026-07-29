@@ -8,8 +8,21 @@ import { parseSiteContent } from "@/domain/content";
 import { buildCurationPrompt } from "@/domain/intake-prompt";
 import type { AppEnv } from "@/env";
 import { AdminPage, adminHtml } from "@/routes/admin/shared";
-import { Badge, Card, ListTable } from "@/ui/display";
-import { Button, TextAreaField } from "@/ui/form";
+import {
+  Badge,
+  Card,
+  CardTitle,
+  Cell,
+  CodeBlock,
+  CopyArea,
+  EmptyState,
+  ListTable,
+  Row,
+  SubTitle,
+  Text,
+  TextLink,
+} from "@/ui/display";
+import { Button, Form, TextAreaField } from "@/ui/form";
 
 export const adminIntake = new Hono<AppEnv>()
   .get("/intake", async (c) => {
@@ -18,25 +31,33 @@ export const adminIntake = new Hono<AppEnv>()
       adminHtml(
         <AdminPage title="Intake" currentPath="/admin/intake" notice={c.req.query("ok")}>
           <Card>
-            <h2>Form intake masuk</h2>
-            <ListTable headers={["ID", "Tenant", "Status", ""]}>
-              {intakes.map((intake) => (
-                <tr>
-                  <td>#{intake.id}</td>
-                  <td>{intake.tenant_id}</td>
-                  <td>
-                    {intake.processed ? (
-                      <Badge tone="success">diproses</Badge>
-                    ) : (
-                      <Badge tone="warning">baru</Badge>
-                    )}
-                  </td>
-                  <td>
-                    <a href={`/admin/intake/${intake.id}`}>Kurasi</a>
-                  </td>
-                </tr>
-              ))}
-            </ListTable>
+            <CardTitle>Form intake masuk</CardTitle>
+            {intakes.length === 0 ? (
+              <EmptyState
+                icon="📥"
+                title="Belum ada intake"
+                hint="Kiriman form data usaha dari klien muncul di sini untuk dikurasi."
+              />
+            ) : (
+              <ListTable headers={["ID", "Tenant", "Status", ""]}>
+                {intakes.map((intake) => (
+                  <Row>
+                    <Cell>#{intake.id}</Cell>
+                    <Cell>{intake.tenant_id}</Cell>
+                    <Cell>
+                      {intake.processed ? (
+                        <Badge tone="success">diproses</Badge>
+                      ) : (
+                        <Badge tone="warning">baru</Badge>
+                      )}
+                    </Cell>
+                    <Cell>
+                      <TextLink href={`/admin/intake/${intake.id}`}>Kurasi</TextLink>
+                    </Cell>
+                  </Row>
+                ))}
+              </ListTable>
+            )}
           </Card>
         </AdminPage>,
       ),
@@ -59,31 +80,22 @@ export const adminIntake = new Hono<AppEnv>()
           error={c.req.query("err")}
         >
           <Card>
-            <h2>
+            <CardTitle>
               Intake #{intake.id} — {tenant.name}
-            </h2>
-            <h3>Data mentah klien</h3>
-            <pre style="white-space:pre-wrap; font-size:0.8rem; background:var(--bg); padding:0.75rem; border-radius:0.5rem; overflow-x:auto;">
-              {JSON.stringify(JSON.parse(intake.raw), null, 2)}
-            </pre>
+            </CardTitle>
+            <SubTitle>Data mentah klien</SubTitle>
+            <CodeBlock text={JSON.stringify(JSON.parse(intake.raw), null, 2)} />
           </Card>
           <Card>
-            <h2>Copy Prompt AI</h2>
-            <p class="small muted">
+            <CardTitle>Copy Prompt AI</CardTitle>
+            <Text small muted>
               Salin prompt ini, tempel ke Gemini, lalu pakai hasilnya di editor konten di bawah.
-            </p>
-            <textarea
-              rows={8}
-              style="width:100%; font-size:0.8rem;"
-              onclick="this.select()"
-              readonly
-            >
-              {prompt}
-            </textarea>
+            </Text>
+            <CopyArea text={prompt} />
           </Card>
           <Card>
-            <h2>Editor Konten (JSON)</h2>
-            <form method="post" action={`/admin/intake/${intake.id}/simpan`}>
+            <CardTitle>Editor Konten (JSON)</CardTitle>
+            <Form action={`/admin/intake/${intake.id}/simpan`}>
               <TextAreaField
                 label="contents.data"
                 name="data"
@@ -95,10 +107,10 @@ export const adminIntake = new Hono<AppEnv>()
                 )}
               />
               <Button block>Simpan konten + tandai diproses</Button>
-            </form>
-            <p class="small muted mb-0">
+            </Form>
+            <Text small muted last>
               Setelah tersimpan: buka tenant → Go Live. Lanjutkan kurasi kapan pun dari sini.
-            </p>
+            </Text>
           </Card>
         </AdminPage>,
       ),

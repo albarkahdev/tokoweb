@@ -8,8 +8,8 @@ import {
 import { formDataToValues } from "@/domain/cms";
 import type { AppEnv } from "@/env";
 import { type CmsContext, CmsPage, html, loadCms, purgeTenantPages } from "@/routes/cms/shared";
-import { Card } from "@/ui/display";
-import { Button } from "@/ui/form";
+import { Actions, Card, CardTitle, EmptyState, Strong, Text } from "@/ui/display";
+import { Button, Form, HiddenInput } from "@/ui/form";
 
 function PesanPage(props: {
   cms: CmsContext;
@@ -20,40 +20,48 @@ function PesanPage(props: {
   return (
     <CmsPage title="Pesan Masuk" currentPath="/pesan" cms={props.cms} notice={props.notice}>
       <Card>
-        <h2>Menunggu persetujuan ({props.pending.length})</h2>
+        <CardTitle>Menunggu persetujuan ({props.pending.length})</CardTitle>
         {props.pending.length === 0 ? (
-          <p class="muted mb-0">Tidak ada testimoni baru.</p>
+          <EmptyState
+            icon="💬"
+            title="Tidak ada testimoni baru"
+            hint="Testimoni dari pengunjung websitemu muncul di sini untuk kamu setujui."
+          />
         ) : (
           props.pending.map((testimonial) => (
-            <div class="card">
-              <strong>{testimonial.author_name}</strong>
-              {testimonial.rating ? <span class="small"> · {testimonial.rating}/5</span> : null}
-              <p>{testimonial.body}</p>
-              <div class="row-actions">
-                <form method="post" action="/pesan/setujui">
-                  <input type="hidden" name="id" value={String(testimonial.id)} />
+            <Card>
+              <Text last>
+                <Strong>{testimonial.author_name}</Strong>
+                {testimonial.rating ? ` · ${testimonial.rating}/5` : ""}
+              </Text>
+              <Text>{testimonial.body}</Text>
+              <Actions>
+                <Form action="/pesan/setujui">
+                  <HiddenInput name="id" value={String(testimonial.id)} />
                   <Button>Tampilkan di website</Button>
-                </form>
-                <form method="post" action="/pesan/hapus">
-                  <input type="hidden" name="id" value={String(testimonial.id)} />
+                </Form>
+                <Form action="/pesan/hapus" confirm="Hapus testimoni ini?">
+                  <HiddenInput name="id" value={String(testimonial.id)} />
                   <Button variant="danger">Hapus</Button>
-                </form>
-              </div>
-            </div>
+                </Form>
+              </Actions>
+            </Card>
           ))
         )}
       </Card>
       <Card>
-        <h2>Tampil di website ({props.approved.length})</h2>
+        <CardTitle>Tampil di website ({props.approved.length})</CardTitle>
         {props.approved.map((testimonial) => (
-          <div class="card">
-            <strong>{testimonial.author_name}</strong>
-            <p>{testimonial.body}</p>
-            <form method="post" action="/pesan/hapus">
-              <input type="hidden" name="id" value={String(testimonial.id)} />
+          <Card>
+            <Text last>
+              <Strong>{testimonial.author_name}</Strong>
+            </Text>
+            <Text>{testimonial.body}</Text>
+            <Form action="/pesan/hapus" confirm="Hapus testimoni ini?">
+              <HiddenInput name="id" value={String(testimonial.id)} />
               <Button variant="danger">Hapus</Button>
-            </form>
-          </div>
+            </Form>
+          </Card>
         ))}
       </Card>
     </CmsPage>

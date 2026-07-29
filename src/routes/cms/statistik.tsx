@@ -9,7 +9,7 @@ import { addDays, sqlUtcDateTime } from "@/domain/stats";
 import { wibDateOf } from "@/domain/subscription";
 import type { AppEnv } from "@/env";
 import { CmsPage, html, loadCms } from "@/routes/cms/shared";
-import { Card, StatRow, StatTile } from "@/ui/display";
+import { Card, CardTitle, Insight, StatRow, StatTile, Strong, Text } from "@/ui/display";
 
 const DAY_MS = 86_400_000;
 
@@ -77,9 +77,9 @@ export const cmsStatistik = new Hono<AppEnv>().get("/statistik", async (c) => {
     html(
       <CmsPage title="Statistik" currentPath="/statistik" cms={cms}>
         <Card>
-          <h2>Minggu ini</h2>
+          <CardTitle>Minggu ini</CardTitle>
           {narrate(week, prevWeek).map((insight) => (
-            <p>{insight}</p>
+            <Insight>{insight}</Insight>
           ))}
         </Card>
         <StatRow>
@@ -88,25 +88,25 @@ export const cmsStatistik = new Hono<AppEnv>().get("/statistik", async (c) => {
           <StatTile value={String(week.uniqueVisitors)} label="pengunjung unik" />
         </StatRow>
         <Card>
-          <h2>30 hari terakhir</h2>
-          <p>
+          <CardTitle>30 hari terakhir</CardTitle>
+          <Text>
             👀 {month.pageViews} kunjungan · 💬 {month.waClicks} klik WA · 📞 {month.phoneClicks}{" "}
             telepon · 📍 {month.mapsClicks} buka Maps
-          </p>
+          </Text>
           {busiest ? (
-            <p>
-              Hari teramai: <strong>{busiest.date}</strong> ({busiest.count} kunjungan).
-            </p>
+            <Text>
+              Hari teramai: <Strong>{busiest.date}</Strong> ({busiest.count} kunjungan).
+            </Text>
           ) : null}
           {topPromo ? (
-            <p>
-              🔥 Promo terpopuler: <strong>{topPromo.title}</strong> ({topPromo.clicks} klik).
-            </p>
+            <Text>
+              🔥 Promo terpopuler: <Strong>{topPromo.title}</Strong> ({topPromo.clicks} klik).
+            </Text>
           ) : null}
-          <p class="small muted mb-0">
+          <Text small muted last>
             Angka diperbarui tiap malam. Data pengunjung anonim — tanpa cookie, tanpa pelacakan
             pribadi.
-          </p>
+          </Text>
         </Card>
       </CmsPage>,
     ),

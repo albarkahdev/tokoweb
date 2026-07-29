@@ -1,5 +1,32 @@
 import type { Child } from "hono/jsx";
 
+export function Form(props: {
+  action: string;
+  multipart?: boolean;
+  webpUpload?: boolean;
+  confirm?: string;
+  children: Child;
+}) {
+  return (
+    <>
+      <form
+        method="post"
+        action={props.action}
+        enctype={props.multipart ? "multipart/form-data" : undefined}
+        data-webp-upload={props.webpUpload ? "" : undefined}
+        data-confirm={props.confirm}
+      >
+        {props.children}
+      </form>
+      {props.webpUpload ? <script src="/assets/upload.js" defer /> : null}
+    </>
+  );
+}
+
+export function HiddenInput(props: { name: string; value: string }) {
+  return <input type="hidden" name={props.name} value={props.value} />;
+}
+
 export function Field(props: {
   label: string;
   name: string;
@@ -64,6 +91,75 @@ export function SelectField(props: {
   );
 }
 
+export function CheckboxField(props: { label: string; name: string; checked?: boolean }) {
+  return (
+    <label class="field checkbox">
+      <input type="checkbox" name={props.name} checked={props.checked} />
+      <span>{props.label}</span>
+    </label>
+  );
+}
+
+export function FileField(props: {
+  label: string;
+  name: string;
+  required?: boolean;
+  multiple?: boolean;
+  hint?: string;
+}) {
+  return (
+    <label class="field">
+      <span>{props.label}</span>
+      <input
+        type="file"
+        name={props.name}
+        accept="image/*"
+        required={props.required}
+        multiple={props.multiple}
+      />
+      {props.hint ? <div class="hint">{props.hint}</div> : null}
+    </label>
+  );
+}
+
+export function TimeRow(props: {
+  label: string;
+  openName: string;
+  closeName: string;
+  closedName: string;
+  open: string;
+  close: string;
+  closed?: boolean;
+}) {
+  return (
+    <div class="field time-row">
+      <span class="day">{props.label}</span>
+      <input type="time" name={props.openName} value={props.open} />
+      <input type="time" name={props.closeName} value={props.close} />
+      <label class="toggle">
+        <input type="checkbox" name={props.closedName} checked={props.closed} /> Tutup
+      </label>
+    </div>
+  );
+}
+
+export function InputPairRow(props: {
+  first: { name: string; placeholder: string };
+  second: { name: string; placeholder: string; numeric?: boolean };
+}) {
+  return (
+    <div class="pair-row">
+      <input type="text" name={props.first.name} placeholder={props.first.placeholder} />
+      <input
+        type="text"
+        name={props.second.name}
+        placeholder={props.second.placeholder}
+        inputmode={props.second.numeric ? "numeric" : undefined}
+      />
+    </div>
+  );
+}
+
 export function Button(props: {
   children: Child;
   variant?: "primary" | "secondary" | "danger";
@@ -93,11 +189,17 @@ export function LinkButton(props: {
   href: string;
   children: Child;
   variant?: "primary" | "secondary";
+  external?: boolean;
 }) {
   const classes = ["btn"];
   if (props.variant === "secondary") classes.push("secondary");
   return (
-    <a class={classes.join(" ")} href={props.href}>
+    <a
+      class={classes.join(" ")}
+      href={props.href}
+      target={props.external ? "_blank" : undefined}
+      rel={props.external ? "noopener" : undefined}
+    >
       {props.children}
     </a>
   );

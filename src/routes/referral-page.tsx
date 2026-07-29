@@ -8,8 +8,18 @@ import { createFixedWindowLimiter } from "@/domain/rate-limit";
 import { isValidPin, isValidReferralCode } from "@/domain/referral-code";
 import type { AppEnv } from "@/env";
 import { AppLayout } from "@/ui/app-layout";
-import { Badge, Card, StatRow, StatTile } from "@/ui/display";
-import { Button, Field } from "@/ui/form";
+import {
+  Alert,
+  Badge,
+  Card,
+  CardTitle,
+  PageTitle,
+  StatRow,
+  StatTile,
+  Strong,
+  Text,
+} from "@/ui/display";
+import { Button, Field, Form } from "@/ui/form";
 
 const pinAttempts = createFixedWindowLimiter(5, 60_000);
 
@@ -27,15 +37,15 @@ function PinPage(props: { code: string; error?: string }) {
   return (
     <AppLayout title={`Komisi ${props.code} — tokoweb`}>
       <Card>
-        <h1>Halaman Komisi</h1>
-        <p class="small muted">
-          Kode: <strong>{props.code}</strong>
-        </p>
-        {props.error ? <p class="alert danger">{props.error}</p> : null}
-        <form method="post" action={`/r/${props.code}`}>
+        <PageTitle>Halaman Komisi</PageTitle>
+        <Text small muted>
+          Kode: <Strong>{props.code}</Strong>
+        </Text>
+        {props.error ? <Alert tone="danger">{props.error}</Alert> : null}
+        <Form action={`/r/${props.code}`}>
           <Field label="PIN 4 digit" name="pin" type="password" inputmode="numeric" required />
           <Button block>Lihat Komisi</Button>
-        </form>
+        </Form>
       </Card>
     </AppLayout>
   );
@@ -100,24 +110,24 @@ export const referralPage = new Hono<AppEnv>()
           </StatRow>
           {[...closings.values()].map((payouts) => (
             <Card>
-              <h2>{payouts[0]?.tenant_name}</h2>
+              <CardTitle>{payouts[0]?.tenant_name}</CardTitle>
               {payouts.map((payout) => {
                 const status = STATUS_LABEL[payout.status] ?? STATUS_LABEL.pending;
                 return (
-                  <p class="mb-0">
+                  <Text last>
                     Cicilan #{payout.installment} · {formatRupiah(payout.amount)}{" "}
                     <Badge tone={status?.tone ?? "muted"}>{status?.label}</Badge>
-                  </p>
+                  </Text>
                 );
               })}
             </Card>
           ))}
           {closings.size === 0 ? (
             <Card>
-              <p class="mb-0">
+              <Text last>
                 Belum ada closing. Terus bagikan brosurmu — komisi sampai {formatRupiah(300_000)}{" "}
                 per klien!
-              </p>
+              </Text>
             </Card>
           ) : null}
         </AppLayout>,

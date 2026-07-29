@@ -17,3 +17,13 @@ el.classList.add(open?"open":"closed")})();`;
 export const REVEAL_SCRIPT = `(function(){if(!("IntersectionObserver" in window))return;
 var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}})},{threshold:0.08});
 document.querySelectorAll(".reveal").forEach(function(el){io.observe(el)})})();`;
+
+export const LIGHTBOX_SCRIPT = `(function(){var imgs=document.querySelectorAll(".gallery-grid img");if(!imgs.length)return;
+var ov=document.createElement("div");ov.className="lightbox";
+var big=document.createElement("img");var x=document.createElement("button");
+x.className="lb-close";x.setAttribute("aria-label","Tutup");x.textContent="\\u00D7";
+ov.appendChild(big);ov.appendChild(x);document.body.appendChild(ov);
+function close(){ov.classList.remove("show");document.body.style.overflow=""}
+imgs.forEach(function(el){el.addEventListener("click",function(){big.src=el.currentSrc||el.src;big.alt=el.alt;ov.classList.add("show");document.body.style.overflow="hidden"})});
+ov.addEventListener("click",close);
+document.addEventListener("keydown",function(e){if(e.key==="Escape")close()})})();`;
