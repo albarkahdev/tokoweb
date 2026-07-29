@@ -1,3 +1,4 @@
+import { isItemActive } from "@/domain/cms";
 import type { RenderData } from "@/themes/engine/types";
 
 const PATH_TITLES: Record<string, string> = {
@@ -21,11 +22,24 @@ export function metaDescription(data: RenderData): string {
 }
 
 export function ogImageUrl(data: RenderData): string | null {
-  const items = (data.site.content.menu ?? []).flatMap((category) => category.items ?? []);
+  const items = (data.site.content.menu ?? [])
+    .flatMap((category) => category.items ?? [])
+    .filter(isItemActive);
   const featuredImage = items.find((item) => item.featured && item.image_key)?.image_key;
   const galleryImage = data.site.content.gallery?.[0]?.image_key;
   const key = featuredImage ?? galleryImage;
   return key ? `${data.baseUrl}/img/${key}` : null;
+}
+
+export function scriptSafeJson(value: unknown): string {
+  const map: Record<string, string> = {
+    "<": "\\u003c",
+    ">": "\\u003e",
+    "&": "\\u0026",
+    "\u2028": "\\u2028",
+    "\u2029": "\\u2029",
+  };
+  return JSON.stringify(value).replace(/[<>&\u2028\u2029]/g, (ch) => map[ch] ?? ch);
 }
 
 export function jsonLd(data: RenderData): string {
@@ -50,7 +64,7 @@ export function jsonLd(data: RenderData): string {
     }));
 
   const image = ogImageUrl(data);
-  return JSON.stringify({
+  return scriptSafeJson({
     "@context": "https://schema.org",
     "@type": "Restaurant",
     name: info.name ?? data.site.name,
