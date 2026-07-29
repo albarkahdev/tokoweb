@@ -5,6 +5,7 @@ import {
   LIGHTBOX_SCRIPT,
   MENU_POPUP_SCRIPT,
   OPEN_NOW_SCRIPT,
+  PROMO_POPUP_SCRIPT,
   REVEAL_SCRIPT,
   SHARE_SCRIPT,
   trackerScript,
@@ -57,7 +58,7 @@ function waLink(waNumber: string, text: string): string {
 
 function pageHref(data: RenderData, path: string): string {
   const base = data.basePath ?? "";
-  const full = path === "/" ? base || "/" : `${base}${path}`;
+  const full = path === "/" ? (data.homePath ?? (base || "/")) : `${base}${path}`;
   return `${full}${data.pageQuery ?? ""}`;
 }
 
@@ -117,30 +118,12 @@ function todayHoursSummary(data: RenderData): string | undefined {
   return window ? `${window[0]} – ${window[1]} WIB` : "Hari ini tutup";
 }
 
-function subpageLinks(data: RenderData) {
-  const links: { href: string; label: string; active?: boolean }[] = [];
-  if (flattenMenu(data).length > 0) {
-    links.push({ href: pageHref(data, "/menu"), label: "Menu", active: data.path === "/menu" });
-  }
-  if (data.promos.length > 0) {
-    links.push({ href: pageHref(data, "/promo"), label: "Promo", active: data.path === "/promo" });
-  }
-  if (galleryPhotos(data).length > 0) {
-    links.push({
-      href: pageHref(data, "/galeri"),
-      label: "Galeri",
-      active: data.path === "/galeri",
-    });
-  }
-  if (data.testimonials.length > 0) {
-    links.push({
-      href: pageHref(data, "/testimoni"),
-      label: "Testimoni",
-      active: data.path === "/testimoni",
-    });
-  }
-  return links;
-}
+const PAGE_LABELS: Record<string, string> = {
+  "/menu": "Menu",
+  "/galeri": "Galeri",
+  "/promo": "Promo",
+  "/testimoni": "Testimoni",
+};
 
 function navLinks(data: RenderData) {
   const home = pageHref(data, "/");
@@ -367,7 +350,13 @@ export function renderKulinerPage(data: RenderData): string {
   const businessName = info.name ?? data.site.name;
   const canonical = `${data.baseUrl}${data.path === "/" ? "" : data.path}`;
   const isHome = data.path === "/";
-  const showTicker = isHome && data.promos.length > 0;
+  const hasPromos = data.promos.length > 0;
+  const tickerLine = hasPromos
+    ? data.promos.map((promo) => `🔥 ${promo.title}`).join("   ✦   ")
+    : `✨ ${
+        info.ticker_text ??
+        `Selamat datang di ${businessName}${info.tagline ? ` — ${info.tagline}` : ""} · Pesan gampang via WhatsApp 💬`
+      }`;
 
   const page = (
     <SiteDocument
@@ -384,22 +373,23 @@ export function renderKulinerPage(data: RenderData): string {
         REVEAL_SCRIPT,
         LIGHTBOX_SCRIPT,
         MENU_POPUP_SCRIPT,
+        PROMO_POPUP_SCRIPT,
         SHARE_SCRIPT,
       ]}
     >
-      {showTicker ? <PromoTicker titles={data.promos.map((promo) => promo.title)} /> : null}
+      {isHome ? <PromoTicker line={tickerLine} href={hasPromos ? "#promo" : undefined} /> : null}
       <SiteNav
         brand={businessName}
         homeHref={pageHref(data, "/")}
         links={navLinks(data)}
         waHref={waLink(waNumber, `Halo ${businessName}, saya mau pesan.`)}
-        withTicker={showTicker}
+        withTicker={isHome}
       />
       {isHome ? null : (
         <SubpageNav
           backHref={pageHref(data, "/")}
           backLabel="Beranda"
-          links={subpageLinks(data)}
+          pageLabel={PAGE_LABELS[data.path]}
           shareTitle={pageTitle(data)}
         />
       )}

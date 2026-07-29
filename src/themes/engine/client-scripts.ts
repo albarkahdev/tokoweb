@@ -22,7 +22,7 @@ els.forEach(function(el){var r=el.getBoundingClientRect();if(r.top<window.innerH
 
 export const MENU_POPUP_SCRIPT = `(function(){var cards=document.querySelectorAll(".menu-item[data-mi]");if(!cards.length)return;
 var ov=document.createElement("div");ov.className="mi-pop";
-ov.innerHTML='<div class="mp-box" role="dialog" aria-modal="true"><button class="mp-close" aria-label="Tutup">\\u00D7</button><div class="mp-media"><img alt=""><button class="mp-prev" aria-label="Sebelumnya">\\u2190</button><button class="mp-next" aria-label="Berikutnya">\\u2192</button><span class="mp-count"></span></div><div class="mp-body"><h3></h3><span class="mp-price"></span><p></p><a class="btn-wa" data-track="click_wa" href="#">\\uD83D\\uDCAC Pesan Menu Ini</a></div></div>';
+ov.innerHTML='<div class="mp-box" role="dialog" aria-modal="true"><button class="mp-close" aria-label="Tutup">\\u00D7</button><div class="mp-media"><img alt=""><button class="mp-prev" aria-label="Sebelumnya">\\u2039</button><button class="mp-next" aria-label="Berikutnya">\\u203A</button><span class="mp-count"></span></div><div class="mp-body"><h3></h3><span class="mp-price"></span><p></p><a class="btn-wa" data-track="click_wa" href="#">\\uD83D\\uDCAC Pesan Menu Ini</a></div></div>';
 document.body.appendChild(ov);
 var img=ov.querySelector(".mp-media img"),media=ov.querySelector(".mp-media"),h3=ov.querySelector("h3"),price=ov.querySelector(".mp-price"),desc=ov.querySelector("p"),wa=ov.querySelector(".btn-wa"),count=ov.querySelector(".mp-count"),prev=ov.querySelector(".mp-prev"),next=ov.querySelector(".mp-next");
 var fotos=[],idx=0;
@@ -41,6 +41,21 @@ ov.addEventListener("click",function(e){if(e.target===ov)close()});
 document.addEventListener("keydown",function(e){if(!ov.classList.contains("show"))return;
 if(e.key==="Escape")close();if(e.key==="ArrowLeft")slide(idx-1);if(e.key==="ArrowRight")slide(idx+1)})})();`;
 
+export const PROMO_POPUP_SCRIPT = `(function(){var cards=document.querySelectorAll(".promo-card[data-pr]");if(!cards.length)return;
+var ov=document.createElement("div");ov.className="mi-pop pr-pop";
+ov.innerHTML='<div class="mp-box" role="dialog" aria-modal="true"><button class="mp-close" aria-label="Tutup">\\u00D7</button><div class="mp-body"><span class="mp-tag">Promo \\uD83D\\uDD25</span><h3></h3><p></p><span class="mp-until"></span><button class="share-btn mp-share" type="button" data-share-title="">Bagikan Promo \\u2197</button></div></div>';
+document.body.appendChild(ov);
+var h3=ov.querySelector("h3"),desc=ov.querySelector("p"),until=ov.querySelector(".mp-until"),share=ov.querySelector(".mp-share");
+function open(data){h3.textContent=data.t;desc.textContent=data.d;until.textContent="Berlaku s/d "+data.u;
+share.setAttribute("data-share-title",data.t);
+ov.classList.add("show");document.body.style.overflow="hidden"}
+function close(){ov.classList.remove("show");document.body.style.overflow=""}
+cards.forEach(function(card){var trigger=card.querySelector(".pr-open");if(!trigger)return;
+trigger.addEventListener("click",function(){try{open(JSON.parse(card.getAttribute("data-pr")))}catch(_){}})});
+ov.querySelector(".mp-close").addEventListener("click",close);
+ov.addEventListener("click",function(e){if(e.target===ov)close()});
+document.addEventListener("keydown",function(e){if(ov.classList.contains("show")&&e.key==="Escape")close()})})();`;
+
 export const SHARE_SCRIPT = `(function(){var btns=document.querySelectorAll("[data-share-title]");if(!btns.length)return;
 btns.forEach(function(btn){btn.addEventListener("click",function(){
 var payload={title:btn.getAttribute("data-share-title"),url:location.href};
@@ -52,7 +67,7 @@ export const LIGHTBOX_SCRIPT = `(function(){var imgs=Array.prototype.slice.call(
 var ov=document.createElement("div");ov.className="lightbox";
 var big=document.createElement("img");
 function btn(cls,label,txt){var b=document.createElement("button");b.className=cls;b.setAttribute("aria-label",label);b.textContent=txt;return b}
-var x=btn("lb-close","Tutup","\\u00D7"),prev=btn("lb-prev","Sebelumnya","\\u2190"),next=btn("lb-next","Berikutnya","\\u2192");
+var x=btn("lb-close","Tutup","\\u00D7"),prev=btn("lb-prev","Sebelumnya","\\u2039"),next=btn("lb-next","Berikutnya","\\u203A");
 var count=document.createElement("span");count.className="lb-count";
 ov.appendChild(big);ov.appendChild(x);ov.appendChild(prev);ov.appendChild(next);ov.appendChild(count);
 document.body.appendChild(ov);

@@ -40,7 +40,7 @@ function landingJsonLd(baseDomain: string): string {
 export const landing = new Hono<AppEnv>()
   .get("/", async (c) => {
     const url = new URL(c.req.url);
-    const cached = await matchCachedPage(url.hostname, "/landing-v4");
+    const cached = await matchCachedPage(url.hostname, "/landing-v5");
     if (cached) return cached;
 
     const demoUrl = `https://demo.${c.env.BASE_DOMAIN}/kuliner`;
@@ -88,7 +88,16 @@ export const landing = new Hono<AppEnv>()
           }}
           secondary={{ href: demoUrl, label: "Lihat Contoh Website →" }}
           trust={["Refund 7 hari", "Tanpa kontrak", "Datamu tetap milikmu"]}
-          screenshotUrl="/img/t/demo/gallery/landing-shot.webp"
+          mock={{
+            name: "Bakmi Lampion Jaya",
+            tagline: "Resep bakmi pecinan sejak 1975",
+            items: [
+              { name: "Bakmi Ayam Jamur", price: "Rp 18.000" },
+              { name: "Dimsum Mentai (4 pcs)", price: "Rp 15.000" },
+              { name: "Es Liang Teh", price: "Rp 8.000" },
+            ],
+            promo: "Diskon 20% Menu Andalan — minggu ini",
+          }}
           chipA="Buka < 1 detik"
           chipB="12 klik WA minggu ini"
         />
@@ -280,7 +289,7 @@ export const landing = new Hono<AppEnv>()
         "cache-control": "public, max-age=300, s-maxage=86400",
       },
     });
-    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/landing-v4", response.clone()));
+    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/landing-v5", response.clone()));
     return response;
   })
   .get("/robots.txt", (c) =>

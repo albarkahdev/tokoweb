@@ -23,6 +23,14 @@ describe("landing tokoweb.id", () => {
     expect(html).not.toContain("noindex");
   });
 
+  it("hero shows lampion-styled phone mockup", async () => {
+    const html = await (await get("/")).text();
+    expect(html).toContain('class="pm-hero"');
+    expect(html).toContain("Bakmi Lampion Jaya");
+    expect(html).toContain("#A32626");
+    expect(html).not.toContain("landing-shot.webp");
+  });
+
   it("serves robots and sitemap", async () => {
     expect((await get("/robots.txt")).status).toBe(200);
     const sitemap = await get("/sitemap.xml");

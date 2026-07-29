@@ -251,8 +251,9 @@ section > h2, .sec-title { font-size: clamp(1.7rem, 5vw, 2.5rem); margin-bottom:
   position: absolute; top: 50%; transform: translateY(-50%);
   width: 2.9rem; height: 2.9rem; border-radius: 50%;
   border: 1px solid rgb(255 255 255 / 0.35);
-  background: rgb(0 0 0 / 0.45); color: #FFF; font-size: 1.4rem;
+  background: rgb(0 0 0 / 0.45); color: #FFF; font-size: 2rem; line-height: 1;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
+  padding: 0 0 0.25rem;
 }
 .lightbox .lb-prev { left: 0.8rem; }
 .lightbox .lb-next { right: 0.8rem; }
@@ -263,12 +264,12 @@ section > h2, .sec-title { font-size: clamp(1.7rem, 5vw, 2.5rem); margin-bottom:
 }
 
 .menu-item.has-pop { cursor: pointer; position: relative; }
-.mi-open {
+.mi-open, .pr-open {
   position: absolute; inset: 0; z-index: 1;
   background: none; border: none; cursor: pointer; padding: 0;
   border-radius: inherit;
 }
-.mi-open:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.mi-open:focus-visible, .pr-open:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .menu-item .ask { position: relative; z-index: 2; }
 .badge-special { background: var(--primary); color: var(--primary-contrast); }
 .special-sec .menu-item {
@@ -302,7 +303,8 @@ section > h2, .sec-title { font-size: clamp(1.7rem, 5vw, 2.5rem); margin-bottom:
   position: absolute; top: 50%; transform: translateY(-50%);
   width: 2.3rem; height: 2.3rem; border-radius: 50%;
   border: none; background: rgb(0 0 0 / 0.45); color: #FFF;
-  font-size: 1.1rem; cursor: pointer;
+  font-size: 1.6rem; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; padding: 0 0 0.2rem;
 }
 .mp-prev { left: 0.6rem; }
 .mp-next { right: 0.6rem; }
@@ -317,6 +319,16 @@ section > h2, .sec-title { font-size: clamp(1.7rem, 5vw, 2.5rem); margin-bottom:
 .mp-body p { color: var(--muted); font-size: 0.92rem; }
 .mp-body p:empty { display: none; }
 .mp-body .btn-wa { justify-content: center; margin-top: 0.5rem; }
+.mp-tag {
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--primary);
+}
+.mp-until {
+  align-self: flex-start; font-size: 0.8rem; font-weight: 700;
+  background: color-mix(in srgb, var(--accent) 25%, var(--surface));
+  padding: 0.25rem 0.8rem; border-radius: 9999px;
+}
+.mp-share { margin: 0.6rem 0 0; align-self: stretch; text-align: center; padding: 0.6rem 1rem; }
 .share-btn {
   margin-left: auto; flex-shrink: 0;
   white-space: nowrap; font: inherit; font-weight: 700; font-size: 0.87rem;
@@ -390,8 +402,9 @@ footer.site a { color: var(--muted); }
 }
 .catnav a:hover { color: var(--primary); border-color: var(--primary); }
 .subnav .back { border: none; font-weight: 800; color: var(--primary); padding-left: 0; }
-.subnav a[aria-current="page"] {
-  color: var(--primary-contrast); background: var(--primary); border-color: var(--primary);
+.subnav .here {
+  align-self: center; font-size: 0.78rem; font-weight: 800;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
 }
 
 .reveal {

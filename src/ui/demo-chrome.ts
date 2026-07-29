@@ -4,26 +4,44 @@ export function demoChromeHtml(
   themes: ThemeConfig[],
   activeTheme: string,
   demoBusinessName: string,
+  currentPath: string,
 ): string {
-  const switcher = themes
+  const active = themes.find((theme) => theme.slug === activeTheme);
+  const items = themes
     .map(
       (theme) =>
-        `<a href="/kuliner?tema=${theme.slug}" class="demo-sw${theme.slug === activeTheme ? " on" : ""}" title="${theme.character}">${theme.name}</a>`,
+        `<a href="${currentPath}?tema=${theme.slug}" class="demo-tp-item${theme.slug === activeTheme ? " on" : ""}" data-f="${`${theme.name} ${theme.character} ${(theme.tags ?? []).join(" ")}`.toLowerCase()}"><b>${theme.name}</b><span>${theme.character}</span></a>`,
     )
     .join("");
   return `
 <style>
 .demo-top{position:fixed;top:0;left:0;right:0;z-index:60;background:rgb(20 17 28 / 0.92);backdrop-filter:blur(10px);color:#fff;display:flex;align-items:center;gap:0.6rem;padding:0.55rem 0.9rem;font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:0.8rem}
 .demo-top .lbl{white-space:nowrap;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;font-size:0.68rem;color:#B9B3C8}
-.demo-sws{display:flex;gap:0.35rem;overflow-x:auto;scrollbar-width:none;padding:0.15rem 0}
-.demo-sws::-webkit-scrollbar{display:none}
-.demo-sw{color:#D6D1E2;text-decoration:none;padding:0.28rem 0.85rem;border-radius:9999px;border:1px solid #453F55;white-space:nowrap;font-weight:600;transition:border-color 0.15s ease}
-.demo-sw:hover{border-color:#8F86AB}
-.demo-sw.on{background:#fff;color:#17141F;font-weight:800;border-color:#fff}
-.demo-name{margin-left:auto;flex-shrink:0}
-.demo-name input{border-radius:9999px;border:1px solid #453F55;background:#252031;color:#fff;padding:0.35rem 0.85rem;font-size:0.8rem;width:10.5rem;font-family:inherit}
+.demo-theme-btn{display:inline-flex;align-items:center;gap:0.45rem;font-family:inherit;font-size:0.8rem;font-weight:700;color:#fff;background:#252031;border:1px solid #453F55;border-radius:9999px;padding:0.35rem 0.95rem;cursor:pointer;white-space:nowrap;transition:border-color 0.15s ease;max-width:60vw;overflow:hidden}
+.demo-theme-btn:hover{border-color:#8F86AB}
+.demo-theme-btn b{color:#FFD166;overflow:hidden;text-overflow:ellipsis}
+.demo-name{margin-left:auto;flex-shrink:1;min-width:0}
+.demo-name input{border-radius:9999px;border:1px solid #453F55;background:#252031;color:#fff;padding:0.35rem 0.85rem;font-size:0.8rem;width:10.5rem;max-width:100%;font-family:inherit}
 .demo-name input::placeholder{color:#8F86AB}
 .demo-name input:focus{outline:2px solid #FF6B57}
+.demo-tp{position:fixed;inset:0;z-index:80;display:none;align-items:flex-end;justify-content:center;background:rgb(0 0 0 / 0.6);backdrop-filter:blur(3px);font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.demo-tp.show{display:flex}
+@media (min-width:40rem){.demo-tp{align-items:center;padding:1.5rem}}
+.demo-tp-box{background:#17141F;color:#fff;width:100%;max-width:30rem;max-height:82dvh;display:flex;flex-direction:column;border-radius:1.2rem 1.2rem 0 0;border:1px solid #453F55;box-shadow:0 30px 80px rgb(0 0 0 / 0.6)}
+@media (min-width:40rem){.demo-tp-box{border-radius:1.2rem}}
+.demo-tp-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.2rem 0.6rem}
+.demo-tp-head strong{font-size:1rem}
+.demo-tp-close{background:none;border:none;color:#B9B3C8;font-size:1.6rem;line-height:1;cursor:pointer;padding:0.2rem}
+.demo-tp-search{margin:0 1.2rem 0.8rem;border-radius:0.7rem;border:1px solid #453F55;background:#252031;color:#fff;padding:0.6rem 0.9rem;font-size:0.88rem;font-family:inherit}
+.demo-tp-search::placeholder{color:#8F86AB}
+.demo-tp-search:focus{outline:2px solid #FF6B57}
+.demo-tp-list{overflow-y:auto;padding:0 0.7rem 0.9rem;display:grid;gap:0.35rem}
+.demo-tp-item{display:flex;flex-direction:column;gap:0.1rem;text-decoration:none;color:#fff;padding:0.6rem 0.7rem;border-radius:0.7rem;border:1px solid transparent}
+.demo-tp-item:hover{background:#252031;border-color:#453F55}
+.demo-tp-item.on{background:#252031;border-color:#FF6B57}
+.demo-tp-item b{font-size:0.92rem}
+.demo-tp-item.on b::after{content:" ✓ dipakai";color:#FFD166;font-size:0.75rem}
+.demo-tp-item span{color:#8F86AB;font-size:0.78rem}
 body{padding-top:3.1rem;padding-bottom:7rem}
 .promo-ticker{top:3.1rem}
 .site-nav{top:3.1rem}
@@ -41,8 +59,15 @@ body{padding-top:3.1rem;padding-bottom:7rem}
 </style>
 <div class="demo-top">
   <span class="lbl">Tema</span>
-  <div class="demo-sws">${switcher}</div>
+  <button type="button" id="demo-theme-btn" class="demo-theme-btn">🎨 <b>${active?.name ?? activeTheme}</b> · Ganti ▾</button>
   <span class="demo-name"><input id="demo-name-input" placeholder="✏️ Coba nama usahamu…" maxlength="40"></span>
+</div>
+<div class="demo-tp" id="demo-tp">
+  <div class="demo-tp-box" role="dialog" aria-modal="true" aria-label="Pilih tema">
+    <div class="demo-tp-head"><strong>Pilih Tema (${themes.length})</strong><button type="button" class="demo-tp-close" aria-label="Tutup">×</button></div>
+    <input class="demo-tp-search" id="demo-tp-search" placeholder="Cari: gelap, mewah, playful, animasi…">
+    <div class="demo-tp-list">${items}</div>
+  </div>
 </div>
 <div class="demo-cta">
   <div class="inner">
@@ -91,8 +116,24 @@ input.addEventListener("input",function(){
   swap(value);
   if(biz)biz.value=value;
 });
-var sws=document.querySelector(".demo-sws .on");
-if(sws)sws.scrollIntoView({inline:"center",block:"nearest"});
+var tp=document.getElementById("demo-tp");
+var tpBtn=document.getElementById("demo-theme-btn");
+var tpSearch=document.getElementById("demo-tp-search");
+var tpItems=Array.prototype.slice.call(tp.querySelectorAll(".demo-tp-item"));
+function openTp(){tp.classList.add("show");document.body.style.overflow="hidden";
+var on=tp.querySelector(".demo-tp-item.on");if(on)on.scrollIntoView({block:"center"});
+tpSearch.focus()}
+function closeTp(){tp.classList.remove("show");document.body.style.overflow=""}
+tpBtn.addEventListener("click",openTp);
+tp.querySelector(".demo-tp-close").addEventListener("click",closeTp);
+tp.addEventListener("click",function(e){if(e.target===tp)closeTp()});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&tp.classList.contains("show"))closeTp()});
+tpSearch.addEventListener("input",function(){
+  var q=tpSearch.value.trim().toLowerCase();
+  tpItems.forEach(function(item){
+    item.style.display=!q||(item.getAttribute("data-f")||"").toLowerCase().indexOf(q)!==-1?"":"none";
+  });
+});
 })();
 </script>`;
 }

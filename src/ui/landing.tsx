@@ -55,6 +55,7 @@ body {
 .brand em { color: var(--brand); font-style: normal; }
 
 .hero { position: relative; padding: clamp(1.5rem, 4vw, 3rem) 0 clamp(2.5rem, 6vw, 4rem); }
+.hero .wrap { max-width: 82rem; }
 .hero-bg {
   position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background:
@@ -108,14 +109,49 @@ body {
 
 .phone-stage { position: relative; display: flex; justify-content: center; padding: 1rem 0; }
 .phone {
-  width: min(19rem, 78vw); border-radius: 2.6rem; background: var(--ink);
-  padding: 0.65rem; box-shadow: var(--shadow-lg);
+  width: min(19.5rem, 80vw); border-radius: 2.4rem; background: var(--ink);
+  padding: 0.55rem; box-shadow: var(--shadow-lg);
   transform: rotate(2.5deg);
   transition: transform 0.4s ease;
 }
 .phone:hover { transform: rotate(0.5deg) translateY(-6px); }
-.phone-screen { border-radius: 2rem; overflow: hidden; display: block; background: #FFF; }
-.phone-screen img { width: 100%; display: block; }
+.phone-screen { border-radius: 1.9rem; overflow: hidden; display: block; background: #FDF6EC; font-family: var(--body); }
+.pm-hero {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem;
+  padding: 2.1rem 1.3rem 1.5rem; color: #F9E8C9;
+  background:
+    radial-gradient(9rem 9rem at 15% 0%, rgb(217 164 65 / 0.35), transparent 55%),
+    radial-gradient(11rem 11rem at 90% 15%, rgb(255 120 90 / 0.25), transparent 55%),
+    linear-gradient(170deg, #A32626 0%, #7E1B1B 100%);
+}
+.pm-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.04em;
+  background: rgb(0 0 0 / 0.28); padding: 0.24rem 0.7rem; border-radius: 9999px;
+}
+.pm-badge .dot { width: 0.45rem; height: 0.45rem; border-radius: 9999px; background: #6EE7A0; }
+.pm-name { font-family: var(--display); font-size: 1.6rem; font-weight: 600; line-height: 1.1; color: #FFF6E3; }
+.pm-tagline { font-size: 0.72rem; color: #F3D9A8; }
+.pm-wa {
+  display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.35rem;
+  background: #D9A441; color: #4A1F1A; font-size: 0.72rem; font-weight: 800;
+  padding: 0.45rem 1rem; border-radius: 9999px;
+}
+.pm-sec { padding: 1rem 1.3rem 1.4rem; color: #4A1F1A; }
+.pm-kicker {
+  display: block; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.14em;
+  text-transform: uppercase; color: #8E1F1F; margin-bottom: 0.55rem;
+}
+.pm-item { display: flex; align-items: baseline; gap: 0.5rem; padding: 0.34rem 0; font-size: 0.78rem; }
+.pm-item b { font-weight: 700; white-space: nowrap; }
+.pm-item i { flex: 1; border-bottom: 2px dotted rgb(140 106 93 / 0.45); transform: translateY(-0.2rem); }
+.pm-item em { font-style: normal; font-weight: 800; color: #8E1F1F; white-space: nowrap; }
+.pm-promo {
+  display: block; margin-top: 0.8rem; font-size: 0.68rem; font-weight: 700;
+  background: linear-gradient(120deg, rgb(217 164 65 / 0.25), rgb(217 164 65 / 0.12));
+  border: 1px solid rgb(217 164 65 / 0.5); color: #7E1B1B;
+  padding: 0.5rem 0.8rem; border-radius: 0.7rem;
+}
 .float-chip {
   position: absolute; z-index: 2; background: var(--surface); border: 1px solid var(--border);
   border-radius: 1rem; box-shadow: var(--shadow-md);
@@ -349,6 +385,40 @@ export function TopBar(props: {
   );
 }
 
+export function PhoneMock(props: {
+  name: string;
+  tagline: string;
+  items: { name: string; price: string }[];
+  promo: string;
+}) {
+  return (
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="pm-hero">
+          <span class="pm-badge">
+            <span class="dot" />
+            Buka sekarang
+          </span>
+          <span class="pm-name">{props.name}</span>
+          <span class="pm-tagline">{props.tagline}</span>
+          <span class="pm-wa">💬 Pesan via WhatsApp</span>
+        </div>
+        <div class="pm-sec">
+          <span class="pm-kicker">Menu Andalan</span>
+          {props.items.map((item) => (
+            <span class="pm-item">
+              <b>{item.name}</b>
+              <i />
+              <em>{item.price}</em>
+            </span>
+          ))}
+          <span class="pm-promo">🔥 {props.promo}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Hero(props: {
   eyebrow: string;
   headline: Child;
@@ -356,7 +426,7 @@ export function Hero(props: {
   primary: { href: string; label: string };
   secondary: { href: string; label: string };
   trust: string[];
-  screenshotUrl: string;
+  mock: { name: string; tagline: string; items: { name: string; price: string }[]; promo: string };
   chipA: string;
   chipB: string;
 }) {
@@ -390,17 +460,12 @@ export function Hero(props: {
             <span class="dot" />
             {props.chipA}
           </span>
-          <div class="phone">
-            <span class="phone-screen">
-              <img
-                src={props.screenshotUrl}
-                alt="Contoh website warung di HP"
-                width="390"
-                height="844"
-                fetchpriority="high"
-              />
-            </span>
-          </div>
+          <PhoneMock
+            name={props.mock.name}
+            tagline={props.mock.tagline}
+            items={props.mock.items}
+            promo={props.mock.promo}
+          />
           <span class="float-chip b">📊 {props.chipB}</span>
         </div>
       </div>

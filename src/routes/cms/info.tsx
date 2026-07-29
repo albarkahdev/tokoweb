@@ -34,6 +34,12 @@ function InfoPage(props: {
         <Form action="/info">
           <Field label="Nama usaha" name="name" value={info.name} required />
           <Field label="Tagline" name="tagline" value={info.tagline} />
+          <Field
+            label="Teks banner atas"
+            name="ticker_text"
+            value={info.ticker_text}
+            hint="Tampil di banner berjalan paling atas saat tidak ada promo aktif."
+          />
           <TextAreaField label="Tentang" name="about" value={info.about} />
           <Field label="Alamat" name="address" value={info.address} />
           <Field label="Link Google Maps" name="maps_url" value={info.maps_url} />

@@ -23,7 +23,9 @@ describe("halaman demo kuliner", () => {
     expect(response.status).toBe(200);
     const html = await response.text();
     expect(html).toContain("Warung Bu Sari");
-    expect(html).toContain('class="demo-sws"');
+    expect(html).toContain("Pilih Tema");
+    expect(html).toContain('class="demo-tp-list"');
+    expect(html).toContain("demo-tp-search");
     expect(html).toContain("/kuliner?tema=arang");
     expect(html).toContain("Coba nama usahamu");
     expect(html).toContain('action="/lead"');
@@ -42,6 +44,14 @@ describe("halaman demo kuliner", () => {
     const html = await response.text();
     expect(html).toContain('href="/menu?tema=arang"');
     expect(html).toContain('href="/promo?tema=arang"');
+    expect(html).toContain('href="/kuliner?tema=arang"');
+  });
+
+  it("links back to demo home from subpages without 404", async () => {
+    const response = await send(new Request(`${DEMO}/menu?tema=arang`));
+    const html = await response.text();
+    expect(html).toContain('href="/kuliner?tema=arang"');
+    expect(html).toContain('href="/kuliner?tema=arang#kontak"');
   });
 
   it("serves themed subpages galeri, promo, testimoni", async () => {
@@ -160,6 +170,7 @@ describe("halaman demo /menu", () => {
     const html = await response.text();
     expect(html).toContain("Makanan");
     expect(html).toContain("Es Teh Manis");
-    expect(html).toContain('class="demo-sws"');
+    expect(html).toContain('class="demo-tp-list"');
+    expect(html).toContain('href="/menu?tema=');
   });
 });

@@ -1,6 +1,7 @@
 import { createExecutionContext, env, waitOnExecutionContext } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import app from "@/index";
+import { renderKulinerPage } from "@/themes/engine/render";
 import { KULINER_FIXTURE } from "../fixtures/kuliner";
 
 const HOST = "https://warung-bu-sari.tokoweb.id";
@@ -94,6 +95,36 @@ describe("tema kuliner — halaman utama", () => {
     expect(html).toContain("Diskon Merdeka 20%");
   });
 
+  it("keeps ticker as welcome banner when no promos", () => {
+    const html = renderKulinerPage({
+      site: {
+        tenantId: 1,
+        slug: "warung-bu-sari",
+        name: "Warung Bu Sari",
+        status: "active",
+        themeSlug: "hangat",
+        tokens: {},
+        content: KULINER_FIXTURE,
+      },
+      promos: [],
+      testimonials: [],
+      baseUrl: HOST,
+      appBaseUrl: "https://app.tokoweb.id",
+      path: "/",
+      todayWib: "2026-07-29",
+    });
+    expect(html).toContain('<span class="promo-ticker">');
+    expect(html).toContain("Selamat datang di Warung Bu Sari");
+    expect(html).not.toContain('id="promo"');
+  });
+
+  it("promo cards open a detail popup with share button", async () => {
+    const html = await (await get("/")).text();
+    expect(html).toContain("data-pr=");
+    expect(html).toContain('class="pr-open"');
+    expect(html).toContain("Bagikan Promo");
+  });
+
   it("embeds gallery lightbox script", async () => {
     const html = await (await get("/")).text();
     expect(html).toContain("lightbox");
@@ -170,6 +201,8 @@ describe("tema kuliner — halaman galeri, promo, testimoni", () => {
     const html = await response.text();
     expect(html).toContain('class="catnav subnav"');
     expect(html).toContain("← Beranda");
+    expect(html).toContain('class="here"');
+    expect(html).not.toContain('href="/menu"');
     expect(html).toContain('class="gallery-grid"');
     expect(html).toContain("<title>Warung Bu Sari — Galeri</title>");
   });
@@ -190,10 +223,12 @@ describe("tema kuliner — halaman galeri, promo, testimoni", () => {
     expect(html).not.toContain("jangan tampil");
   });
 
-  it("gallery lightbox has prev/next arrows", async () => {
+  it("gallery lightbox has chevron prev/next arrows", async () => {
     const html = await (await get("/galeri")).text();
     expect(html).toContain("lb-prev");
     expect(html).toContain("lb-next");
+    expect(html).toContain("\\u2039");
+    expect(html).toContain("\\u203A");
   });
 });
 

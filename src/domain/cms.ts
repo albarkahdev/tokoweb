@@ -31,6 +31,7 @@ export function parseInfoForm(form: FormValues): ParseResult<SiteInfo> {
   const info: SiteInfo = { name, wa_number: waNumber };
   const optional: (keyof SiteInfo)[] = [
     "tagline",
+    "ticker_text",
     "about",
     "address",
     "maps_url",

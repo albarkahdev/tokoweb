@@ -1,6 +1,7 @@
 export type SiteInfo = {
   name?: string;
   tagline?: string;
+  ticker_text?: string;
   about?: string;
   address?: string;
   maps_url?: string;

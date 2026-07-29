@@ -71,16 +71,21 @@ export function SiteNav(props: {
   );
 }
 
-export function PromoTicker(props: { titles: string[] }) {
-  const line = props.titles.map((title) => `🔥 ${title}`).join("   ✦   ");
-  return (
-    <a class="promo-ticker" href="#promo" aria-label="Lihat semua promo">
-      <span class="tk" style={`--tk-dur: ${Math.max(14, line.length * 0.35)}s`}>
-        <span>{line}</span>
-        <span aria-hidden="true">{line}</span>
-      </span>
-    </a>
+export function PromoTicker(props: { line: string; href?: string }) {
+  const inner = (
+    <span class="tk" style={`--tk-dur: ${Math.max(14, props.line.length * 0.35)}s`}>
+      <span>{props.line}</span>
+      <span aria-hidden="true">{props.line}</span>
+    </span>
   );
+  if (props.href) {
+    return (
+      <a class="promo-ticker" href={props.href} aria-label="Lihat semua promo">
+        {inner}
+      </a>
+    );
+  }
+  return <span class="promo-ticker">{inner}</span>;
 }
 
 export function OpenBadge(props: { hoursJson: string }) {
@@ -270,8 +275,10 @@ export function PromoCard(props: {
   desc?: string | null;
   until: string;
 }) {
+  const popData = JSON.stringify({ t: props.title, d: props.desc ?? "", u: props.until });
   return (
-    <div class="promo-card reveal" data-track="click_promo" data-pid={props.id}>
+    <div class="promo-card reveal" data-track="click_promo" data-pid={props.id} data-pr={popData}>
+      <button type="button" class="pr-open" aria-label={`Lihat detail promo ${props.title}`} />
       <h3>{props.title}</h3>
       {props.desc ? <p class="desc">{props.desc}</p> : null}
       <span class="until">Berlaku s/d {props.until}</span>
@@ -428,7 +435,7 @@ export function CategoryNav(props: { categories: { href: string; label: string }
 export function SubpageNav(props: {
   backHref: string;
   backLabel: string;
-  links: { href: string; label: string; active?: boolean }[];
+  pageLabel?: string;
   shareTitle?: string;
 }) {
   return (
@@ -436,11 +443,7 @@ export function SubpageNav(props: {
       <a class="back" href={props.backHref}>
         ← {props.backLabel}
       </a>
-      {props.links.map((link) => (
-        <a href={link.href} aria-current={link.active ? "page" : undefined}>
-          {link.label}
-        </a>
-      ))}
+      {props.pageLabel ? <span class="here">{props.pageLabel}</span> : null}
       {props.shareTitle ? (
         <button class="share-btn" type="button" data-share-title={props.shareTitle}>
           Bagikan ↗

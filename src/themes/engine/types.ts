@@ -99,4 +99,5 @@ export type RenderData = {
   noindex?: boolean;
   pageQuery?: string;
   basePath?: string;
+  homePath?: string;
 };

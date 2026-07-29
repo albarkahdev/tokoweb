@@ -118,10 +118,16 @@ function renderDemoPage(
     todayWib,
     noindex: true,
     pageQuery: `?tema=${themeSlug}`,
+    homePath: "/kuliner",
   });
   return html.replace(
     "</body>",
-    `${demoChromeHtml(Object.values(KULINER_THEMES), themeSlug, DEMO_BUSINESS_NAME)}</body>`,
+    `${demoChromeHtml(
+      Object.values(KULINER_THEMES),
+      themeSlug,
+      DEMO_BUSINESS_NAME,
+      pagePath === "/" ? "/kuliner" : pagePath,
+    )}</body>`,
   );
 }
 
@@ -129,7 +135,7 @@ async function serveDemo(c: Context<AppEnv>, pagePath: PublicPagePath): Promise<
   const requested = c.req.query("tema") ?? DEFAULT_THEME;
   const themeSlug = requested in KULINER_THEMES ? requested : DEFAULT_THEME;
 
-  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=13`;
+  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=14`;
   const cached = await caches.default.match(cacheKey);
   if (cached) return cached;
 
