@@ -60,7 +60,27 @@ export type ThemeConfig = {
     | "anyaman"
     | "sutra"
     | "segar"
-    | "bulu";
+    | "bulu"
+    | "sinar"
+    | "kunang"
+    | "uap"
+    | "denyut"
+    | "melayang"
+    | "tinta"
+    | "prisma"
+    | "loket"
+    | "sawah"
+    | "kilau"
+    | "gelembung"
+    | "lilin"
+    | "orbit"
+    | "gugur"
+    | "sirup"
+    | "jendela"
+    | "komet"
+    | "angin"
+    | "aksara"
+    | "karnaval";
 };
 
 export const PUBLIC_PAGE_PATHS = ["/", "/menu", "/galeri", "/promo", "/testimoni"] as const;

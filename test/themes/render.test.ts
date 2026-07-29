@@ -259,6 +259,34 @@ describe("tema kuliner — preview & switcher", () => {
     }
   });
 
+  it("renders wave-4 animated themes with motion signatures and reduced-motion guards", async () => {
+    const markers: Record<string, string[]> = {
+      sinar: ["sinar-shift", "#E8A020"],
+      kunang: ["kunang-float", "#C6F432"],
+      uap: ["uap-rise", "#7A5C43"],
+      denyut: ["denyut-ring", "#2DE1C2"],
+      melayang: ["melayang-idle", "#5B8DEF"],
+      prisma: ["prisma-hue", "#8B5CF6"],
+      loket: ["loket-chase", "#E8433F"],
+      kilau: ["kilau-sweep", "#D4AF37"],
+      lilin: ["lilin-flicker", "#E89B3C"],
+      orbit: ["orbit-spin", "#FF6B6B"],
+      gugur: ["gugur-jatuh", "#C05621"],
+      sirup: ["sirup-morph", "#E84393"],
+      jendela: ["jendela-sinar", "#A87C4F"],
+      komet: ["komet-lintas", "#4F7CFF"],
+      aksara: ["aksara-ketik", "#3B82F6"],
+      karnaval: ["karnaval-kibar", "#E9484A"],
+    };
+    for (const [slug, expected] of Object.entries(markers)) {
+      const html = await (await get(`/?preview_theme=${slug}`)).text();
+      for (const marker of expected) {
+        expect(html, `${slug} missing ${marker}`).toContain(marker);
+      }
+      expect(html, `${slug} missing reduced-motion guard`).toContain("prefers-reduced-motion");
+    }
+  });
+
   it("ignores unknown preview theme and serves cacheable default", async () => {
     const response = await get("/?preview_theme=tidak-ada");
     expect(response.status).toBe(200);
