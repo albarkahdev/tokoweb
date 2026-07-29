@@ -22,6 +22,8 @@
     "BASE_DOMAIN": "tokoweb.id",
     "CONTACT_WA_NUMBER": "",
     "STORAGE_ENDPOINT": "https://is3.cloudhost.id",
-    "STORAGE_BUCKET": "tokoweb"
+    "STORAGE_BUCKET": "tokoweb",
+    "STORAGE_ACCESS_KEY_ID": "KRBFI276VY1VBDSEHDGB",
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAEBJvtU7MB77JfRE"
   }
 }
