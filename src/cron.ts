@@ -8,8 +8,9 @@ import { setTenantStatus } from "@/db/tenants";
 import { addDays, pruneCutoffUtc, yesterdayWibWindow } from "@/domain/stats";
 import { lifecycleStatusFor, wibDateOf } from "@/domain/subscription";
 import type { Bindings } from "@/env";
+import { PUBLIC_PAGE_PATHS } from "@/themes/engine/types";
 
-const PUBLIC_PATHS = ["/", "/menu"];
+const PUBLIC_PATHS = [...PUBLIC_PAGE_PATHS];
 
 export async function runDailyJobs(env: Bindings, nowMs: number): Promise<void> {
   await upsertDailyStats(env.DB, yesterdayWibWindow(nowMs));

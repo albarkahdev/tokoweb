@@ -47,6 +47,30 @@ export function SiteMain(props: { children: Child }) {
   return <main>{props.children}</main>;
 }
 
+export function SiteNav(props: {
+  brand: string;
+  homeHref: string;
+  links: { href: string; label: string }[];
+  waHref: string;
+  withTicker?: boolean;
+}) {
+  return (
+    <nav class={`site-nav${props.withTicker ? " with-ticker" : ""}`}>
+      <a class="nav-brand" href={props.homeHref}>
+        {props.brand}
+      </a>
+      <span class="nav-links">
+        {props.links.map((link) => (
+          <a href={link.href}>{link.label}</a>
+        ))}
+      </span>
+      <a class="nav-wa" data-track="click_wa" href={props.waHref}>
+        💬 Pesan
+      </a>
+    </nav>
+  );
+}
+
 export function PromoTicker(props: { titles: string[] }) {
   const line = props.titles.map((title) => `🔥 ${title}`).join("   ✦   ");
   return (
@@ -387,5 +411,34 @@ export function CategoryNav(props: { categories: { href: string; label: string }
         <a href={category.href}>{category.label}</a>
       ))}
     </nav>
+  );
+}
+
+export function SubpageNav(props: {
+  backHref: string;
+  backLabel: string;
+  links: { href: string; label: string; active?: boolean }[];
+}) {
+  return (
+    <nav class="catnav subnav">
+      <a class="back" href={props.backHref}>
+        ← {props.backLabel}
+      </a>
+      {props.links.map((link) => (
+        <a href={link.href} aria-current={link.active ? "page" : undefined}>
+          {link.label}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
+export function SectionMoreLink(props: { href: string; label: string }) {
+  return (
+    <p class="more-menu">
+      <a class="btn-ghost" href={props.href}>
+        {props.label}
+      </a>
+    </p>
   );
 }

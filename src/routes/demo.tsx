@@ -9,6 +9,7 @@ import { addDays } from "@/domain/stats";
 import { wibDateOf } from "@/domain/subscription";
 import type { AppEnv } from "@/env";
 import { renderKulinerPage } from "@/themes/engine/render";
+import type { PublicPagePath } from "@/themes/engine/types";
 import { KULINER_THEMES } from "@/themes/kuliner/configs";
 import { DEMO_BUSINESS_NAME, DEMO_CONTENT } from "@/themes/kuliner/demo-content";
 import { AppLayout } from "@/ui/app-layout";
@@ -23,7 +24,7 @@ function renderDemoPage(
   themeSlug: string,
   baseDomain: string,
   todayWib: string,
-  pagePath: "/" | "/menu",
+  pagePath: PublicPagePath,
 ): string {
   const html = renderKulinerPage({
     site: {
@@ -116,6 +117,7 @@ function renderDemoPage(
     path: pagePath,
     todayWib,
     noindex: true,
+    pageQuery: `?tema=${themeSlug}`,
   });
   return html.replace(
     "</body>",
@@ -123,11 +125,11 @@ function renderDemoPage(
   );
 }
 
-async function serveDemo(c: Context<AppEnv>, pagePath: "/" | "/menu"): Promise<Response> {
+async function serveDemo(c: Context<AppEnv>, pagePath: PublicPagePath): Promise<Response> {
   const requested = c.req.query("tema") ?? DEFAULT_THEME;
   const themeSlug = requested in KULINER_THEMES ? requested : DEFAULT_THEME;
 
-  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=8`;
+  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=9`;
   const cached = await caches.default.match(cacheKey);
   if (cached) return cached;
 
@@ -145,6 +147,9 @@ async function serveDemo(c: Context<AppEnv>, pagePath: "/" | "/menu"): Promise<R
 export const demo = new Hono<AppEnv>()
   .get("/kuliner", (c) => serveDemo(c, "/"))
   .get("/menu", (c) => serveDemo(c, "/menu"))
+  .get("/galeri", (c) => serveDemo(c, "/galeri"))
+  .get("/promo", (c) => serveDemo(c, "/promo"))
+  .get("/testimoni", (c) => serveDemo(c, "/testimoni"))
   .post("/scan", async (c) => {
     const ip = c.req.header("cf-connecting-ip") ?? "0.0.0.0";
     if (!scanLimiter.allow(ip, Date.now())) return c.body(null, 204);

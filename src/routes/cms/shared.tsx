@@ -4,6 +4,7 @@ import { invalidateTenantCache } from "@/db/edge-cache";
 import { getSubscription, type SubscriptionRow } from "@/db/subscriptions";
 import { findTenantById, type TenantRow, tenantHostnames } from "@/db/tenants";
 import type { AppEnv } from "@/env";
+import { PUBLIC_PAGE_PATHS } from "@/themes/engine/types";
 import { AppLayout, type NavItem } from "@/ui/app-layout";
 import { Alert } from "@/ui/display";
 
@@ -33,7 +34,7 @@ export async function loadCms(c: Context<AppEnv>): Promise<CmsContext | null> {
 }
 
 export async function purgeTenantPages(c: Context<AppEnv>, tenant: TenantRow): Promise<void> {
-  await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), ["/", "/menu"]);
+  await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), [...PUBLIC_PAGE_PATHS]);
 }
 
 export function CmsPage(props: {

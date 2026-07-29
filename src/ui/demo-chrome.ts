@@ -25,6 +25,10 @@ export function demoChromeHtml(
 .demo-name input::placeholder{color:#8F86AB}
 .demo-name input:focus{outline:2px solid #FF6B57}
 body{padding-top:3.1rem;padding-bottom:7rem}
+.promo-ticker{top:3.1rem}
+.site-nav{top:3.1rem}
+.site-nav.with-ticker{top:calc(3.1rem + var(--tk-h, 2.3rem))}
+.catnav{top:calc(3.1rem + var(--nav-h, 3.5rem))}
 .demo-cta{position:fixed;bottom:0;left:0;right:0;z-index:60;background:rgb(20 17 28 / 0.96);backdrop-filter:blur(10px);color:#fff;padding:0.85rem 0.9rem calc(0.85rem + env(safe-area-inset-bottom));font-family:'Plus Jakarta Sans',system-ui,sans-serif;box-shadow:0 -10px 30px rgb(0 0 0 / 0.25)}
 .demo-cta .inner{max-width:36rem;margin:0 auto}
 .demo-cta .pitch{margin:0 0 0.55rem;font-size:0.88rem;display:flex;align-items:baseline;gap:0.5rem;flex-wrap:wrap}

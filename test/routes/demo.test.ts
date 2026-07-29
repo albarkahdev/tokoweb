@@ -31,6 +31,33 @@ describe("halaman demo kuliner", () => {
     expect(html).toContain('content="noindex"');
   });
 
+  it("keeps chosen theme on internal page links", async () => {
+    const ctx = createExecutionContext();
+    const response = await app.fetch(
+      new Request("https://demo.tokoweb.id/kuliner?tema=arang"),
+      env,
+      ctx,
+    );
+    await waitOnExecutionContext(ctx);
+    const html = await response.text();
+    expect(html).toContain('href="/menu?tema=arang"');
+    expect(html).toContain('href="/promo?tema=arang"');
+  });
+
+  it("serves themed subpages galeri, promo, testimoni", async () => {
+    for (const path of ["/galeri", "/promo", "/testimoni"]) {
+      const ctx = createExecutionContext();
+      const response = await app.fetch(
+        new Request(`https://demo.tokoweb.id${path}?tema=neon`),
+        env,
+        ctx,
+      );
+      await waitOnExecutionContext(ctx);
+      expect(response.status).toBe(200);
+      expect(await response.text()).toContain("#FF3D8A");
+    }
+  });
+
   it("switches theme via query", async () => {
     const html = await (await send(new Request(`${DEMO}/kuliner?tema=arang`))).text();
     expect(html).toContain("#15130F");

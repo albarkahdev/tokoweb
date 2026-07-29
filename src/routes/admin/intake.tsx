@@ -8,6 +8,7 @@ import { parseSiteContent } from "@/domain/content";
 import { buildCurationPrompt } from "@/domain/intake-prompt";
 import type { AppEnv } from "@/env";
 import { AdminPage, adminHtml } from "@/routes/admin/shared";
+import { PUBLIC_PAGE_PATHS } from "@/themes/engine/types";
 import {
   Badge,
   Card,
@@ -128,6 +129,6 @@ export const adminIntake = new Hono<AppEnv>()
     }
     await saveSiteContent(c.env.DB, tenant.id, content);
     await markIntakeProcessed(c.env.DB, intake.id);
-    await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), ["/", "/menu"]);
+    await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), [...PUBLIC_PAGE_PATHS]);
     return c.redirect(`/admin/intake/${intake.id}?ok=Konten tersimpan.`);
   });

@@ -18,12 +18,23 @@ export const REVEAL_SCRIPT = `(function(){if(!("IntersectionObserver" in window)
 var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}})},{threshold:0.08});
 document.querySelectorAll(".reveal").forEach(function(el){io.observe(el)})})();`;
 
-export const LIGHTBOX_SCRIPT = `(function(){var imgs=document.querySelectorAll(".gallery-grid img");if(!imgs.length)return;
+export const LIGHTBOX_SCRIPT = `(function(){var imgs=Array.prototype.slice.call(document.querySelectorAll(".gallery-grid img"));if(!imgs.length)return;
 var ov=document.createElement("div");ov.className="lightbox";
-var big=document.createElement("img");var x=document.createElement("button");
-x.className="lb-close";x.setAttribute("aria-label","Tutup");x.textContent="\\u00D7";
-ov.appendChild(big);ov.appendChild(x);document.body.appendChild(ov);
+var big=document.createElement("img");
+function btn(cls,label,txt){var b=document.createElement("button");b.className=cls;b.setAttribute("aria-label",label);b.textContent=txt;return b}
+var x=btn("lb-close","Tutup","\\u00D7"),prev=btn("lb-prev","Sebelumnya","\\u2190"),next=btn("lb-next","Berikutnya","\\u2192");
+var count=document.createElement("span");count.className="lb-count";
+ov.appendChild(big);ov.appendChild(x);ov.appendChild(prev);ov.appendChild(next);ov.appendChild(count);
+document.body.appendChild(ov);
+var idx=0;
+function show(i){idx=(i+imgs.length)%imgs.length;var el=imgs[idx];big.src=el.currentSrc||el.src;big.alt=el.alt;count.textContent=(idx+1)+" / "+imgs.length;
+prev.style.display=next.style.display=count.style.display=imgs.length>1?"":"none"}
+function open(i){show(i);ov.classList.add("show");document.body.style.overflow="hidden"}
 function close(){ov.classList.remove("show");document.body.style.overflow=""}
-imgs.forEach(function(el){el.addEventListener("click",function(){big.src=el.currentSrc||el.src;big.alt=el.alt;ov.classList.add("show");document.body.style.overflow="hidden"})});
+imgs.forEach(function(el,i){el.addEventListener("click",function(){open(i)})});
+prev.addEventListener("click",function(e){e.stopPropagation();show(idx-1)});
+next.addEventListener("click",function(e){e.stopPropagation();show(idx+1)});
+big.addEventListener("click",function(e){e.stopPropagation()});
 ov.addEventListener("click",close);
-document.addEventListener("keydown",function(e){if(e.key==="Escape")close()})})();`;
+document.addEventListener("keydown",function(e){if(!ov.classList.contains("show"))return;
+if(e.key==="Escape")close();if(e.key==="ArrowLeft")show(idx-1);if(e.key==="ArrowRight")show(idx+1)})})();`;

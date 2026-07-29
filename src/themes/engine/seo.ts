@@ -1,9 +1,16 @@
 import type { RenderData } from "@/themes/engine/types";
 
+const PATH_TITLES: Record<string, string> = {
+  "/menu": "Menu Lengkap",
+  "/galeri": "Galeri",
+  "/promo": "Promo",
+  "/testimoni": "Testimoni",
+};
+
 export function pageTitle(data: RenderData): string {
   const info = data.site.content.info ?? {};
   const name = info.name ?? data.site.name;
-  const suffix = data.path === "/menu" ? "Menu Lengkap" : (info.tagline ?? "");
+  const suffix = PATH_TITLES[data.path] ?? info.tagline ?? "";
   return suffix ? `${name} — ${suffix}` : name;
 }
 

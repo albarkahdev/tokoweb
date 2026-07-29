@@ -30,8 +30,22 @@ export type ThemeConfig = {
     hero: "photo" | "typo" | "color-block" | "split" | "poster" | "frame";
     menu: "cards" | "list" | "grid-2" | "magazine" | "polaroid";
   };
-  flair?: "batik" | "neon" | "brutal" | "zen" | "tropis";
+  flair?:
+    | "batik"
+    | "neon"
+    | "brutal"
+    | "zen"
+    | "tropis"
+    | "royal"
+    | "retro"
+    | "mono"
+    | "lampion"
+    | "sketsa";
 };
+
+export const PUBLIC_PAGE_PATHS = ["/", "/menu", "/galeri", "/promo", "/testimoni"] as const;
+
+export type PublicPagePath = (typeof PUBLIC_PAGE_PATHS)[number];
 
 export type RenderData = {
   site: PublicSite;
@@ -39,7 +53,8 @@ export type RenderData = {
   testimonials: TestimonialRow[];
   baseUrl: string;
   appBaseUrl: string;
-  path: "/" | "/menu";
+  path: PublicPagePath;
   todayWib: string;
   noindex?: boolean;
+  pageQuery?: string;
 };

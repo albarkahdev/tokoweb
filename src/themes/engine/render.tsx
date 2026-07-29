@@ -21,17 +21,23 @@ import {
   MoreMenuLink,
   PromoCard,
   PromoTicker,
+  SectionMoreLink,
   SiteDocument,
   SiteFooter,
   SiteHero,
   SiteMain,
+  SiteNav,
   SiteSection,
+  SubpageNav,
   TestimonialCard,
   TestimonialGrid,
   WaFloat,
 } from "@/ui/site";
 
 const MAX_FEATURED = 7;
+const HOME_PROMOS = 2;
+const HOME_GALLERY = 6;
+const HOME_TESTIMONIALS = 4;
 
 type FlatItem = MenuItem & { category: string };
 
@@ -43,6 +49,16 @@ function flattenMenu(data: RenderData): FlatItem[] {
 
 function waLink(waNumber: string, text: string): string {
   return `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
+}
+
+function pageHref(data: RenderData, path: string): string {
+  return `${path}${data.pageQuery ?? ""}`;
+}
+
+function galleryPhotos(data: RenderData): { src: string; alt: string }[] {
+  return (data.site.content.gallery ?? [])
+    .filter((photo) => photo.image_key)
+    .map((photo) => ({ src: `/img/${photo.image_key}`, alt: photo.alt ?? "" }));
 }
 
 function heroImage(data: RenderData): { src: string; alt: string } | null {
@@ -92,6 +108,41 @@ function todayHoursSummary(data: RenderData): string | undefined {
   return window ? `${window[0]} – ${window[1]} WIB` : "Hari ini tutup";
 }
 
+function subpageLinks(data: RenderData) {
+  const links: { href: string; label: string; active?: boolean }[] = [];
+  if (flattenMenu(data).length > 0) {
+    links.push({ href: pageHref(data, "/menu"), label: "Menu", active: data.path === "/menu" });
+  }
+  if (data.promos.length > 0) {
+    links.push({ href: pageHref(data, "/promo"), label: "Promo", active: data.path === "/promo" });
+  }
+  if (galleryPhotos(data).length > 0) {
+    links.push({
+      href: pageHref(data, "/galeri"),
+      label: "Galeri",
+      active: data.path === "/galeri",
+    });
+  }
+  if (data.testimonials.length > 0) {
+    links.push({
+      href: pageHref(data, "/testimoni"),
+      label: "Testimoni",
+      active: data.path === "/testimoni",
+    });
+  }
+  return links;
+}
+
+function navLinks(data: RenderData) {
+  const home = pageHref(data, "/");
+  const links: { href: string; label: string }[] = [{ href: `${home}#menu`, label: "Menu" }];
+  if (data.promos.length > 0) links.push({ href: `${home}#promo`, label: "Promo" });
+  if (galleryPhotos(data).length > 0) links.push({ href: `${home}#galeri`, label: "Galeri" });
+  if (data.testimonials.length > 0) links.push({ href: `${home}#testimoni`, label: "Testimoni" });
+  links.push({ href: `${home}#kontak`, label: "Kontak" });
+  return links;
+}
+
 function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: string }) {
   const { data, theme, waNumber } = props;
   const info = data.site.content.info ?? {};
@@ -100,16 +151,11 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
   const featured = items.filter((item) => item.featured).slice(0, MAX_FEATURED);
   const shown = featured.length > 0 ? featured : items.slice(0, MAX_FEATURED);
   const listMode = theme.layout.menu === "list";
-  const menuClass = `menu-${theme.layout.menu === "grid-2" ? "grid-2" : theme.layout.menu}`;
-  const gallery = (data.site.content.gallery ?? [])
-    .filter((photo) => photo.image_key)
-    .map((photo) => ({ src: `/img/${photo.image_key}`, alt: photo.alt ?? "" }));
+  const menuClass = `menu-${theme.layout.menu}`;
+  const gallery = galleryPhotos(data);
 
   return (
     <>
-      {data.promos.length > 0 ? (
-        <PromoTicker titles={data.promos.map((promo) => promo.title)} />
-      ) : null}
       <SiteHero
         variant={theme.layout.hero}
         name={businessName}
@@ -122,7 +168,10 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
       <SiteSection id="menu" kicker="Paling laris" title="Menu Andalan" menuVariant={menuClass}>
         <MenuGrid>{shown.map((item) => itemCard(item, businessName, waNumber, listMode))}</MenuGrid>
         {items.length > MAX_FEATURED ? (
-          <MoreMenuLink href="/menu" label={`Lihat Menu Lengkap (${items.length} item) →`} />
+          <MoreMenuLink
+            href={pageHref(data, "/menu")}
+            label={`Lihat Menu Lengkap (${items.length} item) →`}
+          />
         ) : null}
       </SiteSection>
       {data.site.content.hours ? (
@@ -132,7 +181,7 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
       ) : null}
       {data.promos.length > 0 ? (
         <SiteSection id="promo" kicker="Jangan lewatkan" title="Promo">
-          {data.promos.map((promo) => (
+          {data.promos.slice(0, HOME_PROMOS).map((promo) => (
             <PromoCard
               id={String(promo.id)}
               title={promo.title}
@@ -140,23 +189,41 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
               until={promo.end_date}
             />
           ))}
+          {data.promos.length > HOME_PROMOS ? (
+            <SectionMoreLink
+              href={pageHref(data, "/promo")}
+              label={`Semua Promo (${data.promos.length}) →`}
+            />
+          ) : null}
         </SiteSection>
       ) : null}
       {gallery.length > 0 ? (
         <SiteSection id="galeri" kicker="Suasana kami" title="Galeri">
-          <GalleryGrid photos={gallery} />
+          <GalleryGrid photos={gallery.slice(0, HOME_GALLERY)} />
+          {gallery.length > HOME_GALLERY ? (
+            <SectionMoreLink
+              href={pageHref(data, "/galeri")}
+              label={`Lihat Semua Foto (${gallery.length}) →`}
+            />
+          ) : null}
         </SiteSection>
       ) : null}
       {data.testimonials.length > 0 ? (
         <SiteSection id="testimoni" kicker="Kata pelanggan" title="Kata Mereka">
           <TestimonialGrid>
-            {data.testimonials.map((testimonial) => (
+            {data.testimonials.slice(0, HOME_TESTIMONIALS).map((testimonial) => (
               <TestimonialCard
                 body={testimonial.body}
                 who={`${testimonial.author_name}${testimonial.rating ? ` · ${"★".repeat(testimonial.rating)}` : ""}`}
               />
             ))}
           </TestimonialGrid>
+          {data.testimonials.length > HOME_TESTIMONIALS ? (
+            <SectionMoreLink
+              href={pageHref(data, "/testimoni")}
+              label={`Semua Testimoni (${data.testimonials.length}) →`}
+            />
+          ) : null}
         </SiteSection>
       ) : null}
       <SiteSection id="kontak" kicker="Mampir atau pesan" title="Lokasi & Kontak">
@@ -181,7 +248,7 @@ function FullMenuSections(props: { data: RenderData; theme: ThemeConfig; waNumbe
   const businessName = info.name ?? data.site.name;
   const categories = data.site.content.menu ?? [];
   const listMode = theme.layout.menu === "list";
-  const menuClass = `menu-${theme.layout.menu === "grid-2" ? "grid-2" : theme.layout.menu}`;
+  const menuClass = `menu-${theme.layout.menu}`;
 
   return (
     <>
@@ -213,12 +280,67 @@ function FullMenuSections(props: { data: RenderData; theme: ThemeConfig; waNumbe
   );
 }
 
+function GallerySections(props: { data: RenderData }) {
+  return (
+    <SiteSection id="galeri" kicker="Suasana kami" title="Galeri">
+      <GalleryGrid photos={galleryPhotos(props.data)} />
+    </SiteSection>
+  );
+}
+
+function PromoSections(props: { data: RenderData }) {
+  return (
+    <SiteSection id="promo" kicker="Jangan lewatkan" title="Semua Promo">
+      {props.data.promos.map((promo) => (
+        <PromoCard
+          id={String(promo.id)}
+          title={promo.title}
+          desc={promo.description}
+          until={promo.end_date}
+        />
+      ))}
+    </SiteSection>
+  );
+}
+
+function TestimonialSections(props: { data: RenderData }) {
+  return (
+    <SiteSection id="testimoni" kicker="Kata pelanggan" title="Semua Testimoni">
+      <TestimonialGrid>
+        {props.data.testimonials.map((testimonial) => (
+          <TestimonialCard
+            body={testimonial.body}
+            who={`${testimonial.author_name}${testimonial.rating ? ` · ${"★".repeat(testimonial.rating)}` : ""}`}
+          />
+        ))}
+      </TestimonialGrid>
+    </SiteSection>
+  );
+}
+
+function pageSections(data: RenderData, theme: ThemeConfig, waNumber: string) {
+  switch (data.path) {
+    case "/":
+      return <HomeSections data={data} theme={theme} waNumber={waNumber} />;
+    case "/menu":
+      return <FullMenuSections data={data} theme={theme} waNumber={waNumber} />;
+    case "/galeri":
+      return <GallerySections data={data} />;
+    case "/promo":
+      return <PromoSections data={data} />;
+    case "/testimoni":
+      return <TestimonialSections data={data} />;
+  }
+}
+
 export function renderKulinerPage(data: RenderData): string {
   const theme = themeConfigFor(data.site.themeSlug);
   const info = data.site.content.info ?? {};
   const waNumber = info.wa_number ?? "";
   const businessName = info.name ?? data.site.name;
   const canonical = `${data.baseUrl}${data.path === "/" ? "" : data.path}`;
+  const isHome = data.path === "/";
+  const showTicker = isHome && data.promos.length > 0;
 
   const page = (
     <SiteDocument
@@ -231,13 +353,18 @@ export function renderKulinerPage(data: RenderData): string {
       jsonLd={jsonLd(data)}
       scripts={[trackerScript(data.appBaseUrl), OPEN_NOW_SCRIPT, REVEAL_SCRIPT, LIGHTBOX_SCRIPT]}
     >
-      <SiteMain>
-        {data.path === "/" ? (
-          <HomeSections data={data} theme={theme} waNumber={waNumber} />
-        ) : (
-          <FullMenuSections data={data} theme={theme} waNumber={waNumber} />
-        )}
-      </SiteMain>
+      {showTicker ? <PromoTicker titles={data.promos.map((promo) => promo.title)} /> : null}
+      <SiteNav
+        brand={businessName}
+        homeHref={pageHref(data, "/")}
+        links={navLinks(data)}
+        waHref={waLink(waNumber, `Halo ${businessName}, saya mau pesan.`)}
+        withTicker={showTicker}
+      />
+      {isHome ? null : (
+        <SubpageNav backHref={pageHref(data, "/")} backLabel="Beranda" links={subpageLinks(data)} />
+      )}
+      <SiteMain>{pageSections(data, theme, waNumber)}</SiteMain>
       <SiteFooter businessName={businessName} />
       <WaFloat waHref={waLink(waNumber, `Halo ${businessName}, saya mau pesan.`)} />
     </SiteDocument>

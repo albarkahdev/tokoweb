@@ -25,6 +25,7 @@ import { buildMonthlyReportText, previousMonthRange } from "@/domain/report";
 import { nextDueDateAfterPayment, wibDateOf } from "@/domain/subscription";
 import type { AppEnv } from "@/env";
 import { AdminPage, adminHtml } from "@/routes/admin/shared";
+import { PUBLIC_PAGE_PATHS } from "@/themes/engine/types";
 import {
   Actions,
   Badge,
@@ -277,7 +278,9 @@ export const adminTenants = new Hono<AppEnv>()
       nowMs: Date.now(),
     });
     if (result.tenantReactivated) {
-      await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), ["/", "/menu"]);
+      await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), [
+        ...PUBLIC_PAGE_PATHS,
+      ]);
     }
     const note = result.unlockedInstallment
       ? ` Cicilan komisi #${result.unlockedInstallment} siap cair.`
@@ -294,7 +297,7 @@ export const adminTenants = new Hono<AppEnv>()
     const liveDate = wibDateOf(Date.now());
     await setTenantStatus(c.env.DB, tenant.id, "active");
     await setSubscriptionCycle(c.env.DB, tenant.id, nextDueDateAfterPayment(liveDate), "active");
-    await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), ["/", "/menu"]);
+    await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), [...PUBLIC_PAGE_PATHS]);
     return c.redirect(
       `/admin/tenant/${tenant.id}?ok=LIVE! ${tenant.slug}.${c.env.BASE_DOMAIN} tayang.`,
     );
@@ -303,14 +306,14 @@ export const adminTenants = new Hono<AppEnv>()
     const tenant = await findTenantById(c.env.DB, Number(c.req.param("id")));
     if (!tenant) return c.notFound();
     await setTenantStatus(c.env.DB, tenant.id, "suspended");
-    await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), ["/", "/menu"]);
+    await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), [...PUBLIC_PAGE_PATHS]);
     return c.redirect(`/admin/tenant/${tenant.id}?ok=Tenant disuspend.`);
   })
   .post("/tenant/:id/pulihkan", async (c) => {
     const tenant = await findTenantById(c.env.DB, Number(c.req.param("id")));
     if (!tenant) return c.notFound();
     await setTenantStatus(c.env.DB, tenant.id, "active");
-    await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), ["/", "/menu"]);
+    await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), [...PUBLIC_PAGE_PATHS]);
     return c.redirect(`/admin/tenant/${tenant.id}?ok=Tenant aktif kembali.`);
   })
   .post("/tenant/:id/refund", async (c) => {
@@ -320,7 +323,7 @@ export const adminTenants = new Hono<AppEnv>()
     if (closing) await voidInstallment(c.env.DB, closing.id, 1);
     await setTenantStatus(c.env.DB, tenant.id, "archived");
     if (closing) await voidUnpaidPayouts(c.env.DB, closing.id);
-    await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), ["/", "/menu"]);
+    await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), [...PUBLIC_PAGE_PATHS]);
     return c.redirect(
       `/admin/tenant/${tenant.id}?ok=Refund dicatat — tenant diarsip, komisi di-void.`,
     );

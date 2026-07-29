@@ -6,7 +6,7 @@ import { listTestimonials } from "@/db/testimonials";
 import { isCacheablePublicRequest } from "@/domain/edge-cache";
 import { wibDateOf } from "@/domain/subscription";
 import type { AppEnv } from "@/env";
-import type { RenderData } from "@/themes/engine/types";
+import { PUBLIC_PAGE_PATHS, type PublicPagePath, type RenderData } from "@/themes/engine/types";
 import { KULINER_THEMES } from "@/themes/kuliner/configs";
 import { renderKulinerPage, renderSuspendedHtml } from "@/themes/render";
 
@@ -14,6 +14,14 @@ const MAX_FEATURED = 7;
 
 function countMenuItems(site: PublicSite): number {
   return (site.content.menu ?? []).flatMap((category) => category.items ?? []).length;
+}
+
+function countGalleryPhotos(site: PublicSite): number {
+  return (site.content.gallery ?? []).filter((photo) => photo.image_key).length;
+}
+
+function isPublicPagePath(path: string): path is PublicPagePath {
+  return (PUBLIC_PAGE_PATHS as readonly string[]).includes(path);
 }
 
 export async function servePublicSite(c: Context<AppEnv>): Promise<Response> {
@@ -28,13 +36,22 @@ export async function servePublicSite(c: Context<AppEnv>): Promise<Response> {
     });
   }
   if (path === "/sitemap.xml") {
+    const site = await findPublicSite(c.env.DB, url.hostname, c.env.BASE_DOMAIN);
+    const locs = ["/"];
+    if (site && site.status === "active") {
+      if (countMenuItems(site) > MAX_FEATURED) locs.push("/menu");
+      if (countGalleryPhotos(site) > 0) locs.push("/galeri");
+    }
+    const urls = locs
+      .map((loc) => `<url><loc>https://${url.hostname}${loc === "/" ? "/" : loc}</loc></url>`)
+      .join("");
     return c.text(
-      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://${url.hostname}/</loc></url></urlset>\n`,
+      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}</urlset>\n`,
       200,
       { "content-type": "application/xml", "cache-control": "public, max-age=86400" },
     );
   }
-  if (path !== "/" && path !== "/menu") return c.notFound();
+  if (!isPublicPagePath(path)) return c.notFound();
 
   const previewTheme = url.searchParams.get("preview_theme");
   const isPreview = previewTheme !== null && previewTheme in KULINER_THEMES;
@@ -54,8 +71,11 @@ export async function servePublicSite(c: Context<AppEnv>): Promise<Response> {
   }
 
   if (path === "/menu" && countMenuItems(site) <= MAX_FEATURED) return c.notFound();
+  if (path === "/galeri" && countGalleryPhotos(site) === 0) return c.notFound();
 
-  const data = await buildRenderData(c, site, url.hostname, path as "/" | "/menu", isPreview);
+  const data = await buildRenderData(c, site, url.hostname, path, isPreview);
+  if (path === "/promo" && data.promos.length === 0) return c.notFound();
+  if (path === "/testimoni" && data.testimonials.length === 0) return c.notFound();
   if (isPreview) {
     data.site = { ...site, themeSlug: previewTheme };
   }
@@ -73,7 +93,7 @@ async function buildRenderData(
   c: Context<AppEnv>,
   site: PublicSite,
   hostname: string,
-  path: "/" | "/menu",
+  path: PublicPagePath,
   noindex: boolean,
 ): Promise<RenderData> {
   const todayWib = wibDateOf(Date.now());

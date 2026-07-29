@@ -112,6 +112,14 @@ describe("tema kuliner — halaman utama", () => {
     expect(html).toContain('class="testi-grid"');
   });
 
+  it("renders sticky navbar with brand and section links", async () => {
+    const html = await (await get("/")).text();
+    expect(html).toContain('class="site-nav with-ticker"');
+    expect(html).toContain('class="nav-brand"');
+    expect(html).toContain('href="/#kontak"');
+    expect(html).toContain('class="nav-wa"');
+  });
+
   it("embeds tracker beacon and open-now script", async () => {
     const html = await (await get("/")).text();
     expect(html).toContain("sendBeacon");
@@ -130,6 +138,40 @@ describe("tema kuliner — halaman /menu", () => {
     expect(html).toContain("Minuman");
     expect(html).toContain('class="catnav"');
     expect(html).toContain("Es Teh Manis");
+  });
+});
+
+describe("tema kuliner — halaman galeri, promo, testimoni", () => {
+  it("serves /galeri with all photos and back nav", async () => {
+    const response = await get("/galeri");
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain('class="catnav subnav"');
+    expect(html).toContain("← Beranda");
+    expect(html).toContain('class="gallery-grid"');
+    expect(html).toContain("<title>Warung Bu Sari — Galeri</title>");
+  });
+
+  it("serves /promo with all active promos", async () => {
+    const response = await get("/promo");
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain("Semua Promo");
+    expect(html).toContain("Diskon Merdeka 20%");
+  });
+
+  it("serves /testimoni with approved testimonials only", async () => {
+    const response = await get("/testimoni");
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain("Ayam bakarnya juara!");
+    expect(html).not.toContain("jangan tampil");
+  });
+
+  it("gallery lightbox has prev/next arrows", async () => {
+    const html = await (await get("/galeri")).text();
+    expect(html).toContain("lb-prev");
+    expect(html).toContain("lb-next");
   });
 });
 
@@ -170,6 +212,28 @@ describe("tema kuliner — preview & switcher", () => {
     const batik = await (await get("/?preview_theme=batik")).text();
     expect(batik).toContain("menu-magazine");
     expect(batik).toContain("#3F4C8A");
+  });
+
+  it("renders wave-2 themes with signature styles", async () => {
+    const warisan = await (await get("/?preview_theme=warisan")).text();
+    expect(warisan).toContain("#1B2A4A");
+    expect(warisan).toContain('class="hero frame"');
+
+    const retro = await (await get("/?preview_theme=retro")).text();
+    expect(retro).toContain("repeating-conic-gradient");
+    expect(retro).toContain("#E2711D");
+
+    const mono = await (await get("/?preview_theme=mono")).text();
+    expect(mono).toContain("#E11D2E");
+    expect(mono).toContain("poster-echo");
+
+    const lampion = await (await get("/?preview_theme=lampion")).text();
+    expect(lampion).toContain("#8E1F1F");
+    expect(lampion).toContain("menu-grid-2");
+
+    const sketsa = await (await get("/?preview_theme=sketsa")).text();
+    expect(sketsa).toContain("#22303C");
+    expect(sketsa).toContain("dashed");
   });
 
   it("ignores unknown preview theme and serves cacheable default", async () => {
