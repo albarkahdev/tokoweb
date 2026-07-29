@@ -385,6 +385,19 @@ a { color: var(--primary); }
   background: #FFFFFF; max-width: 100%; height: auto;
 }
 .qr-figure figcaption { margin-top: 0.4rem; font-weight: 600; }
+.quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; margin-top: 0.75rem; }
+@media (min-width: 34rem) { .quick-grid { grid-template-columns: repeat(3, 1fr); } }
+.quick-link {
+  display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+  padding: 1rem 0.5rem 0.85rem; text-align: center; text-decoration: none;
+  background: color-mix(in srgb, var(--primary) 4%, var(--surface));
+  border: 1px solid var(--border); border-radius: 1rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.quick-link:hover { transform: translateY(-2px); box-shadow: var(--shadow-card); border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); }
+.quick-link .qk-icon { font-size: 1.5rem; line-height: 1; }
+.quick-link .qk-label { font-weight: 700; font-size: 0.85rem; color: var(--text); }
+.quick-link .qk-hint { font-size: 0.68rem; color: var(--muted); line-height: 1.3; }
 .auth-brand { text-align: center; margin: 0 0 1.5rem; }
 .auth-brand .brand-mark { font-size: 1.6rem; justify-content: center; }
 .auth-brand p { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.88rem; }

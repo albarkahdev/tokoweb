@@ -46,6 +46,11 @@ beforeAll(async () => {
   await env.DB.prepare(
     "INSERT INTO testimonials (tenant_id, author_name, body, status) VALUES (1, 'Budi', 'Enak banget!', 'pending')",
   ).run();
+  await env.DB.prepare(
+    "INSERT INTO users (email, password_hash, role, tenant_id) VALUES ('boss@tokoweb.id', ?1, 'admin', NULL)",
+  )
+    .bind(await hashPassword("admin-kuat-123"))
+    .run();
 });
 
 describe("CMS klien", () => {
@@ -73,6 +78,14 @@ describe("CMS klien", () => {
     expect(body).toContain("Warung Bu Sari");
     expect(body).toContain("LUNAS");
     expect(body).toContain("2026-12-01");
+  });
+
+  it("shows quick actions on beranda", async () => {
+    const body = await (await get("/")).text();
+    expect(body).toContain('class="quick-grid"');
+    expect(body).toContain("Edit Menu");
+    expect(body).toContain("Pasang Promo");
+    expect(body).toContain("Pratinjau");
   });
 
   it("saves info usaha and purges public cache", async () => {
@@ -232,5 +245,54 @@ describe("CMS klien", () => {
       }),
     );
     expect(response.status).toBe(403);
+  });
+});
+
+describe("Mode admin di CMS", () => {
+  let adminCookie = "";
+
+  it("admin without picked tenant is sent to login page", async () => {
+    const login = await post("/masuk", { email: "boss@tokoweb.id", password: "admin-kuat-123" });
+    expect(login.status).toBe(302);
+    adminCookie = (login.headers.get("set-cookie") ?? "").split(";")[0] ?? "";
+
+    const home = await send(new Request(`${APP}/`, { headers: { cookie: adminCookie } }));
+    expect(home.status).toBe(302);
+    expect(home.headers.get("location")).toBe("/masuk");
+  });
+
+  it("admin enters tenant CMS via admin panel and can edit", async () => {
+    const enter = await send(
+      new Request(`${APP}/admin/tenant/1/cms`, {
+        method: "POST",
+        body: form({}),
+        headers: { cookie: adminCookie, origin: APP },
+      }),
+    );
+    expect(enter.status).toBe(302);
+    expect(enter.headers.get("location")).toBe("/");
+    const picked = (enter.headers.get("set-cookie") ?? "").split(";")[0] ?? "";
+    const combined = `${adminCookie}; ${picked}`;
+
+    const home = await send(new Request(`${APP}/`, { headers: { cookie: combined } }));
+    expect(home.status).toBe(200);
+    const body = await home.text();
+    expect(body).toContain("Mode Admin");
+    expect(body).toContain("Warung Bu Sari");
+
+    const save = await send(
+      new Request(`${APP}/promo`, {
+        method: "POST",
+        body: form({ title: "Promo dari Admin", start_date: "2026-08-01", end_date: "2026-08-10" }),
+        headers: { cookie: combined, origin: APP },
+      }),
+    );
+    expect(save.status).toBe(302);
+
+    const exit = await send(
+      new Request(`${APP}/admin/tenant/1/cms/keluar`, { headers: { cookie: combined } }),
+    );
+    expect(exit.status).toBe(302);
+    expect(exit.headers.get("location")).toBe("/admin/tenant/1");
   });
 });

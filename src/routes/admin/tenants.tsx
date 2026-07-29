@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { deleteCookie, setCookie } from "hono/cookie";
 import { issueToken } from "@/db/auth-tokens";
 import { getSiteContent } from "@/db/contents";
 import { invalidateTenantCache } from "@/db/edge-cache";
@@ -25,6 +26,7 @@ import { buildMonthlyReportText, previousMonthRange } from "@/domain/report";
 import { nextDueDateAfterPayment, wibDateOf } from "@/domain/subscription";
 import type { AppEnv } from "@/env";
 import { AdminPage, adminHtml } from "@/routes/admin/shared";
+import { ADMIN_CMS_COOKIE } from "@/routes/cms/shared";
 import { PUBLIC_PAGE_PATHS } from "@/themes/engine/types";
 import {
   Actions,
@@ -202,6 +204,9 @@ export const adminTenants = new Hono<AppEnv>()
           </Card>
           <Card>
             <CardTitle>Akses Klien</CardTitle>
+            <Form action={`/admin/tenant/${tenant.id}/cms`}>
+              <Button>Edit CMS Tenant Ini ✏️</Button>
+            </Form>
             <Form action={`/admin/tenant/${tenant.id}/link-intake`}>
               <Button variant="secondary">Buat Link Intake (3 hari)</Button>
             </Form>
@@ -254,6 +259,21 @@ export const adminTenants = new Hono<AppEnv>()
         </AdminPage>,
       ),
     );
+  })
+  .post("/tenant/:id/cms", async (c) => {
+    const tenant = await findTenantById(c.env.DB, Number(c.req.param("id")));
+    if (!tenant) return c.redirect("/admin/tenant");
+    setCookie(c, ADMIN_CMS_COOKIE, String(tenant.id), {
+      path: "/",
+      httpOnly: true,
+      secure: true,
+      sameSite: "Lax",
+    });
+    return c.redirect("/");
+  })
+  .get("/tenant/:id/cms/keluar", (c) => {
+    deleteCookie(c, ADMIN_CMS_COOKIE, { path: "/" });
+    return c.redirect(`/admin/tenant/${c.req.param("id")}`);
   })
   .post("/tenant/:id/bayar", async (c) => {
     const tenant = await findTenantById(c.env.DB, Number(c.req.param("id")));

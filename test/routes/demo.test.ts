@@ -33,6 +33,14 @@ describe("halaman demo kuliner", () => {
     expect(html).toContain('content="noindex"');
   });
 
+  it("lead CTA is collapsible with saya-mau button", async () => {
+    const html = await (await send(new Request(`${DEMO}/kuliner`))).text();
+    expect(html).toContain('id="demo-cta-toggle"');
+    expect(html).toContain('id="demo-cta-mau"');
+    expect(html).toContain("jadi ≤ 1 hari");
+    expect(html).not.toContain("3 hari");
+  });
+
   it("keeps chosen theme on internal page links", async () => {
     const ctx = createExecutionContext();
     const response = await app.fetch(
@@ -45,6 +53,12 @@ describe("halaman demo kuliner", () => {
     expect(html).toContain('href="/menu?tema=arang"');
     expect(html).toContain('href="/promo?tema=arang"');
     expect(html).toContain('href="/kuliner?tema=arang"');
+  });
+
+  it("redirects stale root links to /kuliner keeping theme", async () => {
+    const response = await send(new Request(`${DEMO}/?tema=arang`));
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe("/kuliner?tema=arang");
   });
 
   it("links back to demo home from subpages without 404", async () => {

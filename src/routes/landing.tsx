@@ -18,9 +18,9 @@ import {
   TopBar,
 } from "@/ui/landing";
 
-const TITLE = "tokoweb.id — Website untuk Warung & UMKM, Jadi ≤ 3 Hari, Mulai Rp 75rb/bulan";
+const TITLE = "tokoweb.id — Website untuk Warung & UMKM, Jadi ≤ 1 Hari, Mulai Rp 75rb/bulan";
 const DESCRIPTION =
-  "Jasa pembuatan website UMKM kuliner: menu online, promo otomatis, tombol WhatsApp, statistik pengunjung. Jadi 3 hari, kelola sendiri dari HP, mulai Rp 75rb/bulan.";
+  "Jasa pembuatan website UMKM kuliner: menu online, promo otomatis, tombol WhatsApp, statistik pengunjung. Jadi dalam sehari, kelola sendiri dari HP, mulai Rp 75rb/bulan.";
 
 function waLink(number: string, text: string): string {
   return `https://wa.me/${number}?text=${encodeURIComponent(text)}`;
@@ -33,14 +33,14 @@ function landingJsonLd(baseDomain: string): string {
     name: "tokoweb.id",
     url: `https://${baseDomain}`,
     description:
-      "Jasa pembuatan website untuk UMKM kuliner Indonesia. Jadi 3 hari, mulai Rp 75.000/bulan, kelola sendiri dari HP.",
+      "Jasa pembuatan website untuk UMKM kuliner Indonesia. Jadi dalam sehari, mulai Rp 75.000/bulan, kelola sendiri dari HP.",
   });
 }
 
 export const landing = new Hono<AppEnv>()
   .get("/", async (c) => {
     const url = new URL(c.req.url);
-    const cached = await matchCachedPage(url.hostname, "/landing-v5");
+    const cached = await matchCachedPage(url.hostname, "/landing-v6");
     if (cached) return cached;
 
     const demoUrl = `https://demo.${c.env.BASE_DOMAIN}/kuliner`;
@@ -63,14 +63,15 @@ export const landing = new Hono<AppEnv>()
             { href: "#fitur", label: "Fitur" },
             { href: "#tema", label: "Tema" },
             { href: "#harga", label: "Harga" },
-            { href: "#faq", label: "FAQ" },
+            { href: "/mitra", label: "Jadi Mitra" },
+            { href: `https://app.${c.env.BASE_DOMAIN}/masuk`, label: "Masuk" },
           ]}
         />
         <Hero
           eyebrow="🍜 Untuk warung, kedai & resto"
           headline={
             <>
-              Websitemu jadi <span class="accent">≤ 3 hari.</span>
+              Websitemu jadi <span class="accent">≤ 1 hari.</span>
               <br />
               Pembeli tinggal klik WA.
             </>
@@ -103,7 +104,7 @@ export const landing = new Hono<AppEnv>()
         />
         <MetricBand
           metrics={[
-            { num: "≤ 3 hari", cap: "janji maksimal — biasanya jauh lebih cepat" },
+            { num: "≤ 1 hari", cap: "janji maksimal — bisa cuma hitungan jam" },
             { num: "100/100", cap: "skor kecepatan Google PageSpeed" },
             { num: "< 1 dtk", cap: "terbuka bahkan di sinyal jelek" },
             { num: "Rp 75rb", cap: "per bulan, tanpa biaya tersembunyi" },
@@ -145,7 +146,7 @@ export const landing = new Hono<AppEnv>()
               {
                 icon: "palette",
                 title: "Ganti tampilan sekali klik",
-                body: "Tiga tema desain premium. Ganti kapan pun, data dan fotomu tidak berubah.",
+                body: "60 tema desain premium. Ganti kapan pun, data dan fotomu tidak berubah.",
               },
             ]}
           />
@@ -153,8 +154,8 @@ export const landing = new Hono<AppEnv>()
         <LandingSection id="tema">
           <SectionHeader
             kicker="Pilih gayamu"
-            title="Tiga kepribadian, satu klik ganti"
-            sub="Klik untuk melihat demo hidup — masing-masing bisa dicoba dengan nama usahamu."
+            title="60 tema premium, satu klik ganti"
+            sub="Tiga contoh di bawah — klik untuk demo hidup, lalu jelajahi semua 60 tema dengan nama usahamu."
           />
           <ThemeStrip
             themes={[
@@ -198,7 +199,7 @@ export const landing = new Hono<AppEnv>()
                 body: "Nama menu, harga, foto, jam buka. Tim kami yang merapikan sampai layak tayang.",
               },
               {
-                title: "Tayang ≤ 3 hari",
+                title: "Tayang ≤ 1 hari",
                 body: "Terima link website + akses kelola. Bayar lewat QRIS, langsung jalan.",
               },
             ]}
@@ -265,7 +266,7 @@ export const landing = new Hono<AppEnv>()
         </LandingSection>
         <LandingSection>
           <CtaBand
-            title="Websitemu bisa tayang minggu ini."
+            title="Websitemu bisa tayang hari ini."
             sub="Mulai dari demo — coba dengan nama usahamu sendiri, gratis, tanpa daftar."
             primary={{
               href: wa,
@@ -277,8 +278,9 @@ export const landing = new Hono<AppEnv>()
         <LandingFooter
           links={[
             { href: demoUrl, label: "Demo" },
-            { href: "/robots.txt", label: "" },
-          ].filter((link) => link.label !== "")}
+            { href: "/mitra", label: "Jadi Mitra" },
+            { href: `https://app.${c.env.BASE_DOMAIN}/masuk`, label: "Masuk CMS" },
+          ]}
         />
       </LandingShell>,
     )}`;
@@ -289,7 +291,109 @@ export const landing = new Hono<AppEnv>()
         "cache-control": "public, max-age=300, s-maxage=86400",
       },
     });
-    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/landing-v5", response.clone()));
+    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/landing-v6", response.clone()));
+    return response;
+  })
+  .get("/mitra", async (c) => {
+    const url = new URL(c.req.url);
+    const cached = await matchCachedPage(url.hostname, "/mitra-v1");
+    if (cached) return cached;
+
+    const wa = c.env.CONTACT_WA_NUMBER
+      ? waLink(c.env.CONTACT_WA_NUMBER, "Halo tokoweb, saya mau daftar jadi mitra.")
+      : `https://demo.${c.env.BASE_DOMAIN}/kuliner`;
+    const ctaLabel = c.env.CONTACT_WA_NUMBER ? "Daftar via WhatsApp" : "Lihat Demo Dulu";
+
+    const html = `<!doctype html>${String(
+      <LandingShell
+        title="Jadi Mitra tokoweb.id — Bawa Klien, Terima Komisi s/d Rp 300rb"
+        description="Program mitra tokoweb.id: rekomendasikan website ke pemilik warung, terima komisi per klien yang membayar. Tanpa modal, bukan MLM, komisi cair ≤ 1 hari."
+        canonical={`https://${c.env.BASE_DOMAIN}/mitra`}
+        jsonLd={landingJsonLd(c.env.BASE_DOMAIN)}
+      >
+        <TopBar
+          ctaHref={wa}
+          ctaLabel={ctaLabel}
+          links={[
+            { href: "/", label: "Beranda" },
+            { href: `https://app.${c.env.BASE_DOMAIN}/masuk`, label: "Masuk" },
+          ]}
+        />
+        <LandingSection>
+          <SectionHeader
+            kicker="Program Mitra"
+            title="Kenal pemilik warung? Itu komisi."
+            sub="Siapa pun bisa jadi mitra — ojol, sales, mahasiswa, pemilik warung yang punya kenalan. Rekomendasikan website tokoweb, klien bayar, kamu terima komisi. Tanpa modal, bukan MLM."
+          />
+        </LandingSection>
+        <MetricBand
+          metrics={[
+            { num: "Rp 150rb", cap: "komisi per klien Basic (3 cicilan bulanan)" },
+            { num: "Rp 300rb", cap: "komisi per klien Pro (3 cicilan bulanan)" },
+            { num: "≤ 1 hari", cap: "cicilan pertama cair setelah klien bayar" },
+            { num: "Rp 0", cap: "modal — cukup brosur QR dari kami" },
+          ]}
+        />
+        <LandingSection>
+          <SectionHeader kicker="Caranya" title="Tiga langkah jadi mitra" />
+          <StepList
+            steps={[
+              {
+                title: "Daftar — gratis",
+                body: "Chat kami. Kamu langsung dapat kode unik + brosur QR atas namamu.",
+              },
+              {
+                title: "Tunjukkan demo ke pemilik warung",
+                body: "Scan QR-mu → demo hidup dengan nama usaha mereka. Websitenya kelihatan nyata, closing jauh lebih gampang.",
+              },
+              {
+                title: "Klien bayar, komisi masuk",
+                body: "Komisi dicicil 3 bulan mengikuti pembayaran klien. Pantau transparan di halaman komisimu sendiri — cukup kode + PIN, tanpa aplikasi.",
+              },
+            ]}
+          />
+        </LandingSection>
+        <LandingSection id="faq">
+          <SectionHeader kicker="FAQ" title="Yang sering ditanya mitra" />
+          <FaqList
+            items={[
+              {
+                q: "Siapa saja bisa ikut?",
+                a: "Siapa pun yang kenal pemilik usaha kuliner: ojol, kurir, sales, mahasiswa, ibu rumah tangga. Tidak ada syarat, tidak ada target.",
+              },
+              {
+                q: "Ini MLM?",
+                a: "Bukan. Satu tingkat saja: kamu bawa klien, kamu dapat komisi. Tidak ada rekrut-merekrut, tidak ada beli paket.",
+              },
+              {
+                q: "Kapan komisi cair?",
+                a: "Cicilan pertama cair ≤ 1 hari setelah klien bayar biaya setup. Cicilan 2 dan 3 mengikuti pembayaran langganan bulan ke-2 dan ke-3.",
+              },
+              {
+                q: "Cek komisi di mana?",
+                a: "Halaman khususmu: tokoweb.id/r/KODEKAMU + PIN 4 digit. Berapa scan, berapa closing, berapa cair — semua transparan.",
+              },
+            ]}
+          />
+        </LandingSection>
+        <LandingSection>
+          <CtaBand
+            title="Mulai hari ini, modal nol."
+            sub="Chat kami — kode unik + brosur QR-mu jadi dalam hitungan menit."
+            primary={{ href: wa, label: ctaLabel }}
+          />
+        </LandingSection>
+        <LandingFooter links={[{ href: "/", label: "Beranda" }]} />
+      </LandingShell>,
+    )}`;
+
+    const response = new Response(html, {
+      headers: {
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": "public, max-age=300, s-maxage=86400",
+      },
+    });
+    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/mitra-v1", response.clone()));
     return response;
   })
   .get("/robots.txt", (c) =>
@@ -299,7 +403,7 @@ export const landing = new Hono<AppEnv>()
   )
   .get("/sitemap.xml", (c) =>
     c.text(
-      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://${c.env.BASE_DOMAIN}/</loc></url></urlset>\n`,
+      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://${c.env.BASE_DOMAIN}/</loc></url><url><loc>https://${c.env.BASE_DOMAIN}/mitra</loc></url></urlset>\n`,
       200,
       { "content-type": "application/xml", "cache-control": "public, max-age=86400" },
     ),

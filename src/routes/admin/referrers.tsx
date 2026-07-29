@@ -37,18 +37,18 @@ export const adminReferrers = new Hono<AppEnv>()
     return c.html(
       adminHtml(
         <AdminPage
-          title="Ojol"
+          title="Mitra"
           currentPath="/admin/referrer"
           notice={c.req.query("ok")}
           error={c.req.query("err")}
         >
           <Card>
-            <CardTitle>Mitra Ojol ({referrers.length})</CardTitle>
+            <CardTitle>Mitra ({referrers.length})</CardTitle>
             {referrers.length === 0 ? (
               <EmptyState
                 icon="🛵"
-                title="Belum ada mitra ojol"
-                hint="Daftarkan ojol pertamamu — kode unik + brosur QR jadi mesin distribusimu."
+                title="Belum ada mitra"
+                hint="Daftarkan mitra pertamamu (ojol, sales, siapa pun) — kode unik + brosur QR jadi mesin distribusimu."
               />
             ) : (
               <ListTable headers={["Nama", "Kode", "Scan", ""]}>
@@ -79,7 +79,7 @@ export const adminReferrers = new Hono<AppEnv>()
             )}
           </Card>
           <Card>
-            <CardTitle>Daftarkan Ojol Baru</CardTitle>
+            <CardTitle>Daftarkan Mitra Baru</CardTitle>
             <Form action="/admin/referrer">
               <Field label="Nama" name="name" required />
               <Field label="No WA" name="wa_number" inputmode="numeric" required hint="62xxx" />

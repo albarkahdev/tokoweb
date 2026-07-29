@@ -135,7 +135,7 @@ async function serveDemo(c: Context<AppEnv>, pagePath: PublicPagePath): Promise<
   const requested = c.req.query("tema") ?? DEFAULT_THEME;
   const themeSlug = requested in KULINER_THEMES ? requested : DEFAULT_THEME;
 
-  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=14`;
+  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=15`;
   const cached = await caches.default.match(cacheKey);
   if (cached) return cached;
 
@@ -151,6 +151,10 @@ async function serveDemo(c: Context<AppEnv>, pagePath: PublicPagePath): Promise<
 }
 
 export const demo = new Hono<AppEnv>()
+  .get("/", (c) => {
+    const query = new URL(c.req.url).search;
+    return c.redirect(`/kuliner${query}`);
+  })
   .get("/kuliner", (c) => serveDemo(c, "/"))
   .get("/menu", (c) => serveDemo(c, "/menu"))
   .get("/galeri", (c) => serveDemo(c, "/galeri"))

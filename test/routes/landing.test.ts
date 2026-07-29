@@ -23,6 +23,24 @@ describe("landing tokoweb.id", () => {
     expect(html).not.toContain("noindex");
   });
 
+  it("promises 1 day and links login + mitra", async () => {
+    const html = await (await get("/")).text();
+    expect(html).toContain("≤ 1 hari");
+    expect(html).not.toContain("3 hari");
+    expect(html).toContain('href="https://app.tokoweb.id/masuk"');
+    expect(html).toContain('href="/mitra"');
+  });
+
+  it("serves mitra page with commission info", async () => {
+    const response = await get("/mitra");
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain("Rp 150rb");
+    expect(html).toContain("Rp 300rb");
+    expect(html).toContain("Bukan");
+    expect(html).toContain("tokoweb.id/r/KODEKAMU");
+  });
+
   it("hero shows lampion-styled phone mockup", async () => {
     const html = await (await get("/")).text();
     expect(html).toContain('class="pm-hero"');

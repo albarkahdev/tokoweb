@@ -21,7 +21,7 @@ export const adminPayouts = new Hono<AppEnv>()
                 <Text>
                   Total transfer: <Strong>{formatRupiah(total)}</Strong> — target ≤ 1 hari kerja.
                 </Text>
-                <ListTable headers={["Ojol", "Klien", "Cicilan", ""]}>
+                <ListTable headers={["Mitra", "Klien", "Cicilan", ""]}>
                   {payable.map((payout) => (
                     <Row>
                       <Cell>{payout.referrer_name}</Cell>

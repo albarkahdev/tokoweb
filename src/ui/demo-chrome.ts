@@ -49,8 +49,15 @@ body{padding-top:3.1rem;padding-bottom:7rem}
 .catnav{top:calc(3.1rem + var(--nav-h, 3.5rem))}
 .demo-cta{position:fixed;bottom:0;left:0;right:0;z-index:60;background:rgb(20 17 28 / 0.96);backdrop-filter:blur(10px);color:#fff;padding:0.85rem 0.9rem calc(0.85rem + env(safe-area-inset-bottom));font-family:'Plus Jakarta Sans',system-ui,sans-serif;box-shadow:0 -10px 30px rgb(0 0 0 / 0.25)}
 .demo-cta .inner{max-width:36rem;margin:0 auto}
-.demo-cta .pitch{margin:0 0 0.55rem;font-size:0.88rem;display:flex;align-items:baseline;gap:0.5rem;flex-wrap:wrap}
+.demo-cta .pitch{margin:0 0 0.55rem;font-size:0.88rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap}
 .demo-cta .pitch .price{color:#FFD166;font-weight:800}
+.demo-cta .cta-hide{margin-left:auto;background:none;border:1px solid #453F55;color:#B9B3C8;border-radius:9999px;width:1.9rem;height:1.9rem;line-height:1;cursor:pointer;font-size:0.95rem;flex-shrink:0;transition:transform 0.2s ease}
+.demo-cta .cta-hide:hover{border-color:#8F86AB}
+.demo-cta .cta-mini-btn{display:none;background:linear-gradient(135deg,#FF6B57,#FF8A3D);color:#1D1410;border:none;border-radius:9999px;padding:0.45rem 1.1rem;font-weight:800;cursor:pointer;font-family:inherit;font-size:0.85rem}
+.demo-cta.min form{display:none}
+.demo-cta.min .pitch{margin:0}
+.demo-cta.min .cta-mini-btn{display:inline-flex}
+.demo-cta.min .cta-hide{transform:rotate(180deg)}
 .demo-cta form{display:flex;gap:0.45rem;flex-wrap:wrap}
 .demo-cta input{flex:1 1 8rem;border-radius:0.55rem;border:none;padding:0.6rem 0.7rem;font-size:0.88rem;font-family:inherit}
 .demo-cta button{background:linear-gradient(135deg,#FF6B57,#FF8A3D);color:#1D1410;border:none;border-radius:0.55rem;padding:0.6rem 1.2rem;font-weight:800;cursor:pointer;font-family:inherit;font-size:0.9rem;transition:transform 0.15s ease}
@@ -69,9 +76,9 @@ body{padding-top:3.1rem;padding-bottom:7rem}
     <div class="demo-tp-list">${items}</div>
   </div>
 </div>
-<div class="demo-cta">
+<div class="demo-cta" id="demo-cta">
   <div class="inner">
-    <p class="pitch"><strong>Suka website ini?</strong> <span>Punya versimu — jadi ≤ 3 hari,</span> <span class="price">mulai Rp 75rb/bulan.</span></p>
+    <p class="pitch"><strong>Suka website ini?</strong> <span>Punya versimu — jadi ≤ 1 hari,</span> <span class="price">mulai Rp 75rb/bulan.</span> <button type="button" id="demo-cta-mau" class="cta-mini-btn">Saya mau! →</button> <button type="button" id="demo-cta-toggle" class="cta-hide" aria-label="Sembunyikan form">▾</button></p>
     <form method="post" action="/lead">
       <input name="name" placeholder="Namamu" required>
       <input name="business_name" id="demo-lead-business" placeholder="Nama usahamu" required>
@@ -116,6 +123,13 @@ input.addEventListener("input",function(){
   swap(value);
   if(biz)biz.value=value;
 });
+var cta=document.getElementById("demo-cta");
+var ctaToggle=document.getElementById("demo-cta-toggle");
+var ctaMau=document.getElementById("demo-cta-mau");
+function setCta(min){cta.classList.toggle("min",min);localStorage.setItem("demo_cta_min",min?"1":"")}
+if(localStorage.getItem("demo_cta_min")==="1")cta.classList.add("min");
+ctaToggle.addEventListener("click",function(){setCta(!cta.classList.contains("min"))});
+ctaMau.addEventListener("click",function(){setCta(false);var first=cta.querySelector("input[name=name]");if(first)first.focus()});
 var tp=document.getElementById("demo-tp");
 var tpBtn=document.getElementById("demo-theme-btn");
 var tpSearch=document.getElementById("demo-tp-search");

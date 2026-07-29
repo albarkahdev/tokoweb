@@ -7,7 +7,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/tenant", label: "Tenant", icon: "store" },
   { href: "/admin/lead", label: "Lead", icon: "lead" },
   { href: "/admin/intake", label: "Intake", icon: "inbox" },
-  { href: "/admin/referrer", label: "Ojol", icon: "bike" },
+  { href: "/admin/referrer", label: "Mitra", icon: "bike" },
   { href: "/admin/payout", label: "Payout", icon: "cash" },
 ];
 

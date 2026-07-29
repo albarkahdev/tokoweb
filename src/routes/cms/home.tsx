@@ -2,7 +2,18 @@ import { Hono } from "hono";
 import { formatRupiah } from "@/domain/money";
 import type { AppEnv } from "@/env";
 import { CmsPage, html, loadCms } from "@/routes/cms/shared";
-import { Actions, Badge, Card, CardTitle, DataList, QrImage, Text, TextLink } from "@/ui/display";
+import {
+  Actions,
+  Badge,
+  Card,
+  CardTitle,
+  DataList,
+  QrImage,
+  QuickGrid,
+  QuickLink,
+  Text,
+  TextLink,
+} from "@/ui/display";
 import { LinkButton } from "@/ui/form";
 
 export const cmsHome = new Hono<AppEnv>().get("/", async (c) => {
@@ -22,6 +33,23 @@ export const cmsHome = new Hono<AppEnv>().get("/", async (c) => {
   return c.html(
     html(
       <CmsPage title="Beranda" currentPath="/" cms={cms}>
+        <Card>
+          <CardTitle>Mau ngapain hari ini?</CardTitle>
+          <QuickGrid>
+            <QuickLink href="/menu" icon="🍽️" label="Edit Menu" hint="harga, foto, spesial" />
+            <QuickLink href="/promo" icon="📢" label="Pasang Promo" hint="tampil otomatis" />
+            <QuickLink href="/galeri" icon="📷" label="Upload Foto" hint="galeri website" />
+            <QuickLink
+              href="/pratinjau"
+              icon="👀"
+              label="Pratinjau"
+              hint="lihat hasilnya"
+              external
+            />
+            <QuickLink href="/tema" icon="🎨" label="Ganti Tema" hint="60 pilihan gaya" />
+            <QuickLink href="/info" icon="✏️" label="Info & Jam" hint="alamat, jam buka" />
+          </QuickGrid>
+        </Card>
         <Card>
           <CardTitle>Langganan {dueBadge}</CardTitle>
           <DataList

@@ -43,10 +43,10 @@ export const adminLeads = new Hono<AppEnv>()
               <EmptyState
                 icon="🎯"
                 title="Belum ada lead"
-                hint="Lead dari form demo dan brosur QR ojol muncul di sini."
+                hint="Lead dari form demo dan brosur QR mitra muncul di sini."
               />
             ) : (
-              <ListTable headers={["Prospek", "Ojol", "Status", ""]}>
+              <ListTable headers={["Prospek", "Mitra", "Status", ""]}>
                 {leads.map((lead) => (
                   <Row>
                     <CellStack
@@ -106,7 +106,7 @@ export const adminLeads = new Hono<AppEnv>()
               <Button block>Closing — buat tenant + komisi</Button>
             </Form>
             <Text small muted last>
-              Komisi 3 cicilan dibuat otomatis kalau lead terikat kode ojol. Tarif terkunci sesuai
+              Komisi 3 cicilan dibuat otomatis kalau lead terikat kode mitra. Tarif terkunci sesuai
               paket saat closing.
             </Text>
           </Card>
@@ -140,7 +140,7 @@ export const adminLeads = new Hono<AppEnv>()
       const referrer = await findReferrerById(c.env.DB, lead.referrer_id);
       if (referrer && referrer.wa_number === lead.wa_number) {
         return c.redirect(
-          "/admin/lead?err=No WA lead sama dengan no WA ojol — self-referral, tinjau manual.",
+          "/admin/lead?err=No WA lead sama dengan no WA mitra — self-referral, tinjau manual.",
         );
       }
     }

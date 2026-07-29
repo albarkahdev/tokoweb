@@ -161,3 +161,25 @@ export function MediaRow(props: { src: string; alt: string; children?: Child }) 
 export function Actions(props: { children: Child }) {
   return <div class="row-actions">{props.children}</div>;
 }
+
+export function QuickGrid(props: { children: Child }) {
+  return <div class="quick-grid">{props.children}</div>;
+}
+
+export function QuickLink(props: {
+  href: string;
+  icon: string;
+  label: string;
+  hint?: string;
+  external?: boolean;
+}) {
+  return (
+    <a class="quick-link" href={props.href} target={props.external ? "_blank" : undefined}>
+      <span class="qk-icon" aria-hidden="true">
+        {props.icon}
+      </span>
+      <span class="qk-label">{props.label}</span>
+      {props.hint ? <span class="qk-hint">{props.hint}</span> : null}
+    </a>
+  );
+}
