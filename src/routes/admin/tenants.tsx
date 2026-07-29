@@ -188,7 +188,10 @@ export const adminTenants = new Hono<AppEnv>()
           </Card>
           <Card>
             <CardTitle>Verifikasi Pembayaran QRIS</CardTitle>
-            <Form action={`/admin/tenant/${tenant.id}/bayar`}>
+            <Form
+              action={`/admin/tenant/${tenant.id}/bayar`}
+              confirm="Pastikan pembayaran benar-benar sudah masuk. Catat sekali saja per periode — dobel pencatatan bisa membuka komisi mitra tanpa pembayaran nyata. Lanjut?"
+            >
               <SelectField
                 label="Jenis"
                 name="kind"
@@ -297,6 +300,11 @@ export const adminTenants = new Hono<AppEnv>()
       tenantStatus: tenant.status,
       nowMs: Date.now(),
     });
+    if (result.duplicate) {
+      return c.redirect(
+        `/admin/tenant/${tenant.id}?err=Pembayaran ${kind} periode ${period} sudah pernah dicatat. Tidak diproses ulang.`,
+      );
+    }
     if (result.tenantReactivated) {
       await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), [
         ...PUBLIC_PAGE_PATHS,
@@ -332,9 +340,13 @@ export const adminTenants = new Hono<AppEnv>()
   .post("/tenant/:id/pulihkan", async (c) => {
     const tenant = await findTenantById(c.env.DB, Number(c.req.param("id")));
     if (!tenant) return c.notFound();
+    const today = wibDateOf(Date.now());
     await setTenantStatus(c.env.DB, tenant.id, "active");
+    await setSubscriptionCycle(c.env.DB, tenant.id, nextDueDateAfterPayment(today), "active");
     await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), [...PUBLIC_PAGE_PATHS]);
-    return c.redirect(`/admin/tenant/${tenant.id}?ok=Tenant aktif kembali.`);
+    return c.redirect(
+      `/admin/tenant/${tenant.id}?ok=Tenant aktif kembali. Jatuh tempo berikutnya diset ulang.`,
+    );
   })
   .post("/tenant/:id/refund", async (c) => {
     const tenant = await findTenantById(c.env.DB, Number(c.req.param("id")));
@@ -370,22 +382,20 @@ export const adminTenants = new Hono<AppEnv>()
     if (!email.includes("@")) {
       return c.redirect(`/admin/tenant/${tenant.id}?err=Email tidak valid.`);
     }
-    let user = await findUserByEmail(c.env.DB, email);
-    if (!user) {
-      const randomPassword = await hashPassword(generateOneTimeToken());
-      const userId = await createUser(c.env.DB, email, randomPassword, "owner", tenant.id);
-      user = {
-        id: userId,
+    const existing = await findUserByEmail(c.env.DB, email);
+    const userId =
+      existing?.id ??
+      (await createUser(
+        c.env.DB,
         email,
-        password_hash: randomPassword,
-        role: "owner",
-        tenant_id: tenant.id,
-      };
-    }
+        await hashPassword(generateOneTimeToken()),
+        "owner",
+        tenant.id,
+      ));
     const token = await issueToken(
       c.env.DB,
       "set_password",
-      { userId: user.id },
+      { userId },
       SET_PASSWORD_TTL_MS,
       Date.now(),
     );

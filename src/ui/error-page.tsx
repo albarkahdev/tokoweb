@@ -1,3 +1,5 @@
+import { BrandLogo, FaviconLinks } from "@/ui/brand";
+
 const ERROR_STYLES = `
 * { box-sizing: border-box; }
 body {
@@ -39,15 +41,8 @@ a {
   text-decoration: none;
   box-shadow: 0 6px 16px -8px rgba(196, 80, 27, 0.5);
 }
-.brand { margin-top: 2rem; font-weight: 700; color: #1C1917; font-size: 0.9rem; }
-.brand .dot {
-  display: inline-block;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  margin-right: 0.3rem;
-  background: linear-gradient(135deg, #C4501B, #E8632C);
-}
+.brand { margin-top: 2rem; display: flex; justify-content: center; }
+.brand img { height: 26px; width: auto; opacity: 0.9; }
 `;
 
 export function errorPageHtml(props: {
@@ -64,6 +59,7 @@ export function errorPageHtml(props: {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="noindex" />
         <title>{`${props.code} — ${props.title}`}</title>
+        <FaviconLinks />
         <style dangerouslySetInnerHTML={{ __html: ERROR_STYLES }} />
       </head>
       <body>
@@ -73,8 +69,7 @@ export function errorPageHtml(props: {
           <p>{props.message}</p>
           <a href={props.backHref}>{props.backLabel}</a>
           <div class="brand">
-            <span class="dot" />
-            tokoweb
+            <BrandLogo height={26} />
           </div>
         </div>
       </body>

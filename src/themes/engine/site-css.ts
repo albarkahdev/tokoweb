@@ -184,17 +184,24 @@ section > h2, .sec-title { font-size: clamp(1.7rem, 5vw, 2.5rem); margin-bottom:
 .menu-list .menu-item.no-photo .mi-body { border-top: none; }
 .menu-list .mi-head { display: flex; align-items: baseline; gap: 0.7rem; }
 .menu-list .mi-head h3 { flex-shrink: 0; }
-.menu-list .mi-head .leader { flex: 1; border-bottom: 2px dotted color-mix(in srgb, var(--muted) 45%, transparent); transform: translateY(-0.3rem); }
-.menu-list .price { font-size: 1rem; }
+.menu-list .mi-head .leader { flex: 1; min-width: 1.5rem; border-bottom: 2px dotted color-mix(in srgb, var(--muted) 45%, transparent); transform: translateY(-0.3rem); }
+.menu-list .price { font-size: 1rem; white-space: nowrap; }
+@media (max-width: 40rem) {
+  .menu-list .mi-head { flex-wrap: wrap; row-gap: 0.1rem; }
+  .menu-list .mi-head h3 { flex-shrink: 1; }
+  .menu-list .mi-head .price { margin-left: auto; }
+}
 
 .menu-grid-2 .menu-item:nth-child(3n+2) .mi-body { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
 
 .badge-fav {
   display: inline-block; background: var(--accent);
-  color: color-mix(in srgb, var(--text) 88%, #000);
+  color: #241C10;
   font-size: 0.7rem; font-weight: 800; padding: 0.14rem 0.62rem;
   border-radius: 9999px; vertical-align: middle; letter-spacing: 0.02em;
+  margin: 0.12rem 0;
 }
+h3 .badge-fav { margin-left: 0.35rem; }
 
 .more-menu { margin-top: 1.8rem; }
 
@@ -453,7 +460,7 @@ const LAYOUT_EXTRAS_CSS = `
   .hero.split { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); min-height: 78vh; }
   .hero.split .hero-inner { max-width: none; margin: 0; padding-left: max(1.4rem, calc((100vw - 66rem) / 2 + 1.4rem)); padding-right: 2rem; }
   .hero.split .hero-side { display: block; position: relative; overflow: hidden; }
-  .hero.split .hero-side img { width: 100%; height: 100%; object-fit: cover; }
+  .hero.split .hero-side img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .hero.split .hero-side.pattern {
     background:
       radial-gradient(circle at 25% 25%, color-mix(in srgb, var(--accent) 45%, transparent) 0 0.55rem, transparent 0.55rem),
@@ -492,8 +499,16 @@ const LAYOUT_EXTRAS_CSS = `
 .menu-magazine .menu-grid { grid-template-columns: 1fr; gap: 0; max-width: 48rem; counter-reset: mag; }
 .menu-magazine .menu-item {
   background: none; box-shadow: none; border-radius: 0; flex-direction: row; gap: 1.3rem;
-  padding: 1.6rem 0; align-items: flex-start; counter-increment: mag;
+  padding: 1.6rem 1.25rem; align-items: flex-start; counter-increment: mag;
   border-bottom: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+}
+@media (max-width: 40rem) {
+  .menu-magazine .menu-item { flex-wrap: wrap; gap: 0.9rem 1rem; }
+  .menu-magazine .menu-item::before { flex-basis: 100%; }
+  .menu-magazine .menu-item .mi-photo {
+    order: 0; width: 100%; height: auto; aspect-ratio: 16/10; object-fit: cover;
+  }
+  .menu-magazine .menu-item .mi-body { order: 4; flex: 1 1 100%; }
 }
 .menu-magazine .menu-item:hover { transform: none; box-shadow: none; }
 .menu-magazine .menu-item::before {
@@ -597,7 +612,7 @@ body::before {
 .sec-title::after {
   content: "❦"; display: block; color: var(--accent); font-size: 1.1rem; margin-top: 0.5rem;
 }
-.hero.frame .hero-inner { border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent); outline: 1px solid color-mix(in srgb, var(--accent) 60%, transparent); outline-offset: 5px; margin: 1.2rem; }
+.hero.frame .hero-inner { border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent); outline: 1px solid color-mix(in srgb, var(--accent) 60%, transparent); outline-offset: 5px; margin: 1.2rem auto; width: calc(100% - 2.4rem); }
 .menu-item, .promo-card, .hours-card, .contact-card, .testi {
   border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
 }
@@ -672,7 +687,7 @@ section { border-top: 1px solid var(--text); max-width: none; padding-left: max(
 .menu-item:nth-child(even) { rotate: 0.6deg; }
 .menu-item:hover { rotate: 0deg; }
 .sec-title { display: inline-block; border-bottom: 3px dashed var(--primary); padding-bottom: 0.3rem; }
-.kicker { color: var(--accent); }
+.kicker { color: var(--accent); display: table; margin-bottom: 0.7rem; }
 .price { color: var(--primary); }
 .btn-wa { box-shadow: none; border: 2px dashed color-mix(in srgb, var(--text) 40%, transparent); }
 .btn-ghost { border-style: dashed; }
@@ -787,16 +802,17 @@ body {
   if (flair === "stempel") {
     return `
 .kicker {
-  display: inline-block; border: 2px solid var(--accent); color: var(--accent);
+  display: table; border: 2px solid var(--accent); color: var(--accent);
   padding: 0.15rem 0.7rem; rotate: -1.5deg; border-radius: 0.3rem;
+  margin-bottom: 0.7rem;
 }
 .menu-item, .promo-card, .hours-card, .contact-card, .testi {
   border: 1.5px solid color-mix(in srgb, var(--text) 30%, transparent);
 }
 .menu-polaroid .menu-item { box-shadow: 0 4px 10px rgb(0 0 0 / 0.12); }
-.badge-fav { rotate: -2deg; border: 1.5px dashed var(--text); background: transparent; }
+.badge-fav { rotate: -2deg; border: 1.5px dashed var(--text); background: transparent; color: var(--text); }
 .hero.frame .hero-inner {
-  border: 2px dashed color-mix(in srgb, var(--text) 40%, transparent); margin: 1.2rem; rotate: -0.4deg;
+  border: 2px dashed color-mix(in srgb, var(--text) 40%, transparent); margin: 1.2rem auto; width: calc(100% - 2.4rem); rotate: -0.4deg;
 }
 .price { color: var(--accent); }
 .sec-title { rotate: -0.5deg; display: inline-block; }
@@ -968,7 +984,7 @@ section { position: relative; }
 }
 .sec-title::after { content: " ✦"; color: var(--primary); font-size: 0.7em; vertical-align: super; }
 .kicker { letter-spacing: 0.3em; color: var(--primary); }
-.hero.frame .hero-inner { border-top: 3px solid var(--accent); border-bottom: 3px solid var(--accent); margin: 1.2rem; }
+.hero.frame .hero-inner { border-top: 3px solid var(--accent); border-bottom: 3px solid var(--accent); margin: 1.2rem auto; width: calc(100% - 2.4rem); }
 .hero.frame h1 { letter-spacing: 0.08em; }
 .price { color: var(--primary); }
 .gallery-grid .ph { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: -3px; }
@@ -1187,6 +1203,7 @@ body::after { left: 76%; top: 58%; animation-delay: -6s; animation-duration: 16s
   }
   if (flair === "tinta") {
     return `
+.kicker { display: table; margin-bottom: 0.7rem; }
 .sec-title { position: relative; display: inline-block; }
 .sec-title::after {
   content: ""; position: absolute; left: 0; bottom: -0.35rem; height: 0.45rem; width: 100%;
@@ -1230,7 +1247,7 @@ body::before {
     return `
 .hero.poster .hero-inner {
   color: var(--text);
-  border: 4px solid var(--accent); border-radius: 1rem; margin: 1.2rem; position: relative;
+  border: 4px solid var(--accent); border-radius: 1rem; margin: 1.2rem auto; width: calc(100% - 2.4rem); position: relative;
   background-image: radial-gradient(circle, var(--accent) 0 0.22rem, transparent 0.23rem);
   background-size: 1.6rem 1.6rem; background-repeat: repeat-x; background-position: 0.8rem 0.5rem;
   animation: loket-chase 1.2s steps(2) infinite;
@@ -1276,7 +1293,7 @@ body::before {
   animation: kilau-sweep 5.5s ease-in-out infinite;
 }
 @keyframes kilau-sweep { 0% { background-position: 100% 0; } 100% { background-position: -50% 0; } }
-.hero.frame .hero-inner { border: 1px solid color-mix(in srgb, var(--primary) 50%, transparent); margin: 1.2rem; }
+.hero.frame .hero-inner { border: 1px solid color-mix(in srgb, var(--primary) 50%, transparent); margin: 1.2rem auto; width: calc(100% - 2.4rem); }
 .hero.frame h1 { color: var(--accent); letter-spacing: 0.06em; }
 :root { --shadow-card: none; }
 .menu-item, .promo-card, .hours-card, .contact-card, .testi {
@@ -1439,7 +1456,7 @@ body::after { left: 70%; animation-delay: -5.5s; animation-duration: 14s; font-s
 @keyframes jendela-sinar { 0% { left: -30%; } 55%, 100% { left: 120%; } }
 .hero.frame .hero-inner {
   border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
-  margin: 1.2rem;
+  margin: 1.2rem auto; width: calc(100% - 2.4rem);
   background:
     linear-gradient(color-mix(in srgb, var(--primary) 25%, transparent) 1px, transparent 1px) center / 100% 50%,
     none;
@@ -1517,6 +1534,7 @@ body::after { top: 55%; left: 15%; animation-delay: -3.4s; animation-duration: 9
 .sec-title::before { content: "// "; color: var(--accent); }
 .kicker { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.1em; }
 .price { color: var(--accent); }
+@media (max-width: 40rem) { .hero.typo .tagline { animation: none; border-right: none; white-space: normal; } }
 @media (prefers-reduced-motion: reduce) { .hero.typo .tagline { animation: none; border-right: none; white-space: normal; } }
 `;
   }

@@ -6,6 +6,7 @@ import { formatRupiah } from "@/domain/money";
 import { hashOneTimeToken } from "@/domain/one-time-token";
 import { createFixedWindowLimiter } from "@/domain/rate-limit";
 import { isValidPin, isValidReferralCode } from "@/domain/referral-code";
+import { verifyTurnstile } from "@/domain/turnstile";
 import type { AppEnv } from "@/env";
 import { AppLayout } from "@/ui/app-layout";
 import {
@@ -20,6 +21,7 @@ import {
   Text,
 } from "@/ui/display";
 import { Button, Field, Form } from "@/ui/form";
+import { TurnstileWidget } from "@/ui/turnstile-widget";
 
 const pinAttempts = createFixedWindowLimiter(5, 60_000);
 
@@ -33,7 +35,7 @@ const STATUS_LABEL: Record<
   void: { label: "hangus", tone: "danger" },
 };
 
-function PinPage(props: { code: string; error?: string }) {
+function PinPage(props: { code: string; error?: string; siteKey?: string }) {
   return (
     <AppLayout title={`Komisi ${props.code} — tokoweb`}>
       <Card>
@@ -43,7 +45,8 @@ function PinPage(props: { code: string; error?: string }) {
         </Text>
         {props.error ? <Alert tone="danger">{props.error}</Alert> : null}
         <Form action={`/r/${props.code}`}>
-          <Field label="PIN 4 digit" name="pin" type="password" inputmode="numeric" required />
+          <Field label="PIN 6 digit" name="pin" type="password" inputmode="numeric" required />
+          <TurnstileWidget siteKey={props.siteKey} />
           <Button block>Lihat Komisi</Button>
         </Form>
       </Card>
@@ -65,23 +68,43 @@ export const referralPage = new Hono<AppEnv>()
   .get("/r/:code", (c) => {
     const code = c.req.param("code").toUpperCase();
     if (!isValidReferralCode(code)) return c.notFound();
-    return c.html(`<!doctype html>${String(<PinPage code={code} />)}`);
+    return c.html(
+      `<!doctype html>${String(<PinPage code={code} siteKey={c.env.TURNSTILE_SITE_KEY} />)}`,
+    );
   })
   .post("/r/:code", async (c) => {
     const code = c.req.param("code").toUpperCase();
     if (!isValidReferralCode(code)) return c.notFound();
+    const siteKey = c.env.TURNSTILE_SITE_KEY;
 
     const ip = c.req.header("cf-connecting-ip") ?? "0.0.0.0";
     if (!pinAttempts.allow(`${code}:${ip}`, Date.now())) {
       return c.html(
         `<!doctype html>${String(
-          <PinPage code={code} error="Terlalu banyak percobaan. Tunggu 1 menit." />,
+          <PinPage
+            code={code}
+            error="Terlalu banyak percobaan. Tunggu 1 menit."
+            siteKey={siteKey}
+          />,
         )}`,
         429,
       );
     }
 
     const values = formDataToValues(await c.req.formData());
+    const humanOk = await verifyTurnstile(
+      c.env.TURNSTILE_SECRET,
+      values["cf-turnstile-response"] ?? "",
+      c.req.header("cf-connecting-ip"),
+    );
+    if (!humanOk) {
+      return c.html(
+        `<!doctype html>${String(
+          <PinPage code={code} error="Verifikasi anti-robot gagal. Coba lagi." siteKey={siteKey} />,
+        )}`,
+        400,
+      );
+    }
     const pin = (values.pin ?? "").trim();
     const referrer = await findReferrerByCode(c.env.DB, code);
     const expectedHash = referrer?.pin_hash;
@@ -91,6 +114,17 @@ export const referralPage = new Hono<AppEnv>()
         : null;
     if (!referrer || !expectedHash || providedHash !== expectedHash) {
       return c.html(`<!doctype html>${String(<PinPage code={code} error="PIN salah." />)}`, 401);
+    }
+    if (referrer.status !== "active") {
+      return c.html(
+        `<!doctype html>${String(
+          <PinPage
+            code={code}
+            error="Akun mitramu belum aktif — tunggu verifikasi admin, kami hubungi via WA."
+          />,
+        )}`,
+        403,
+      );
     }
 
     const scans = await countScans(c.env.DB, referrer.id);

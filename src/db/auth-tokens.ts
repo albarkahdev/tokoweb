@@ -57,10 +57,11 @@ export async function consumeToken(
 ): Promise<AuthTokenRow | null> {
   const row = await peekToken(db, token, purpose, nowMs);
   if (!row) return null;
-  await db
-    .prepare("UPDATE auth_tokens SET used_at = ?1 WHERE id = ?2")
+  const result = await db
+    .prepare("UPDATE auth_tokens SET used_at = ?1 WHERE id = ?2 AND used_at IS NULL")
     .bind(sqlUtcDateTime(nowMs), row.id)
     .run();
+  if (result.meta.changes !== 1) return null;
   return row;
 }
 

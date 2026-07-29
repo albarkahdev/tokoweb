@@ -32,20 +32,32 @@ describe("session token", () => {
   const NOW = 1_000_000;
 
   it("round-trips a valid session", async () => {
-    const payload = { userId: 7, role: "owner" as const, tenantId: 3, expiresAtMs: NOW + 1000 };
+    const payload = {
+      userId: 7,
+      role: "owner" as const,
+      tenantId: 3,
+      expiresAtMs: NOW + 1000,
+      ver: 0,
+    };
     const token = await createSessionToken(payload, SECRET);
     expect(await verifySessionToken(token, SECRET, NOW)).toEqual(payload);
   });
 
   it("supports admin session without tenant", async () => {
-    const payload = { userId: 1, role: "admin" as const, tenantId: null, expiresAtMs: NOW + 1000 };
+    const payload = {
+      userId: 1,
+      role: "admin" as const,
+      tenantId: null,
+      expiresAtMs: NOW + 1000,
+      ver: 0,
+    };
     const token = await createSessionToken(payload, SECRET);
     expect(await verifySessionToken(token, SECRET, NOW)).toEqual(payload);
   });
 
   it("rejects expired token", async () => {
     const token = await createSessionToken(
-      { userId: 7, role: "owner", tenantId: 3, expiresAtMs: NOW - 1 },
+      { userId: 7, role: "owner", tenantId: 3, expiresAtMs: NOW - 1, ver: 0 },
       SECRET,
     );
     expect(await verifySessionToken(token, SECRET, NOW)).toBeNull();
@@ -53,7 +65,7 @@ describe("session token", () => {
 
   it("rejects tampered token and wrong secret", async () => {
     const token = await createSessionToken(
-      { userId: 7, role: "owner", tenantId: 3, expiresAtMs: NOW + 1000 },
+      { userId: 7, role: "owner", tenantId: 3, expiresAtMs: NOW + 1000, ver: 0 },
       SECRET,
     );
     const tampered = token.replace("7.owner", "7.admin");

@@ -1,8 +1,17 @@
 import { Hono } from "hono";
 import { matchCachedPage, putCachedPage } from "@/db/edge-cache";
+import { createReferrer, findReferrerByCode, findReferrerByWa } from "@/db/referrers";
+import { formDataToValues } from "@/domain/cms";
+import { hashOneTimeToken } from "@/domain/one-time-token";
+import { createFixedWindowLimiter } from "@/domain/rate-limit";
+import { generateReferralCode, isValidPin } from "@/domain/referral-code";
+import { verifyTurnstile } from "@/domain/turnstile";
 import type { AppEnv } from "@/env";
+import { AppLayout } from "@/ui/app-layout";
+import { Card, PageTitle, Text, TextLink } from "@/ui/display";
 import {
   CtaBand,
+  CtaRow,
   FaqList,
   FeatureGrid,
   Hero,
@@ -10,6 +19,7 @@ import {
   LandingSection,
   LandingShell,
   MetricBand,
+  MitraForm,
   PriceCard,
   PricingGrid,
   SectionHeader,
@@ -18,12 +28,47 @@ import {
   TopBar,
 } from "@/ui/landing";
 
+const daftarLimiter = createFixedWindowLimiter(3, 60_000);
+
 const TITLE = "tokoweb.id — Website untuk Warung & UMKM, Jadi ≤ 1 Hari, Mulai Rp 75rb/bulan";
 const DESCRIPTION =
   "Jasa pembuatan website UMKM kuliner: menu online, promo otomatis, tombol WhatsApp, statistik pengunjung. Jadi dalam sehari, kelola sendiri dari HP, mulai Rp 75rb/bulan.";
 
 function waLink(number: string, text: string): string {
   return `https://wa.me/${number}?text=${encodeURIComponent(text)}`;
+}
+
+function mitraResultPage(props: { code?: string; error?: string }): string {
+  return `<!doctype html>${String(
+    <AppLayout title="Pendaftaran Mitra — tokoweb">
+      <Card>
+        {props.error ? (
+          <>
+            <PageTitle>Ups!</PageTitle>
+            <Text>{props.error}</Text>
+            <Text last>
+              <TextLink href="/mitra">← Kembali</TextLink>
+            </Text>
+          </>
+        ) : (
+          <>
+            <PageTitle>Terdaftar! 🎉</PageTitle>
+            <Text>
+              Kode mitramu: <strong>{props.code}</strong>. Simpan baik-baik bersama PIN-mu.
+            </Text>
+            <Text>
+              Kami verifikasi dulu (anti-spam), lalu hubungi kamu via WhatsApp ≤ 1 hari. Setelah
+              aktif, brosur QR-mu siap dan komisimu bisa dipantau di{" "}
+              <strong>tokoweb.id/r/{props.code}</strong>.
+            </Text>
+            <Text last>
+              <TextLink href="/">← Ke beranda</TextLink>
+            </Text>
+          </>
+        )}
+      </Card>
+    </AppLayout>,
+  )}`;
 }
 
 function landingJsonLd(baseDomain: string): string {
@@ -40,7 +85,7 @@ function landingJsonLd(baseDomain: string): string {
 export const landing = new Hono<AppEnv>()
   .get("/", async (c) => {
     const url = new URL(c.req.url);
-    const cached = await matchCachedPage(url.hostname, "/landing-v6");
+    const cached = await matchCachedPage(url.hostname, "/landing-v8");
     if (cached) return cached;
 
     const demoUrl = `https://demo.${c.env.BASE_DOMAIN}/kuliner`;
@@ -205,6 +250,14 @@ export const landing = new Hono<AppEnv>()
             ]}
           />
         </LandingSection>
+        <LandingSection id="mitra">
+          <SectionHeader
+            kicker="Program Mitra"
+            title="Kenal pemilik warung? Itu komisi."
+            sub="Rekomendasikan tokoweb, klien bayar, kamu terima sampai Rp 300rb per klien. Ojol, sales, mahasiswa — siapa pun bisa. Tanpa modal, bukan MLM."
+          />
+          <CtaRow links={[{ href: "/mitra", label: "Pelajari Program Mitra →", fill: true }]} />
+        </LandingSection>
         <LandingSection id="harga">
           <SectionHeader
             kicker="Investasi"
@@ -291,12 +344,12 @@ export const landing = new Hono<AppEnv>()
         "cache-control": "public, max-age=300, s-maxage=86400",
       },
     });
-    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/landing-v6", response.clone()));
+    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/landing-v8", response.clone()));
     return response;
   })
   .get("/mitra", async (c) => {
     const url = new URL(c.req.url);
-    const cached = await matchCachedPage(url.hostname, "/mitra-v1");
+    const cached = await matchCachedPage(url.hostname, "/mitra-v3");
     if (cached) return cached;
 
     const wa = c.env.CONTACT_WA_NUMBER
@@ -307,7 +360,7 @@ export const landing = new Hono<AppEnv>()
     const html = `<!doctype html>${String(
       <LandingShell
         title="Jadi Mitra tokoweb.id — Bawa Klien, Terima Komisi s/d Rp 300rb"
-        description="Program mitra tokoweb.id: rekomendasikan website ke pemilik warung, terima komisi per klien yang membayar. Tanpa modal, bukan MLM, komisi cair ≤ 1 hari."
+        description="Program mitra tokoweb.id: rekomendasikan website ke pemilik warung, terima komisi per klien yang membayar. Tanpa modal, bukan MLM, komisi cair setelah masa refund 7 hari."
         canonical={`https://${c.env.BASE_DOMAIN}/mitra`}
         jsonLd={landingJsonLd(c.env.BASE_DOMAIN)}
       >
@@ -330,7 +383,7 @@ export const landing = new Hono<AppEnv>()
           metrics={[
             { num: "Rp 150rb", cap: "komisi per klien Basic (3 cicilan bulanan)" },
             { num: "Rp 300rb", cap: "komisi per klien Pro (3 cicilan bulanan)" },
-            { num: "≤ 1 hari", cap: "cicilan pertama cair setelah klien bayar" },
+            { num: "7 hari", cap: "cicilan pertama cair setelah masa refund lewat" },
             { num: "Rp 0", cap: "modal — cukup brosur QR dari kami" },
           ]}
         />
@@ -353,6 +406,14 @@ export const landing = new Hono<AppEnv>()
             ]}
           />
         </LandingSection>
+        <LandingSection id="daftar">
+          <SectionHeader
+            kicker="Daftar"
+            title="Daftar sendiri, 1 menit selesai"
+            sub="Isi form ini — kami verifikasi dulu (anti-spam), lalu hubungi kamu via WA ≤ 1 hari dengan kode unik + brosur QR siap pakai."
+          />
+          <MitraForm action="/mitra/daftar" siteKey={c.env.TURNSTILE_SITE_KEY} />
+        </LandingSection>
         <LandingSection id="faq">
           <SectionHeader kicker="FAQ" title="Yang sering ditanya mitra" />
           <FaqList
@@ -367,11 +428,11 @@ export const landing = new Hono<AppEnv>()
               },
               {
                 q: "Kapan komisi cair?",
-                a: "Cicilan pertama cair ≤ 1 hari setelah klien bayar biaya setup. Cicilan 2 dan 3 mengikuti pembayaran langganan bulan ke-2 dan ke-3.",
+                a: "Cicilan pertama cair setelah masa refund klien 7 hari lewat (jadi aman dari pembatalan). Cicilan 2 dan 3 mengikuti pembayaran langganan bulanan klien berikutnya.",
               },
               {
                 q: "Cek komisi di mana?",
-                a: "Halaman khususmu: tokoweb.id/r/KODEKAMU + PIN 4 digit. Berapa scan, berapa closing, berapa cair — semua transparan.",
+                a: "Halaman khususmu: tokoweb.id/r/KODEKAMU + PIN 6 digit. Berapa scan, berapa closing, berapa cair — semua transparan.",
               },
             ]}
           />
@@ -393,8 +454,66 @@ export const landing = new Hono<AppEnv>()
         "cache-control": "public, max-age=300, s-maxage=86400",
       },
     });
-    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/mitra-v1", response.clone()));
+    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/mitra-v3", response.clone()));
     return response;
+  })
+  .post("/mitra/daftar", async (c) => {
+    const ip = c.req.header("cf-connecting-ip") ?? "0.0.0.0";
+    const values = formDataToValues(await c.req.formData());
+    const name = (values.name ?? "").trim();
+    const waNumber = (values.wa_number ?? "").replace(/\D/g, "");
+    const pin = (values.pin ?? "").trim();
+
+    const humanOk = await verifyTurnstile(
+      c.env.TURNSTILE_SECRET,
+      values["cf-turnstile-response"] ?? "",
+      c.req.header("cf-connecting-ip"),
+    );
+    if (!humanOk) {
+      return c.html(mitraResultPage({ error: "Verifikasi anti-robot gagal. Coba lagi." }), 400);
+    }
+
+    if (
+      !daftarLimiter.allow(ip, Date.now()) ||
+      name.length < 2 ||
+      name.length > 60 ||
+      !/^62\d{8,13}$/.test(waNumber) ||
+      !isValidPin(pin)
+    ) {
+      return c.html(
+        mitraResultPage({
+          error: "Isi nama, no WA format 62xxxxxxxxxx, dan PIN 6 digit — lalu coba lagi.",
+        }),
+        400,
+      );
+    }
+
+    const existing = await findReferrerByWa(c.env.DB, waNumber);
+    if (existing) {
+      return c.html(
+        mitraResultPage({
+          error:
+            existing.status === "pending"
+              ? "Nomor ini sudah terdaftar dan sedang kami verifikasi. Tunggu kabar via WA ya."
+              : "Nomor ini sudah terdaftar sebagai mitra. Cek halaman komisimu di tokoweb.id/r/KODEKAMU.",
+        }),
+        409,
+      );
+    }
+
+    let code = generateReferralCode(Math.random);
+    for (let attempt = 0; attempt < 5 && (await findReferrerByCode(c.env.DB, code)); attempt++) {
+      code = generateReferralCode(Math.random);
+    }
+    await createReferrer(c.env.DB, {
+      code,
+      name,
+      waNumber,
+      bankAccount: null,
+      pinHash: await hashOneTimeToken(`${pin}:${c.env.AUTH_SECRET}`),
+      status: "pending",
+    });
+    return c.html(mitraResultPage({ code }));
   })
   .get("/robots.txt", (c) =>
     c.text(`User-agent: *\nAllow: /\nSitemap: https://${c.env.BASE_DOMAIN}/sitemap.xml\n`, 200, {

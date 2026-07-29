@@ -19,6 +19,23 @@ export type ParseResult<T> = { ok: true; value: T } | { ok: false; error: string
 const WA_PATTERN = /^62\d{8,13}$/;
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
+export const MAX_NAME = 80;
+export const MAX_DESC = 500;
+export const MAX_ABOUT = 1000;
+export const MAX_TAGLINE = 160;
+export const MAX_CATEGORY = 40;
+export const MAX_PRICE = 100_000_000;
+
+const FIELD_CAPS: Partial<Record<keyof SiteInfo, number>> = {
+  tagline: MAX_TAGLINE,
+  ticker_text: MAX_TAGLINE,
+  about: MAX_ABOUT,
+  address: MAX_ABOUT,
+  phone: 20,
+  instagram: 40,
+  maps_url: 500,
+};
+
 export function parseInfoForm(form: FormValues): ParseResult<SiteInfo> {
   const name = (form.name ?? "").trim();
   const waNumber = (form.wa_number ?? "").trim().replace(/\D/g, "");
@@ -40,7 +57,12 @@ export function parseInfoForm(form: FormValues): ParseResult<SiteInfo> {
   ];
   for (const key of optional) {
     const value = (form[key] ?? "").trim();
-    if (value) info[key] = value;
+    if (!value) continue;
+    const cap = FIELD_CAPS[key] ?? MAX_ABOUT;
+    if (value.length > cap) {
+      return { ok: false, error: `${key} terlalu panjang (maks ${cap} karakter).` };
+    }
+    info[key] = value;
   }
   if (info.maps_url && !info.maps_url.startsWith("https://")) {
     return { ok: false, error: "Link Maps harus diawali https://" };
@@ -72,13 +94,20 @@ export function parseMenuItemForm(form: FormValues): ParseResult<{
   const category = (form.category ?? "").trim();
   const name = (form.item_name ?? "").trim();
   const price = Number((form.price ?? "").replace(/\D/g, ""));
-  if (category.length < 2) return { ok: false, error: "Kategori wajib diisi." };
-  if (name.length < 2) return { ok: false, error: "Nama item wajib diisi." };
-  if (!Number.isInteger(price) || price <= 0) {
-    return { ok: false, error: "Harga wajib angka lebih dari 0." };
+  if (category.length < 2 || category.length > MAX_CATEGORY) {
+    return { ok: false, error: `Kategori wajib diisi (maks ${MAX_CATEGORY} karakter).` };
+  }
+  if (name.length < 2 || name.length > MAX_NAME) {
+    return { ok: false, error: `Nama item wajib diisi (maks ${MAX_NAME} karakter).` };
+  }
+  if (!Number.isInteger(price) || price <= 0 || price > MAX_PRICE) {
+    return { ok: false, error: "Harga wajib angka wajar lebih dari 0." };
+  }
+  const desc = (form.desc ?? "").trim();
+  if (desc.length > MAX_DESC) {
+    return { ok: false, error: `Deskripsi terlalu panjang (maks ${MAX_DESC} karakter).` };
   }
   const item: MenuItem = { name, price };
-  const desc = (form.desc ?? "").trim();
   if (desc) item.desc = desc;
   if (form.featured === "on") item.featured = true;
   return { ok: true, value: { category, item } };
@@ -171,11 +200,16 @@ export function removeItemPhoto(
 export function parseItemEditForm(form: FormValues): ParseResult<Partial<MenuItem>> {
   const name = (form.item_name ?? "").trim();
   const price = Number((form.price ?? "").replace(/\D/g, ""));
-  if (name.length < 2) return { ok: false, error: "Nama item wajib diisi." };
-  if (!Number.isInteger(price) || price <= 0) {
-    return { ok: false, error: "Harga wajib angka lebih dari 0." };
+  if (name.length < 2 || name.length > MAX_NAME) {
+    return { ok: false, error: `Nama item wajib diisi (maks ${MAX_NAME} karakter).` };
+  }
+  if (!Number.isInteger(price) || price <= 0 || price > MAX_PRICE) {
+    return { ok: false, error: "Harga wajib angka wajar lebih dari 0." };
   }
   const desc = (form.desc ?? "").trim();
+  if (desc.length > MAX_DESC) {
+    return { ok: false, error: `Deskripsi terlalu panjang (maks ${MAX_DESC} karakter).` };
+  }
   return { ok: true, value: { name, price, desc: desc || undefined } };
 }
 

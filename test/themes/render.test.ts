@@ -95,6 +95,33 @@ describe("tema kuliner — halaman utama", () => {
     expect(html).toContain("Diskon Merdeka 20%");
   });
 
+  it("escapes </script> in JSON-LD so tenant content cannot break out", () => {
+    const html = renderKulinerPage({
+      site: {
+        tenantId: 1,
+        slug: "warung-bu-sari",
+        name: "Warung Bu Sari",
+        status: "active",
+        themeSlug: "hangat",
+        tokens: {},
+        content: {
+          info: {
+            name: "</script><script>alert(1)</script>",
+            wa_number: "6281234567890",
+          },
+        },
+      },
+      promos: [],
+      testimonials: [],
+      baseUrl: HOST,
+      appBaseUrl: "https://app.tokoweb.id",
+      path: "/",
+      todayWib: "2026-07-29",
+    });
+    expect(html).not.toContain("</script><script>alert(1)</script>");
+    expect(html).toContain("\\u003c/script\\u003e\\u003cscript\\u003e");
+  });
+
   it("keeps ticker as welcome banner when no promos", () => {
     const html = renderKulinerPage({
       site: {

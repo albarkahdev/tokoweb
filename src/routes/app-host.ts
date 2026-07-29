@@ -12,7 +12,7 @@ import { cmsPromo } from "@/routes/cms/promo";
 import { cmsStatistik } from "@/routes/cms/statistik";
 import { cmsTema } from "@/routes/cms/tema";
 import { intake } from "@/routes/intake";
-import { attachSession, rejectCrossOriginWrites } from "@/routes/middleware";
+import { attachSession, rejectCrossOriginWrites, securityHeaders } from "@/routes/middleware";
 import { notFoundHtml, serverErrorHtml } from "@/ui/error-page";
 
 export const appHost = new Hono<AppEnv>()
@@ -21,6 +21,7 @@ export const appHost = new Hono<AppEnv>()
     console.error(error);
     return c.html(serverErrorHtml(c.req.path), 500);
   })
+  .use("*", securityHeaders)
   .use("*", rejectCrossOriginWrites)
   .use("*", attachSession)
   .route("/", auth)

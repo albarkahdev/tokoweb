@@ -170,15 +170,19 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
           </MenuGrid>
         </SiteSection>
       ) : null}
-      <SiteSection id="menu" kicker="Paling laris" title="Menu Andalan" menuVariant={menuClass}>
-        <MenuGrid>{shown.map((item) => itemCard(item, businessName, waNumber, listMode))}</MenuGrid>
-        {items.length > MAX_FEATURED ? (
-          <MoreMenuLink
-            href={pageHref(data, "/menu")}
-            label={`Lihat Menu Lengkap (${items.length} item) →`}
-          />
-        ) : null}
-      </SiteSection>
+      {shown.length > 0 ? (
+        <SiteSection id="menu" kicker="Paling laris" title="Menu Andalan" menuVariant={menuClass}>
+          <MenuGrid>
+            {shown.map((item) => itemCard(item, businessName, waNumber, listMode))}
+          </MenuGrid>
+          {items.length > MAX_FEATURED ? (
+            <MoreMenuLink
+              href={pageHref(data, "/menu")}
+              label={`Lihat Menu Lengkap (${items.length} item) →`}
+            />
+          ) : null}
+        </SiteSection>
+      ) : null}
       {data.site.content.hours ? (
         <SiteSection id="jam" kicker="Kapan mampir" title="Jam Buka">
           <HoursCard rows={hoursRows(data)} />

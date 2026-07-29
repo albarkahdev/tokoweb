@@ -124,13 +124,13 @@ export const intake = new Hono<AppEnv>()
     const name = (values.name ?? "").trim();
     const waNumber = (values.wa_number ?? "").replace(/\D/g, "");
     const email = (values.email ?? "").trim();
-    if (!name || !waNumber || !email.includes("@")) {
+    if (!name || name.length > 80 || !/^62\d{8,13}$/.test(waNumber) || !email.includes("@")) {
       return c.html(
         `<!doctype html>${String(
           <IntakePage
             token={resolved.token}
             businessName={resolved.tenant.name}
-            error="Nama usaha, no WA, dan email wajib diisi."
+            error="Nama usaha (maks 80), no WA format 62xxxxxxxxxx, dan email wajib diisi."
           />,
         )}`,
         400,

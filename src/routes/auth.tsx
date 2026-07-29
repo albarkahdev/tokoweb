@@ -1,16 +1,18 @@
 import { type Context, Hono } from "hono";
 import { deleteCookie, setCookie } from "hono/cookie";
 import { consumeToken } from "@/db/auth-tokens";
-import { findUserByEmail, findUserById, updateUserPassword } from "@/db/users";
+import { bumpSessionVersion, findUserByEmail, findUserById, updateUserPassword } from "@/db/users";
 import { hashPassword, isAcceptablePassword, verifyPassword } from "@/domain/password";
 import { createSessionToken, SESSION_TTL_MS } from "@/domain/session";
+import { verifyTurnstile } from "@/domain/turnstile";
 import type { AppEnv } from "@/env";
 import { SESSION_COOKIE } from "@/routes/middleware";
 import { AppLayout, AuthBrand } from "@/ui/app-layout";
 import { Alert, Card, PageTitle, Text } from "@/ui/display";
 import { Button, Field, Form, HiddenInput } from "@/ui/form";
+import { TurnstileWidget } from "@/ui/turnstile-widget";
 
-function LoginPage(props: { error?: string }) {
+function LoginPage(props: { error?: string; siteKey?: string }) {
   return (
     <AppLayout title="Masuk — tokoweb" centered>
       <AuthBrand tagline="Kelola websitemu dari sini" />
@@ -20,6 +22,7 @@ function LoginPage(props: { error?: string }) {
         <Form action="/masuk">
           <Field label="Email" name="email" type="email" required />
           <Field label="Password" name="password" type="password" required />
+          <TurnstileWidget siteKey={props.siteKey} />
           <Button block>Masuk</Button>
         </Form>
         <Text small muted last>
@@ -54,20 +57,42 @@ function SetPasswordPage(props: { token: string; error?: string }) {
 }
 
 export const auth = new Hono<AppEnv>()
-  .get("/masuk", (c) => c.html(String(<LoginPage />)))
+  .get("/masuk", (c) => c.html(String(<LoginPage siteKey={c.env.TURNSTILE_SITE_KEY} />)))
   .post("/masuk", async (c) => {
     const form = await c.req.formData();
     const email = String(form.get("email") ?? "");
     const password = String(form.get("password") ?? "");
+    const captcha = String(form.get("cf-turnstile-response") ?? "");
+    const humanOk = await verifyTurnstile(
+      c.env.TURNSTILE_SECRET,
+      captcha,
+      c.req.header("cf-connecting-ip"),
+    );
+    if (!humanOk) {
+      return c.html(
+        String(
+          <LoginPage
+            error="Verifikasi anti-robot gagal. Coba lagi."
+            siteKey={c.env.TURNSTILE_SITE_KEY}
+          />,
+        ),
+        400,
+      );
+    }
     const user = email ? await findUserByEmail(c.env.DB, email) : null;
     const valid = user ? await verifyPassword(password, user.password_hash) : false;
     if (!user || !valid) {
-      return c.html(String(<LoginPage error="Email atau password salah." />), 401);
+      return c.html(
+        String(<LoginPage error="Email atau password salah." siteKey={c.env.TURNSTILE_SITE_KEY} />),
+        401,
+      );
     }
-    await startSession(c, user.id, user.role, user.tenant_id);
+    await startSession(c, user.id, user.role, user.tenant_id, user.session_version);
     return c.redirect(user.role === "admin" ? "/admin" : "/");
   })
-  .post("/keluar", (c) => {
+  .post("/keluar", async (c) => {
+    const session = c.get("session");
+    if (session) await bumpSessionVersion(c.env.DB, session.userId);
     deleteCookie(c, SESSION_COOKIE, { path: "/" });
     return c.redirect("/masuk");
   })
@@ -101,7 +126,7 @@ export const auth = new Hono<AppEnv>()
     await updateUserPassword(c.env.DB, row.user_id, await hashPassword(password));
     const user = await findUserById(c.env.DB, row.user_id);
     if (!user) return c.redirect("/masuk");
-    await startSession(c, user.id, user.role, user.tenant_id);
+    await startSession(c, user.id, user.role, user.tenant_id, user.session_version);
     return c.redirect(user.role === "admin" ? "/admin" : "/");
   });
 
@@ -110,9 +135,10 @@ async function startSession(
   userId: number,
   role: "admin" | "owner",
   tenantId: number | null,
+  ver: number,
 ): Promise<void> {
   const token = await createSessionToken(
-    { userId, role, tenantId, expiresAtMs: Date.now() + SESSION_TTL_MS },
+    { userId, role, tenantId, expiresAtMs: Date.now() + SESSION_TTL_MS, ver },
     c.env.AUTH_SECRET,
   );
   setCookie(c, SESSION_COOKIE, token, {

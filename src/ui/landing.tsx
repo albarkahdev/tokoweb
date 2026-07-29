@@ -1,5 +1,7 @@
 import type { Child } from "hono/jsx";
+import { BrandLogo, FaviconLinks } from "@/ui/brand";
 import { FONTS_CSS } from "@/ui/fonts-css";
+import { TurnstileWidget } from "@/ui/turnstile-widget";
 
 const DISPLAY_FONT = "'Fraunces', ui-serif, 'New York', Georgia, 'Times New Roman', serif";
 const BODY_FONT = "'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
@@ -51,8 +53,8 @@ body {
 .topnav a { color: var(--ink-soft); text-decoration: none; font-weight: 600; font-size: 0.92rem; }
 .topnav a:hover { color: var(--brand-deep); }
 @media (max-width: 44rem) { .topnav { display: none; } }
-.brand { font-family: var(--display); font-weight: 700; font-size: 1.25rem; letter-spacing: -0.01em; text-decoration: none; color: var(--ink); }
-.brand em { color: var(--brand); font-style: normal; }
+.brand-logo { display: inline-flex; align-items: center; text-decoration: none; }
+.brand-logo img { display: block; width: auto; }
 
 .hero { position: relative; padding: clamp(1.5rem, 4vw, 3rem) 0 clamp(2.5rem, 6vw, 4rem); }
 .hero .wrap { max-width: 82rem; }
@@ -274,6 +276,17 @@ body {
 .footer .wrap { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; align-items: center; }
 .footer a { color: var(--ink-soft); text-decoration: none; font-weight: 600; }
 .footer a:hover { color: var(--brand-deep); }
+.footer-brand { display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
+.mitra-form { max-width: 26rem; margin-top: 2rem; display: grid; gap: 0.9rem; }
+.mitra-form label { display: grid; gap: 0.3rem; font-weight: 700; font-size: 0.88rem; }
+.mitra-form input {
+  font: inherit; padding: 0.75rem 0.95rem; border-radius: 0.8rem;
+  border: 1.5px solid var(--border); background: var(--surface); width: 100%;
+}
+.mitra-form input:focus { outline: 3px solid var(--gold); border-color: var(--brand); }
+.mitra-form .hint { font-weight: 500; font-size: 0.78rem; color: var(--muted); }
+.mitra-form .btn { justify-content: center; }
 
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
 .reveal.in { opacity: 1; transform: none; }
@@ -344,6 +357,8 @@ export function LandingShell(props: {
         <meta property="og:description" content={props.description} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={props.canonical} />
+        <meta property="og:image" content="https://tokoweb.id/assets/logo-square.png" />
+        <FaviconLinks />
         <style dangerouslySetInnerHTML={{ __html: LANDING_STYLES }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: props.jsonLd }} />
       </head>
@@ -363,9 +378,7 @@ export function TopBar(props: {
   return (
     <header class="topbar">
       <div class="wrap">
-        <a class="brand" href="/">
-          toko<em>web</em>.id
-        </a>
+        <BrandLogo href="/" height={30} />
         {props.links ? (
           <nav class="topnav">
             {props.links.map((link) => (
@@ -470,6 +483,43 @@ export function Hero(props: {
         </div>
       </div>
     </section>
+  );
+}
+
+export function CtaRow(props: { links: { href: string; label: string; fill?: boolean }[] }) {
+  return (
+    <div class="cta-row">
+      {props.links.map((link) => (
+        <a class={link.fill ? "btn btn-fill" : "btn btn-line"} href={link.href}>
+          {link.label}
+        </a>
+      ))}
+    </div>
+  );
+}
+
+export function MitraForm(props: { action: string; siteKey?: string }) {
+  return (
+    <form class="mitra-form" method="post" action={props.action}>
+      <label>
+        Nama lengkap
+        <input name="name" required maxlength={60} />
+      </label>
+      <label>
+        No WhatsApp
+        <input name="wa_number" inputmode="tel" placeholder="62812…" required />
+        <span class="hint">Format 62xxxxxxxxxx — kami hubungi ke nomor ini.</span>
+      </label>
+      <label>
+        PIN 6 digit
+        <input name="pin" inputmode="numeric" type="password" maxlength={6} required />
+        <span class="hint">Untuk membuka halaman komisimu nanti. Jangan lupa!</span>
+      </label>
+      <TurnstileWidget siteKey={props.siteKey} />
+      <button class="btn btn-fill" type="submit">
+        Daftar Jadi Mitra →
+      </button>
+    </form>
   );
 }
 
@@ -655,11 +705,9 @@ export function LandingFooter(props: { links: { href: string; label: string }[] 
   return (
     <footer class="footer">
       <div class="wrap">
-        <span>
-          <a class="brand" href="/">
-            toko<em>web</em>.id
-          </a>{" "}
-          — website kilat untuk UMKM Indonesia
+        <span class="footer-brand">
+          <BrandLogo href="/" height={22} />
+          <span>— website kilat untuk UMKM Indonesia</span>
         </span>
         <span>
           {props.links.map((link, index) => (

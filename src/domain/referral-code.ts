@@ -15,6 +15,8 @@ export function isValidReferralCode(code: string): boolean {
   return CODE_PATTERN.test(code);
 }
 
+export const PIN_PATTERN = /^\d{6}$/;
+
 export function isValidPin(pin: string): boolean {
-  return /^\d{4}$/.test(pin);
+  return PIN_PATTERN.test(pin);
 }

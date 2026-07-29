@@ -1,4 +1,5 @@
 import type { Child } from "hono/jsx";
+import { BrandLogo, FaviconLinks } from "@/ui/brand";
 
 export type NavIcon =
   | "home"
@@ -50,12 +51,7 @@ function NavGlyph(props: { icon: NavIcon }) {
 }
 
 export function BrandMark() {
-  return (
-    <span class="brand-mark">
-      <span class="dot" />
-      tokoweb
-    </span>
-  );
+  return <BrandLogo className="brand-mark" height={26} />;
 }
 
 function LogoutButton() {
@@ -71,7 +67,7 @@ function LogoutButton() {
 export function AuthBrand(props: { tagline: string }) {
   return (
     <div class="auth-brand">
-      <BrandMark />
+      <BrandLogo className="brand-mark" height={40} />
       <p>{props.tagline}</p>
     </div>
   );
@@ -93,6 +89,7 @@ export function AppLayout(props: {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="noindex" />
         <title>{props.title}</title>
+        <FaviconLinks />
         <link rel="stylesheet" href="/assets/app.css" />
       </head>
       <body>

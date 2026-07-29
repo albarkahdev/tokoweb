@@ -176,6 +176,23 @@ function ItemPage(props: {
         <ListTable headers={["Pengaturan", ""]}>
           <Row>
             <Cell>
+              Andalan (tampil di depan):{" "}
+              {item.featured ? (
+                <Badge tone="success">andalan 🔥</Badge>
+              ) : (
+                <Badge tone="muted">tidak</Badge>
+              )}
+            </Cell>
+            <Cell>
+              <Form action={`/menu/item/andalan?${itemQuery}`}>
+                <Button variant="secondary">
+                  {item.featured ? "Hapus dari andalan" : "Jadikan andalan"}
+                </Button>
+              </Form>
+            </Cell>
+          </Row>
+          <Row>
+            <Cell>
               Spesial hari ini:{" "}
               {item.special ? (
                 <Badge tone="warning">aktif ⭐</Badge>
@@ -336,6 +353,22 @@ export const cmsMenu = new Hono<AppEnv>()
     await purgeTenantPages(c, loaded.cms.tenant);
     return c.redirect(
       `/menu/item?${itemQuery}&ok=${nextActive ? "Menu diaktifkan." : "Menu disembunyikan dari website."}`,
+    );
+  })
+  .post("/menu/item/andalan", async (c) => {
+    const loaded = await loadItem(c);
+    if (!loaded) return c.redirect("/masuk");
+    if (!isRef(loaded)) return c.redirect(loaded.redirect);
+    if (loaded.cms.readOnly) return c.redirect("/menu");
+    const itemQuery = `c=${loaded.categoryIndex}&i=${loaded.itemIndex}`;
+    const nextFeatured = !loaded.item.featured;
+    const menu = updateMenuItem(loaded.content.menu, loaded.categoryIndex, loaded.itemIndex, {
+      featured: nextFeatured ? true : undefined,
+    });
+    await saveSiteContent(c.env.DB, loaded.cms.tenant.id, { ...loaded.content, menu });
+    await purgeTenantPages(c, loaded.cms.tenant);
+    return c.redirect(
+      `/menu/item?${itemQuery}&ok=${nextFeatured ? "Jadi menu andalan 🔥" : "Dihapus dari andalan."}`,
     );
   })
   .post("/menu/item/spesial", async (c) => {

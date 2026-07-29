@@ -12,7 +12,21 @@ export type VerifyPaymentResult = {
   paymentId: number;
   unlockedInstallment: number | null;
   tenantReactivated: boolean;
+  duplicate?: boolean;
 };
+
+async function paymentExists(
+  db: D1Database,
+  tenantId: number,
+  kind: PaymentKind,
+  period: string,
+): Promise<boolean> {
+  const row = await db
+    .prepare("SELECT 1 FROM payments WHERE tenant_id = ?1 AND kind = ?2 AND period = ?3 LIMIT 1")
+    .bind(tenantId, kind, period)
+    .first<{ 1: number }>();
+  return row !== null;
+}
 
 export async function verifyPayment(
   db: D1Database,
@@ -27,6 +41,10 @@ export async function verifyPayment(
     nowMs: number;
   },
 ): Promise<VerifyPaymentResult> {
+  if (await paymentExists(db, input.tenantId, input.kind, input.period)) {
+    return { paymentId: 0, unlockedInstallment: null, tenantReactivated: false, duplicate: true };
+  }
+
   const payment = await db
     .prepare(
       "INSERT INTO payments (tenant_id, kind, amount, period, confirmed_at, confirmed_by) VALUES (?1, ?2, ?3, ?4, ?5, ?6) RETURNING id",
@@ -47,7 +65,6 @@ export async function verifyPayment(
 
   if (input.kind === "setup") {
     await markSetupPaid(db, input.tenantId, sqlUtcDateTime(input.nowMs));
-    unlockedInstallment = 1;
   } else {
     const counted = await db
       .prepare("SELECT COUNT(*) AS n FROM payments WHERE tenant_id = ?1 AND kind = 'monthly'")
