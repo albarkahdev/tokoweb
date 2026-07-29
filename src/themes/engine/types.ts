@@ -40,7 +40,27 @@ export type ThemeConfig = {
     | "retro"
     | "mono"
     | "lampion"
-    | "sketsa";
+    | "sketsa"
+    | "blueprint"
+    | "koran"
+    | "aurora"
+    | "keramik"
+    | "pixel"
+    | "stempel"
+    | "disko"
+    | "hutan"
+    | "teraso"
+    | "krim"
+    | "ombak"
+    | "rempah"
+    | "kelopak"
+    | "gerabah"
+    | "beku"
+    | "api"
+    | "anyaman"
+    | "sutra"
+    | "segar"
+    | "bulu";
 };
 
 export const PUBLIC_PAGE_PATHS = ["/", "/menu", "/galeri", "/promo", "/testimoni"] as const;

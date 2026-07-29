@@ -236,6 +236,29 @@ describe("tema kuliner — preview & switcher", () => {
     expect(sketsa).toContain("dashed");
   });
 
+  it("renders wave-3 themes with unique visual styles", async () => {
+    const markers: Record<string, string[]> = {
+      blueprint: ["#7FD1E8", "menu-magazine"],
+      koran: ["#C0231B", "double"],
+      aurora: ["backdrop-filter", "#7C5CFF"],
+      piksel: ["#A3E635", "text-shadow"],
+      disko: ["#FF4ECD", "poster-echo"],
+      hutan: ["#B08D3F", 'class="hero split"'],
+      mentega: ["#D9A404", "1.9rem 1.1rem"],
+      kunyit: ["-webkit-text-stroke", "#D97706"],
+      bara: ["api-pulse", "#FF6A1F"],
+      jeruk: ["#FF7A00", "0.45rem 0 var(--text)"],
+      merak: ["#0C4A50", "background-clip: text"],
+      kabut: ["#B0806F", "0.34em"],
+    };
+    for (const [slug, expected] of Object.entries(markers)) {
+      const html = await (await get(`/?preview_theme=${slug}`)).text();
+      for (const marker of expected) {
+        expect(html, `${slug} missing ${marker}`).toContain(marker);
+      }
+    }
+  });
+
   it("ignores unknown preview theme and serves cacheable default", async () => {
     const response = await get("/?preview_theme=tidak-ada");
     expect(response.status).toBe(200);
