@@ -14,9 +14,11 @@ var open=today&&now>=today[0]&&now<=today[1];
 el.textContent=open?"● Buka sekarang":"● Tutup — cek jam buka";
 el.classList.add(open?"open":"closed")})();`;
 
-export const REVEAL_SCRIPT = `(function(){if(!("IntersectionObserver" in window))return;
-var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}})},{threshold:0.08});
-document.querySelectorAll(".reveal").forEach(function(el){io.observe(el)})})();`;
+export const REVEAL_SCRIPT = `(function(){var els=document.querySelectorAll(".reveal");
+function showAll(){els.forEach(function(el){el.classList.add("in")})}
+if(!("IntersectionObserver" in window)){showAll();return}
+var io=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add("in");io.unobserve(entry.target)}})},{threshold:0.3,rootMargin:"0px 0px -10% 0px"});
+els.forEach(function(el){var r=el.getBoundingClientRect();if(r.top<window.innerHeight*0.85){el.classList.add("in")}else{io.observe(el)}})})();`;
 
 export const LIGHTBOX_SCRIPT = `(function(){var imgs=Array.prototype.slice.call(document.querySelectorAll(".gallery-grid img"));if(!imgs.length)return;
 var ov=document.createElement("div");ov.className="lightbox";

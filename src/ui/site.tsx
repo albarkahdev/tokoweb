@@ -168,8 +168,8 @@ export function SiteSection(props: {
 }) {
   return (
     <section id={props.id} class={props.menuVariant}>
-      {props.kicker ? <span class="kicker">{props.kicker}</span> : null}
-      {props.title ? <h2 class="sec-title">{props.title}</h2> : null}
+      {props.kicker ? <span class="kicker reveal">{props.kicker}</span> : null}
+      {props.title ? <h2 class="sec-title reveal">{props.title}</h2> : null}
       {props.children}
     </section>
   );
