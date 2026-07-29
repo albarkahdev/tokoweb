@@ -4,7 +4,7 @@ export type ReferrerRow = {
   name: string;
   wa_number: string;
   bank_account: string | null;
-  status: "active" | "inactive";
+  status: "pending" | "active" | "inactive";
   pin_hash: string | null;
 };
 
@@ -46,16 +46,29 @@ export async function createReferrer(
     waNumber: string;
     bankAccount: string | null;
     pinHash: string;
+    status: "pending" | "active";
   },
 ): Promise<number> {
   const row = await db
     .prepare(
-      "INSERT INTO referrers (code, name, wa_number, bank_account, status, pin_hash) VALUES (?1, ?2, ?3, ?4, 'active', ?5) RETURNING id",
+      "INSERT INTO referrers (code, name, wa_number, bank_account, status, pin_hash) VALUES (?1, ?2, ?3, ?4, ?5, ?6) RETURNING id",
     )
-    .bind(data.code, data.name, data.waNumber, data.bankAccount, data.pinHash)
+    .bind(data.code, data.name, data.waNumber, data.bankAccount, data.status, data.pinHash)
     .first<{ id: number }>();
   if (!row) throw new Error("Failed to create referrer");
   return row.id;
+}
+
+export async function findReferrerByWa(
+  db: D1Database,
+  waNumber: string,
+): Promise<ReferrerRow | null> {
+  return db
+    .prepare(
+      "SELECT id, code, name, wa_number, bank_account, status, pin_hash FROM referrers WHERE wa_number = ?1",
+    )
+    .bind(waNumber)
+    .first<ReferrerRow>();
 }
 
 export async function setReferrerStatus(

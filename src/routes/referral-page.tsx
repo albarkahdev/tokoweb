@@ -92,6 +92,17 @@ export const referralPage = new Hono<AppEnv>()
     if (!referrer || !expectedHash || providedHash !== expectedHash) {
       return c.html(`<!doctype html>${String(<PinPage code={code} error="PIN salah." />)}`, 401);
     }
+    if (referrer.status !== "active") {
+      return c.html(
+        `<!doctype html>${String(
+          <PinPage
+            code={code}
+            error="Akun mitramu belum aktif — tunggu verifikasi admin, kami hubungi via WA."
+          />,
+        )}`,
+        403,
+      );
+    }
 
     const scans = await countScans(c.env.DB, referrer.id);
     const rows = await listClosingsWithPayouts(c.env.DB, referrer.id);

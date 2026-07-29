@@ -51,7 +51,7 @@ body{padding-top:3.1rem;padding-bottom:7rem}
 .demo-cta .inner{max-width:36rem;margin:0 auto}
 .demo-cta .pitch{margin:0 0 0.55rem;font-size:0.88rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap}
 .demo-cta .pitch .price{color:#FFD166;font-weight:800}
-.demo-cta .cta-hide{margin-left:auto;background:none;border:1px solid #453F55;color:#B9B3C8;border-radius:9999px;width:1.9rem;height:1.9rem;line-height:1;cursor:pointer;font-size:0.95rem;flex-shrink:0;transition:transform 0.2s ease}
+.demo-cta .cta-hide{margin-left:auto;background:#252031;border:1px solid #453F55;color:#D6D1E2;border-radius:9999px;width:2.3rem;height:2.3rem;padding:0;display:inline-flex;align-items:center;justify-content:center;line-height:1;cursor:pointer;font-size:1.15rem;flex-shrink:0;transition:transform 0.2s ease}
 .demo-cta .cta-hide:hover{border-color:#8F86AB}
 .demo-cta .cta-mini-btn{display:none;background:linear-gradient(135deg,#FF6B57,#FF8A3D);color:#1D1410;border:none;border-radius:9999px;padding:0.45rem 1.1rem;font-weight:800;cursor:pointer;font-family:inherit;font-size:0.85rem}
 .demo-cta.min form{display:none}

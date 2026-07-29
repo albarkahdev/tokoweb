@@ -275,6 +275,16 @@ body {
 .footer a { color: var(--ink-soft); text-decoration: none; font-weight: 600; }
 .footer a:hover { color: var(--brand-deep); }
 
+.mitra-form { max-width: 26rem; margin-top: 2rem; display: grid; gap: 0.9rem; }
+.mitra-form label { display: grid; gap: 0.3rem; font-weight: 700; font-size: 0.88rem; }
+.mitra-form input {
+  font: inherit; padding: 0.75rem 0.95rem; border-radius: 0.8rem;
+  border: 1.5px solid var(--border); background: var(--surface); width: 100%;
+}
+.mitra-form input:focus { outline: 3px solid var(--gold); border-color: var(--brand); }
+.mitra-form .hint { font-weight: 500; font-size: 0.78rem; color: var(--muted); }
+.mitra-form .btn { justify-content: center; }
+
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
 .reveal.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) {
@@ -470,6 +480,42 @@ export function Hero(props: {
         </div>
       </div>
     </section>
+  );
+}
+
+export function CtaRow(props: { links: { href: string; label: string; fill?: boolean }[] }) {
+  return (
+    <div class="cta-row">
+      {props.links.map((link) => (
+        <a class={link.fill ? "btn btn-fill" : "btn btn-line"} href={link.href}>
+          {link.label}
+        </a>
+      ))}
+    </div>
+  );
+}
+
+export function MitraForm(props: { action: string }) {
+  return (
+    <form class="mitra-form" method="post" action={props.action}>
+      <label>
+        Nama lengkap
+        <input name="name" required maxlength={60} />
+      </label>
+      <label>
+        No WhatsApp
+        <input name="wa_number" inputmode="tel" placeholder="62812…" required />
+        <span class="hint">Format 62xxxxxxxxxx — kami hubungi ke nomor ini.</span>
+      </label>
+      <label>
+        PIN 4 digit
+        <input name="pin" inputmode="numeric" type="password" maxlength={4} required />
+        <span class="hint">Untuk membuka halaman komisimu nanti. Jangan lupa!</span>
+      </label>
+      <button class="btn btn-fill" type="submit">
+        Daftar Jadi Mitra →
+      </button>
+    </form>
   );
 }
 

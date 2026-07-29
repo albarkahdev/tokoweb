@@ -12,6 +12,7 @@ import { generateReferralCode } from "@/domain/referral-code";
 import type { AppEnv } from "@/env";
 import { AdminPage, adminHtml } from "@/routes/admin/shared";
 import {
+  Actions,
   Badge,
   Card,
   CardTitle,
@@ -59,19 +60,34 @@ export const adminReferrers = new Hono<AppEnv>()
                       <Strong>{referrer.code}</Strong>{" "}
                       {referrer.status === "inactive" ? (
                         <Badge tone="danger">nonaktif</Badge>
+                      ) : referrer.status === "pending" ? (
+                        <Badge tone="warning">menunggu ✋</Badge>
                       ) : null}
                     </Cell>
                     <Cell>{scanCounts[index]}</Cell>
                     <Cell>
-                      <Form action={`/admin/referrer/${referrer.id}/status`}>
-                        <HiddenInput
-                          name="status"
-                          value={referrer.status === "active" ? "inactive" : "active"}
-                        />
-                        <Button variant="secondary">
-                          {referrer.status === "active" ? "Nonaktifkan" : "Aktifkan"}
-                        </Button>
-                      </Form>
+                      {referrer.status === "pending" ? (
+                        <Actions>
+                          <Form action={`/admin/referrer/${referrer.id}/status`}>
+                            <HiddenInput name="status" value="active" />
+                            <Button>Setujui ✓</Button>
+                          </Form>
+                          <Form action={`/admin/referrer/${referrer.id}/status`}>
+                            <HiddenInput name="status" value="inactive" />
+                            <Button variant="secondary">Tolak</Button>
+                          </Form>
+                        </Actions>
+                      ) : (
+                        <Form action={`/admin/referrer/${referrer.id}/status`}>
+                          <HiddenInput
+                            name="status"
+                            value={referrer.status === "active" ? "inactive" : "active"}
+                          />
+                          <Button variant="secondary">
+                            {referrer.status === "active" ? "Nonaktifkan" : "Aktifkan"}
+                          </Button>
+                        </Form>
+                      )}
                     </Cell>
                   </Row>
                 ))}
@@ -116,6 +132,7 @@ export const adminReferrers = new Hono<AppEnv>()
       waNumber,
       bankAccount: (values.bank_account ?? "").trim() || null,
       pinHash: await hashPin(pin, c.env.AUTH_SECRET),
+      status: "active",
     });
     return c.redirect(
       `/admin/referrer?ok=Terdaftar. Kode: ${code} — URL QR: https://demo.${c.env.BASE_DOMAIN}/kuliner?ref=${code} (PIN jangan lupa dibagikan)`,
