@@ -1,6 +1,7 @@
 import type { Child } from "hono/jsx";
 import { BrandLogo, FaviconLinks } from "@/ui/brand";
 import { FONTS_CSS } from "@/ui/fonts-css";
+import { TurnstileWidget } from "@/ui/turnstile-widget";
 
 const DISPLAY_FONT = "'Fraunces', ui-serif, 'New York', Georgia, 'Times New Roman', serif";
 const BODY_FONT = "'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
@@ -514,12 +515,7 @@ export function MitraForm(props: { action: string; siteKey?: string }) {
         <input name="pin" inputmode="numeric" type="password" maxlength={6} required />
         <span class="hint">Untuk membuka halaman komisimu nanti. Jangan lupa!</span>
       </label>
-      {props.siteKey ? (
-        <>
-          <div class="cf-turnstile" data-sitekey={props.siteKey} />
-          <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
-        </>
-      ) : null}
+      <TurnstileWidget siteKey={props.siteKey} />
       <button class="btn btn-fill" type="submit">
         Daftar Jadi Mitra →
       </button>

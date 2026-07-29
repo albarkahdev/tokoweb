@@ -7,6 +7,7 @@ import { createFixedWindowLimiter } from "@/domain/rate-limit";
 import { isValidReferralCode } from "@/domain/referral-code";
 import { addDays } from "@/domain/stats";
 import { wibDateOf } from "@/domain/subscription";
+import { verifyTurnstile } from "@/domain/turnstile";
 import type { AppEnv } from "@/env";
 import { renderKulinerPage } from "@/themes/engine/render";
 import type { PublicPagePath } from "@/themes/engine/types";
@@ -15,6 +16,8 @@ import { DEMO_BUSINESS_NAME, DEMO_CONTENT } from "@/themes/kuliner/demo-content"
 import { AppLayout } from "@/ui/app-layout";
 import { demoChromeHtml } from "@/ui/demo-chrome";
 import { Card, PageTitle, Text, TextLink } from "@/ui/display";
+import { Button, Field, Form, HiddenInput } from "@/ui/form";
+import { TurnstileWidget } from "@/ui/turnstile-widget";
 
 const leadLimiter = createFixedWindowLimiter(5, 60_000);
 const scanLimiter = createFixedWindowLimiter(10, 60_000);
@@ -135,7 +138,7 @@ async function serveDemo(c: Context<AppEnv>, pagePath: PublicPagePath): Promise<
   const requested = c.req.query("tema") ?? DEFAULT_THEME;
   const themeSlug = requested in KULINER_THEMES ? requested : DEFAULT_THEME;
 
-  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=17`;
+  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=18`;
   const cached = await caches.default.match(cacheKey);
   if (cached) return cached;
 
@@ -174,12 +177,34 @@ export const demo = new Hono<AppEnv>()
     } catch {}
     return c.body(null, 204);
   })
+  .post("/daftar", async (c) => {
+    const values = formDataToValues(await c.req.formData());
+    return c.html(
+      daftarPage(c.env.TURNSTILE_SITE_KEY, {
+        name: (values.name ?? "").trim(),
+        businessName: (values.business_name ?? "").trim(),
+        waNumber: (values.wa_number ?? "").trim(),
+        email: (values.email ?? "").trim(),
+        ref: (values.ref ?? "").trim(),
+      }),
+    );
+  })
   .post("/lead", async (c) => {
     const ip = c.req.header("cf-connecting-ip") ?? "0.0.0.0";
     const values = formDataToValues(await c.req.formData());
     const name = (values.name ?? "").trim();
     const businessName = (values.business_name ?? "").trim();
     const waNumber = (values.wa_number ?? "").replace(/\D/g, "");
+    const email = (values.email ?? "").trim();
+
+    const humanOk = await verifyTurnstile(
+      c.env.TURNSTILE_SECRET,
+      values["cf-turnstile-response"] ?? "",
+      c.req.header("cf-connecting-ip"),
+    );
+    if (!humanOk) {
+      return c.html(thanksPage("Verifikasi anti-robot gagal. Coba lagi ya!"), 400);
+    }
 
     if (
       !leadLimiter.allow(ip, Date.now()) ||
@@ -187,9 +212,14 @@ export const demo = new Hono<AppEnv>()
       name.length > 80 ||
       !businessName ||
       businessName.length > 80 ||
-      !/^62\d{8,13}$/.test(waNumber)
+      !/^62\d{8,13}$/.test(waNumber) ||
+      email.length > 120 ||
+      (email !== "" && !email.includes("@"))
     ) {
-      return c.html(thanksPage("Nomor WA harus diawali 62. Coba lagi ya!"), 400);
+      return c.html(
+        thanksPage("Cek lagi: nama, nama usaha, no WA (awali 62), email yang benar."),
+        400,
+      );
     }
 
     const existing = await findLeadByWa(c.env.DB, waNumber);
@@ -207,11 +237,53 @@ export const demo = new Hono<AppEnv>()
         name,
         businessName,
         waNumber,
+        email: email || null,
         verticalSlug: "kuliner",
       });
     }
     return c.html(thanksPage());
   });
+
+function daftarPage(
+  siteKey: string | undefined,
+  values: { name: string; businessName: string; waNumber: string; email: string; ref: string },
+): string {
+  return `<!doctype html>${String(
+    <AppLayout title="Daftar — tokoweb" centered>
+      <Card>
+        <PageTitle>Satu langkah lagi 🎉</PageTitle>
+        <Text muted>
+          Cek datamu, lengkapi email, lalu kirim. Kami hubungi via WhatsApp hari ini juga.
+        </Text>
+        <Form action="/lead">
+          <HiddenInput name="ref" value={values.ref} />
+          <Field label="Nama kamu" name="name" value={values.name} required />
+          <Field label="Nama usaha" name="business_name" value={values.businessName} required />
+          <Field
+            label="No WhatsApp"
+            name="wa_number"
+            value={values.waNumber}
+            inputmode="numeric"
+            required
+            hint="Format 62xxxxxxxxxx"
+          />
+          <Field
+            label="Email"
+            name="email"
+            type="email"
+            value={values.email}
+            hint="Untuk kirim invoice & info penting"
+          />
+          <TurnstileWidget siteKey={siteKey} />
+          <Button block>Kirim & Dihubungi →</Button>
+        </Form>
+        <Text small muted last>
+          <TextLink href="/kuliner">← Kembali ke demo</TextLink>
+        </Text>
+      </Card>
+    </AppLayout>,
+  )}`;
+}
 
 function thanksPage(error?: string): string {
   return `<!doctype html>${String(

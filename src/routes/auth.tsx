@@ -10,16 +10,7 @@ import { SESSION_COOKIE } from "@/routes/middleware";
 import { AppLayout, AuthBrand } from "@/ui/app-layout";
 import { Alert, Card, PageTitle, Text } from "@/ui/display";
 import { Button, Field, Form, HiddenInput } from "@/ui/form";
-
-function TurnstileWidget(props: { siteKey?: string }) {
-  if (!props.siteKey) return null;
-  return (
-    <>
-      <div class="cf-turnstile" data-sitekey={props.siteKey} data-theme="light" />
-      <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
-    </>
-  );
-}
+import { TurnstileWidget } from "@/ui/turnstile-widget";
 
 function LoginPage(props: { error?: string; siteKey?: string }) {
   return (

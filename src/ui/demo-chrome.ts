@@ -79,7 +79,7 @@ body{padding-top:3.1rem;padding-bottom:7rem}
 <div class="demo-cta" id="demo-cta">
   <div class="inner">
     <p class="pitch"><strong>Suka website ini?</strong> <span>Punya versimu — jadi ≤ 1 hari,</span> <span class="price">mulai Rp 75rb/bulan.</span> <button type="button" id="demo-cta-mau" class="cta-mini-btn">Saya mau! →</button> <button type="button" id="demo-cta-toggle" class="cta-hide" aria-label="Sembunyikan form">▾</button></p>
-    <form method="post" action="/lead">
+    <form method="post" action="/daftar">
       <input name="name" placeholder="Namamu" required>
       <input name="business_name" id="demo-lead-business" placeholder="Nama usahamu" required>
       <input name="wa_number" placeholder="No WhatsApp (62…)" inputmode="tel" required>

@@ -51,7 +51,7 @@ export const adminLeads = new Hono<AppEnv>()
                   <Row>
                     <CellStack
                       top={lead.business_name}
-                      bottom={`${lead.name} · ${lead.wa_number}`}
+                      bottom={`${lead.name} · ${lead.wa_number}${lead.email ? ` · ${lead.email}` : ""}`}
                     />
                     <Cell small>
                       {lead.referrer_id ? (referrerName.get(lead.referrer_id) ?? "?") : "—"}

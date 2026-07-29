@@ -28,9 +28,28 @@ describe("halaman demo kuliner", () => {
     expect(html).toContain("demo-tp-search");
     expect(html).toContain("/kuliner?tema=arang");
     expect(html).toContain("Coba nama usahamu");
-    expect(html).toContain('action="/lead"');
+    expect(html).toContain('action="/daftar"');
     expect(html).toContain("Rp 75rb/bulan");
     expect(html).toContain('content="noindex"');
+  });
+
+  it("daftar page is a separate prefilled form with email + turnstile slot", async () => {
+    const response = await send(
+      new Request(`${DEMO}/daftar`, {
+        method: "POST",
+        body: new URLSearchParams({
+          name: "Bu Sari",
+          business_name: "Warung Bu Sari",
+          wa_number: "6281234567890",
+        }),
+      }),
+    );
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain('action="/lead"');
+    expect(html).toContain('name="email"');
+    expect(html).toContain('value="Warung Bu Sari"');
+    expect(html).toContain("Satu langkah lagi");
   });
 
   it("lead CTA is collapsible with saya-mau button", async () => {

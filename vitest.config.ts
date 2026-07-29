@@ -12,6 +12,8 @@ export default defineConfig({
           TEST_MIGRATIONS: migrations,
           TRACKER_SALT_SECRET: "test-salt-secret",
           AUTH_SECRET: "test-auth-secret",
+          TURNSTILE_SECRET: "",
+          TURNSTILE_SITE_KEY: "",
         },
       },
     }),
