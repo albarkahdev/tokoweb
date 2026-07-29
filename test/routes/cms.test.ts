@@ -119,6 +119,34 @@ describe("CMS klien", () => {
     expect(overflow.status).toBe(400);
   });
 
+  it("manages item: edit, special, deactivate, reactivate", async () => {
+    const detail = await get("/menu/item?c=0&i=0");
+    expect(detail.status).toBe(200);
+    expect(await detail.text()).toContain("Ayam Bakar");
+
+    const save = await post("/menu/item/simpan?c=0&i=0", {
+      item_name: "Ayam Bakar Madu",
+      price: "19000",
+      desc: "Madu hutan asli",
+    });
+    expect(save.status).toBe(302);
+
+    await post("/menu/item/spesial?c=0&i=0", {});
+    let page = await (await get("/menu")).text();
+    expect(page).toContain("Ayam Bakar Madu");
+    expect(page).toContain("spesial ⭐");
+
+    await post("/menu/item/status?c=0&i=0", {});
+    page = await (await get("/menu")).text();
+    expect(page).toContain(">nonaktif</span>");
+    const site = await send(new Request("https://warung.tokoweb.id/"));
+    expect(await site.text()).not.toContain("Ayam Bakar Madu");
+
+    await post("/menu/item/status?c=0&i=0", {});
+    page = await (await get("/menu")).text();
+    expect(page).not.toContain(">nonaktif</span>");
+  });
+
   it("creates promo and validates dates", async () => {
     const bad = await post("/promo", {
       title: "Promo Salah",
@@ -160,6 +188,33 @@ describe("CMS klien", () => {
       theme_id: number;
     }>();
     expect(tenant?.theme_id).toBe(2);
+  });
+
+  it("shows QR share card and preview button on home", async () => {
+    const body = await (await get("/")).text();
+    expect(body).toContain("api.qrserver.com");
+    expect(body).toContain("warung.tokoweb.id");
+    expect(body).toContain('href="/pratinjau"');
+  });
+
+  it("renders own site preview with all pages before publish", async () => {
+    const home = await get("/pratinjau");
+    expect(home.status).toBe(200);
+    expect(home.headers.get("cache-control")).toBe("no-store");
+    const body = await home.text();
+    expect(body).toContain("Warung Bu Sari");
+    expect(body).toContain('href="/pratinjau#menu"');
+
+    const menu = await get("/pratinjau/menu");
+    expect(menu.status).toBe(200);
+    expect(await menu.text()).toContain("Makanan");
+  });
+
+  it("searchable theme picker shows tags and filter input", async () => {
+    const body = await (await get("/tema")).text();
+    expect(body).toContain("data-filter-cards");
+    expect(body).toContain("data-filter-text");
+    expect(body).toContain("mewah");
   });
 
   it("shows statistik page with empty state", async () => {

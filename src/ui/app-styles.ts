@@ -379,6 +379,12 @@ pre.code { white-space: pre-wrap; overflow-x: auto; margin: 0 0 1rem; }
 .mb-0 { margin-bottom: 0; }
 .row-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.5rem; }
 a { color: var(--primary); }
+.qr-figure { margin: 0.5rem 0 0; text-align: center; }
+.qr-figure img {
+  border: 1px solid var(--border); border-radius: 0.9rem; padding: 0.6rem;
+  background: #FFFFFF; max-width: 100%; height: auto;
+}
+.qr-figure figcaption { margin-top: 0.4rem; font-weight: 600; }
 .auth-brand { text-align: center; margin: 0 0 1.5rem; }
 .auth-brand .brand-mark { font-size: 1.6rem; justify-content: center; }
 .auth-brand p { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.88rem; }

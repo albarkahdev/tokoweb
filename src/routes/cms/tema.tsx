@@ -4,8 +4,9 @@ import { findThemeById, listActiveThemes, type ThemeRow } from "@/db/themes";
 import { formDataToValues } from "@/domain/cms";
 import type { AppEnv } from "@/env";
 import { type CmsContext, CmsPage, html, loadCms, purgeTenantPages } from "@/routes/cms/shared";
-import { Actions, Badge, Card, CardTitle } from "@/ui/display";
-import { Button, Form, HiddenInput, LinkButton } from "@/ui/form";
+import { themeConfigFor } from "@/themes/kuliner/configs";
+import { Actions, Badge, Card, CardTitle, Text } from "@/ui/display";
+import { Button, FilterInput, Form, HiddenInput, LinkButton } from "@/ui/form";
 
 function TemaPage(props: {
   cms: CmsContext;
@@ -22,29 +23,50 @@ function TemaPage(props: {
       notice={props.notice}
       error={props.error}
     >
-      {props.themes.map((theme) => (
-        <Card>
-          <CardTitle>
-            {theme.name}{" "}
-            {theme.id === props.cms.tenant.theme_id ? <Badge tone="success">dipakai</Badge> : null}
-          </CardTitle>
-          <Actions>
-            <LinkButton
-              variant="secondary"
-              external
-              href={`https://${props.publicHost}/?preview_theme=${theme.slug}`}
-            >
-              Preview dengan datamu
-            </LinkButton>
-            {theme.id !== props.cms.tenant.theme_id ? (
-              <Form action="/tema">
-                <HiddenInput name="theme_id" value={String(theme.id)} />
-                <Button>Pakai Tema Ini</Button>
-              </Form>
-            ) : null}
-          </Actions>
-        </Card>
-      ))}
+      <Card>
+        <CardTitle>Cari Tema ({props.themes.length})</CardTitle>
+        <FilterInput
+          label="Ketik nama atau gaya"
+          placeholder="modern, gelap, mewah, playful, animasi, earth…"
+        />
+      </Card>
+      {props.themes.map((theme) => {
+        const config = themeConfigFor(theme.slug);
+        const tags = config.tags ?? [];
+        return (
+          <Card filterText={`${theme.name} ${config.character} ${tags.join(" ")}`}>
+            <CardTitle>
+              {theme.name}{" "}
+              {theme.id === props.cms.tenant.theme_id ? (
+                <Badge tone="success">dipakai</Badge>
+              ) : null}
+            </CardTitle>
+            <Text small muted>
+              {config.character}
+            </Text>
+            <Text small>
+              {tags.map((tag) => (
+                <Badge tone="muted">{tag}</Badge>
+              ))}
+            </Text>
+            <Actions>
+              <LinkButton
+                variant="secondary"
+                external
+                href={`https://${props.publicHost}/?preview_theme=${theme.slug}`}
+              >
+                Preview dengan datamu
+              </LinkButton>
+              {theme.id !== props.cms.tenant.theme_id ? (
+                <Form action="/tema">
+                  <HiddenInput name="theme_id" value={String(theme.id)} />
+                  <Button>Pakai Tema Ini</Button>
+                </Form>
+              ) : null}
+            </Actions>
+          </Card>
+        );
+      })}
     </CmsPage>
   );
 }

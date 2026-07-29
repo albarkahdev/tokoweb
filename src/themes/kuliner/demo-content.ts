@@ -5,9 +5,9 @@ export const DEMO_BUSINESS_NAME = "Warung Bu Sari";
 export const DEMO_CONTENT: SiteContent = {
   info: {
     name: DEMO_BUSINESS_NAME,
-    tagline: "Masakan rumahan sejak 1998",
+    tagline: "Resep tiga generasi, dimasak pagi — biasanya habis sebelum petang",
     about:
-      "Warung keluarga dengan resep turun-temurun dari Bandung. Semua masakan dibuat segar setiap hari dengan bumbu racikan sendiri.",
+      "Sejak 1998, dapur kami tidak pernah pakai bumbu instan. Ayam kampung dipilih subuh-subuh, sambal diulek saat kamu memesan, dan rendang dimasak lima jam sampai santannya jadi karamel. Datang sebagai pembeli, pulang sebagai langganan.",
     address: "Jl. Melati No. 3, Bandung",
     maps_url: "https://maps.app.goo.gl/contoh",
     wa_number: "6281234567890",
@@ -30,15 +30,18 @@ export const DEMO_CONTENT: SiteContent = {
         {
           name: "Nasi Ayam Bakar",
           price: 18000,
-          desc: "Sambal korek, lalapan segar",
+          desc: "Ayam kampung bakar arang, sambal korek dadakan, lalapan segar",
           image_key: "t/demo/menu/ayam-bakar.webp",
+          images: ["t/demo/gallery/hero-sate.webp", "t/demo/gallery/suasana-3.webp"],
           featured: true,
+          special: true,
         },
         {
           name: "Nasi Rendang",
           price: 22000,
-          desc: "Daging empuk bumbu meresap",
+          desc: "Dimasak 5 jam sampai santan jadi karamel — daging lumer",
           image_key: "t/demo/menu/rendang.webp",
+          images: ["t/demo/gallery/suasana-2.webp"],
           featured: true,
         },
         {

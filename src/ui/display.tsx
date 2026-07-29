@@ -1,7 +1,21 @@
 import type { Child } from "hono/jsx";
 
-export function Card(props: { children: Child }) {
-  return <div class="card">{props.children}</div>;
+export function Card(props: { children: Child; filterText?: string }) {
+  return (
+    <div class="card" data-filter-text={props.filterText}>
+      {props.children}
+    </div>
+  );
+}
+
+export function QrImage(props: { data: string; caption: string }) {
+  const src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&data=${encodeURIComponent(props.data)}`;
+  return (
+    <figure class="qr-figure">
+      <img src={src} alt={`QR ${props.data}`} width="240" height="240" loading="lazy" />
+      <figcaption class="small muted">{props.caption}</figcaption>
+    </figure>
+  );
 }
 
 export function PageTitle(props: { children: Child }) {

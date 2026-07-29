@@ -6,6 +6,7 @@ export type ThemeConfig = {
   slug: string;
   name: string;
   character: string;
+  tags?: string[];
   colors: {
     bg: string;
     surface: string;
@@ -97,4 +98,5 @@ export type RenderData = {
   todayWib: string;
   noindex?: boolean;
   pageQuery?: string;
+  basePath?: string;
 };

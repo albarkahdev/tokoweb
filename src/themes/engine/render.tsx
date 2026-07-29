@@ -1,10 +1,12 @@
-import { DAY_KEYS, DAY_LABELS } from "@/domain/cms";
+import { DAY_KEYS, DAY_LABELS, isItemActive, itemPhotos } from "@/domain/cms";
 import type { MenuItem } from "@/domain/content";
 import { formatRupiah } from "@/domain/money";
 import {
   LIGHTBOX_SCRIPT,
+  MENU_POPUP_SCRIPT,
   OPEN_NOW_SCRIPT,
   REVEAL_SCRIPT,
+  SHARE_SCRIPT,
   trackerScript,
 } from "@/themes/engine/client-scripts";
 import { jsonLd, metaDescription, ogImageUrl, pageTitle } from "@/themes/engine/seo";
@@ -43,7 +45,9 @@ type FlatItem = MenuItem & { category: string };
 
 function flattenMenu(data: RenderData): FlatItem[] {
   return (data.site.content.menu ?? []).flatMap((category) =>
-    (category.items ?? []).map((item) => ({ ...item, category: category.category ?? "Menu" })),
+    (category.items ?? [])
+      .filter(isItemActive)
+      .map((item) => ({ ...item, category: category.category ?? "Menu" })),
   );
 }
 
@@ -52,7 +56,9 @@ function waLink(waNumber: string, text: string): string {
 }
 
 function pageHref(data: RenderData, path: string): string {
-  return `${path}${data.pageQuery ?? ""}`;
+  const base = data.basePath ?? "";
+  const full = path === "/" ? base || "/" : `${base}${path}`;
+  return `${full}${data.pageQuery ?? ""}`;
 }
 
 function galleryPhotos(data: RenderData): { src: string; alt: string }[] {
@@ -73,15 +79,18 @@ function heroImage(data: RenderData): { src: string; alt: string } | null {
 }
 
 function itemCard(item: FlatItem, businessName: string, waNumber: string, listMode: boolean) {
+  const photos = itemPhotos(item).map((key) => `/img/${key}`);
   return (
     <MenuItemCard
       listMode={listMode}
       name={item.name ?? ""}
       price={formatRupiah(item.price ?? 0)}
       desc={item.desc}
-      imageSrc={item.image_key ? `/img/${item.image_key}` : null}
+      imageSrc={photos[0] ?? null}
+      photos={photos}
       featured={item.featured}
-      askHref={waLink(waNumber, `Halo ${businessName}, mau tanya ${item.name}.`)}
+      special={item.special}
+      askHref={waLink(waNumber, `Halo ${businessName}, mau pesan ${item.name}.`)}
     />
   );
 }
@@ -153,6 +162,7 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
   const listMode = theme.layout.menu === "list";
   const menuClass = `menu-${theme.layout.menu}`;
   const gallery = galleryPhotos(data);
+  const specials = items.filter((item) => item.special);
 
   return (
     <>
@@ -165,6 +175,18 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
         waHref={waLink(waNumber, `Halo ${businessName}, saya mau pesan.`)}
         menuAnchor="#menu"
       />
+      {specials.length > 0 ? (
+        <SiteSection
+          id="spesial"
+          kicker="Cuma hari ini"
+          title="Spesial Hari Ini ⭐"
+          menuVariant={`${menuClass} special-sec`}
+        >
+          <MenuGrid>
+            {specials.map((item) => itemCard(item, businessName, waNumber, listMode))}
+          </MenuGrid>
+        </SiteSection>
+      ) : null}
       <SiteSection id="menu" kicker="Paling laris" title="Menu Andalan" menuVariant={menuClass}>
         <MenuGrid>{shown.map((item) => itemCard(item, businessName, waNumber, listMode))}</MenuGrid>
         {items.length > MAX_FEATURED ? (
@@ -246,7 +268,12 @@ function FullMenuSections(props: { data: RenderData; theme: ThemeConfig; waNumbe
   const { data, theme, waNumber } = props;
   const info = data.site.content.info ?? {};
   const businessName = info.name ?? data.site.name;
-  const categories = data.site.content.menu ?? [];
+  const categories = (data.site.content.menu ?? [])
+    .map((category) => ({
+      category: category.category,
+      items: (category.items ?? []).filter(isItemActive),
+    }))
+    .filter((category) => category.items.length > 0);
   const listMode = theme.layout.menu === "list";
   const menuClass = `menu-${theme.layout.menu}`;
 
@@ -351,7 +378,14 @@ export function renderKulinerPage(data: RenderData): string {
       ogImage={ogImageUrl(data)}
       css={siteCss(theme)}
       jsonLd={jsonLd(data)}
-      scripts={[trackerScript(data.appBaseUrl), OPEN_NOW_SCRIPT, REVEAL_SCRIPT, LIGHTBOX_SCRIPT]}
+      scripts={[
+        trackerScript(data.appBaseUrl),
+        OPEN_NOW_SCRIPT,
+        REVEAL_SCRIPT,
+        LIGHTBOX_SCRIPT,
+        MENU_POPUP_SCRIPT,
+        SHARE_SCRIPT,
+      ]}
     >
       {showTicker ? <PromoTicker titles={data.promos.map((promo) => promo.title)} /> : null}
       <SiteNav
@@ -362,7 +396,12 @@ export function renderKulinerPage(data: RenderData): string {
         withTicker={showTicker}
       />
       {isHome ? null : (
-        <SubpageNav backHref={pageHref(data, "/")} backLabel="Beranda" links={subpageLinks(data)} />
+        <SubpageNav
+          backHref={pageHref(data, "/")}
+          backLabel="Beranda"
+          links={subpageLinks(data)}
+          shareTitle={pageTitle(data)}
+        />
       )}
       <SiteMain>{pageSections(data, theme, waNumber)}</SiteMain>
       <SiteFooter businessName={businessName} />

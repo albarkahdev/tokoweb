@@ -7,6 +7,7 @@ import { cmsHome } from "@/routes/cms/home";
 import { cmsInfo } from "@/routes/cms/info";
 import { cmsMenu } from "@/routes/cms/menu";
 import { cmsPesan } from "@/routes/cms/pesan";
+import { cmsPratinjau } from "@/routes/cms/pratinjau";
 import { cmsPromo } from "@/routes/cms/promo";
 import { cmsStatistik } from "@/routes/cms/statistik";
 import { cmsTema } from "@/routes/cms/tema";
@@ -32,4 +33,5 @@ export const appHost = new Hono<AppEnv>()
   .route("/", cmsGaleri)
   .route("/", cmsPesan)
   .route("/", cmsStatistik)
-  .route("/", cmsTema);
+  .route("/", cmsTema)
+  .route("/", cmsPratinjau);

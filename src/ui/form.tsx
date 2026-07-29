@@ -160,6 +160,15 @@ export function InputPairRow(props: {
   );
 }
 
+export function FilterInput(props: { label: string; placeholder: string }) {
+  return (
+    <label class="field">
+      <span>{props.label}</span>
+      <input type="search" placeholder={props.placeholder} data-filter-cards="" />
+    </label>
+  );
+}
+
 export function Button(props: {
   children: Child;
   variant?: "primary" | "secondary" | "danger";

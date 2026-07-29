@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { formatRupiah } from "@/domain/money";
 import type { AppEnv } from "@/env";
 import { CmsPage, html, loadCms } from "@/routes/cms/shared";
-import { Actions, Badge, Card, CardTitle, DataList, TextLink } from "@/ui/display";
+import { Actions, Badge, Card, CardTitle, DataList, QrImage, Text, TextLink } from "@/ui/display";
 import { LinkButton } from "@/ui/form";
 
 export const cmsHome = new Hono<AppEnv>().get("/", async (c) => {
@@ -61,6 +61,9 @@ export const cmsHome = new Hono<AppEnv>().get("/", async (c) => {
             ]}
           />
           <Actions>
+            <LinkButton href="/pratinjau" external>
+              Pratinjau Website
+            </LinkButton>
             <LinkButton href="/tema" variant="secondary">
               Ganti Tema
             </LinkButton>
@@ -68,6 +71,17 @@ export const cmsHome = new Hono<AppEnv>().get("/", async (c) => {
               Lihat Statistik
             </LinkButton>
           </Actions>
+        </Card>
+        <Card>
+          <CardTitle>Bagikan Website</CardTitle>
+          <Text small muted>
+            Tunjukkan QR ini di kasir, meja, atau brosur — pelanggan scan langsung buka websitemu.
+            Screenshot untuk dicetak.
+          </Text>
+          <QrImage
+            data={`https://${tenant.slug}.${c.env.BASE_DOMAIN}`}
+            caption={`${tenant.slug}.${c.env.BASE_DOMAIN}`}
+          />
         </Card>
       </CmsPage>,
     ),

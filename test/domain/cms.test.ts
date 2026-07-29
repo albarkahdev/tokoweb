@@ -1,12 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
+  addItemPhoto,
   addMenuItem,
   countFeatured,
+  findMenuItem,
+  isItemActive,
+  itemPhotos,
   parseHoursForm,
   parseInfoForm,
+  parseItemEditForm,
   parseMenuItemForm,
   parsePromoForm,
+  removeItemPhoto,
   removeMenuItem,
+  updateMenuItem,
 } from "@/domain/cms";
 
 describe("parseInfoForm", () => {
@@ -102,5 +109,59 @@ describe("parsePromoForm", () => {
     expect(
       parsePromoForm({ title: "Promo", start_date: "2026-08-07", end_date: "2026-08-01" }).ok,
     ).toBe(false);
+  });
+});
+
+describe("menu v2 — foto per item, aktif, spesial", () => {
+  const menu = [
+    {
+      category: "Makanan",
+      items: [
+        { name: "Ayam Bakar", price: 18000, image_key: "a.webp" },
+        { name: "Rendang", price: 22000 },
+      ],
+    },
+  ];
+
+  it("itemPhotos merges image_key with extra images capped at 3", () => {
+    expect(itemPhotos({ image_key: "a", images: ["b", "c", "d"] })).toEqual(["a", "b", "c"]);
+    expect(itemPhotos({ images: ["x"] })).toEqual(["x"]);
+    expect(itemPhotos({})).toEqual([]);
+  });
+
+  it("addItemPhoto appends until limit then rejects", () => {
+    const one = addItemPhoto(menu, 0, 0, "b.webp");
+    expect(one.ok).toBe(true);
+    if (!one.ok) return;
+    const two = addItemPhoto(one.value, 0, 0, "c.webp");
+    expect(two.ok).toBe(true);
+    if (!two.ok) return;
+    expect(itemPhotos(findMenuItem(two.value, 0, 0) ?? {})).toEqual(["a.webp", "b.webp", "c.webp"]);
+    const three = addItemPhoto(two.value, 0, 0, "d.webp");
+    expect(three.ok).toBe(false);
+  });
+
+  it("removeItemPhoto promotes next photo to primary and reports removed key", () => {
+    const filled = updateMenuItem(menu, 0, 0, { image_key: "a", images: ["b", "c"] });
+    const { menu: next, removedKey } = removeItemPhoto(filled, 0, 0, 0);
+    expect(removedKey).toBe("a");
+    const item = findMenuItem(next, 0, 0);
+    expect(item?.image_key).toBe("b");
+    expect(item?.images).toEqual(["c"]);
+  });
+
+  it("toggles active and special via updateMenuItem without mutating source", () => {
+    const off = updateMenuItem(menu, 0, 1, { active: false, special: true });
+    expect(findMenuItem(off, 0, 1)?.active).toBe(false);
+    expect(findMenuItem(off, 0, 1)?.special).toBe(true);
+    expect(findMenuItem(menu, 0, 1)?.active).toBeUndefined();
+    expect(isItemActive({ active: false })).toBe(false);
+    expect(isItemActive({})).toBe(true);
+  });
+
+  it("parseItemEditForm validates name and price", () => {
+    expect(parseItemEditForm({ item_name: "Sate", price: "20.000", desc: "" }).ok).toBe(true);
+    expect(parseItemEditForm({ item_name: "S", price: "20000" }).ok).toBe(false);
+    expect(parseItemEditForm({ item_name: "Sate", price: "0" }).ok).toBe(false);
   });
 });

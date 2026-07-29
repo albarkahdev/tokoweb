@@ -185,7 +185,9 @@ export function MenuItemCard(props: {
   price: string;
   desc?: string;
   imageSrc?: string | null;
+  photos?: string[];
   featured?: boolean;
+  special?: boolean;
   askHref: string;
 }) {
   const photo = props.imageSrc ? (
@@ -201,10 +203,19 @@ export function MenuItemCard(props: {
   const title = (
     <h3>
       {props.name} {props.featured ? <span class="badge-fav">favorit 🔥</span> : null}
+      {props.special ? <span class="badge-fav badge-special">spesial ⭐</span> : null}
     </h3>
   );
+  const popData = JSON.stringify({
+    n: props.name,
+    p: props.price,
+    d: props.desc ?? "",
+    f: props.photos ?? (props.imageSrc ? [props.imageSrc] : []),
+    w: props.askHref,
+  });
   return (
-    <div class={`menu-item reveal${props.imageSrc ? "" : " no-photo"}`}>
+    <div class={`menu-item reveal has-pop${props.imageSrc ? "" : " no-photo"}`} data-mi={popData}>
+      <button type="button" class="mi-open" aria-label={`Lihat detail ${props.name}`} />
       {photo}
       <div class="mi-body">
         {props.listMode ? (
@@ -418,6 +429,7 @@ export function SubpageNav(props: {
   backHref: string;
   backLabel: string;
   links: { href: string; label: string; active?: boolean }[];
+  shareTitle?: string;
 }) {
   return (
     <nav class="catnav subnav">
@@ -429,6 +441,11 @@ export function SubpageNav(props: {
           {link.label}
         </a>
       ))}
+      {props.shareTitle ? (
+        <button class="share-btn" type="button" data-share-title={props.shareTitle}>
+          Bagikan ↗
+        </button>
+      ) : null}
     </nav>
   );
 }

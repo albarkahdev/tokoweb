@@ -112,6 +112,28 @@ describe("tema kuliner — halaman utama", () => {
     expect(html).toContain('class="testi-grid"');
   });
 
+  it("shows daily special section and hides inactive items", async () => {
+    const html = await (await get("/")).text();
+    expect(html).toContain("Spesial Hari Ini");
+    expect(html).toContain("special-sec");
+    expect(html).not.toContain("Menu Rahasia Lama");
+    const menuPage = await (await get("/menu")).text();
+    expect(menuPage).not.toContain("Menu Rahasia Lama");
+  });
+
+  it("menu cards carry popup data with up to 3 photos", async () => {
+    const html = await (await get("/")).text();
+    expect(html).toContain("data-mi=");
+    expect(html).toContain("mi-pop");
+    expect(html).toContain("ayam-bakar-2.webp");
+  });
+
+  it("subpages show share button", async () => {
+    const html = await (await get("/menu")).text();
+    expect(html).toContain("data-share-title");
+    expect(html).toContain("navigator.share");
+  });
+
   it("renders sticky navbar with brand and section links", async () => {
     const html = await (await get("/")).text();
     expect(html).toContain('class="site-nav with-ticker"');

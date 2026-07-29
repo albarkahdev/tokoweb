@@ -11,6 +11,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "hangat",
     name: "Hangat",
     character: "Earth tone membumi — warung & rumah makan keluarga",
+    tags: ["terang", "earth", "klasik", "foto", "keluarga"],
     colors: {
       bg: "#FFFBF5",
       surface: "#FFFFFF",
@@ -30,6 +31,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "arang",
     name: "Arang",
     character: "Gelap elegan berlapis emas — grill, kopi & dining malam",
+    tags: ["gelap", "mewah", "klasik", "emas", "malam"],
     colors: {
       bg: "#15130F",
       surface: "#1F1B15",
@@ -50,6 +52,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "ceria",
     name: "Ceria",
     character: "Cerah playful — kedai kekinian, dessert & minuman",
+    tags: ["terang", "playful", "modern", "warna", "kekinian"],
     colors: {
       bg: "#FFFDF7",
       surface: "#FFFFFF",
@@ -70,6 +73,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "kopi",
     name: "Kopi",
     character: "Monokrom krem-espresso — coffee shop minimal",
+    tags: ["terang", "minimal", "kopi", "earth", "klasik"],
     colors: {
       bg: "#F5F0E8",
       surface: "#FFFFFF",
@@ -89,6 +93,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "senja",
     name: "Senja",
     character: "Gradasi matahari terbenam — cafe rooftop & outdoor",
+    tags: ["terang", "gradasi", "romantis", "modern"],
     colors: {
       bg: "#FFF9F4",
       surface: "#FFFFFF",
@@ -108,6 +113,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "padi",
     name: "Padi",
     character: "Hijau-emas tradisional — masakan Padang & nusantara",
+    tags: ["terang", "tradisional", "hijau", "emas", "nusantara"],
     colors: {
       bg: "#F7F8F2",
       surface: "#FFFFFF",
@@ -128,6 +134,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "laut",
     name: "Laut",
     character: "Biru laut segar — seafood & ikan bakar",
+    tags: ["terang", "biru", "segar", "modern", "seafood"],
     colors: {
       bg: "#F3FAFB",
       surface: "#FFFFFF",
@@ -148,6 +155,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "manis",
     name: "Manis",
     character: "Pastel lembut membulat — bakery, kue & dessert box",
+    tags: ["terang", "pastel", "lembut", "manis", "bakery"],
     colors: {
       bg: "#FFF7F9",
       surface: "#FFFFFF",
@@ -168,6 +176,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "sambal",
     name: "Sambal",
     character: "Merah berani tipografi tebal — ayam geprek & pedas-pedasan",
+    tags: ["terang", "merah", "berani", "tebal", "pedas"],
     colors: {
       bg: "#FFF8F4",
       surface: "#FFFFFF",
@@ -188,6 +197,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "kebun",
     name: "Kebun",
     character: "Hijau daun natural ringan — healthy food, salad & jus",
+    tags: ["terang", "hijau", "natural", "sehat", "ringan"],
     colors: {
       bg: "#F6FBF4",
       surface: "#FFFFFF",
@@ -208,6 +218,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "batik",
     name: "Batik",
     character: "Editorial heritage berpola — resto nusantara & katering hajatan",
+    tags: ["terang", "tradisional", "editorial", "heritage", "nusantara", "pola"],
     colors: {
       bg: "#FAF6EE",
       surface: "#FFFFFF",
@@ -229,6 +240,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "neon",
     name: "Neon",
     character: "Gelap menyala khas street food malam — burger, ramen & nongkrong",
+    tags: ["gelap", "modern", "menyala", "berani", "malam", "animasi"],
     colors: {
       bg: "#0B0B12",
       surface: "#15151F",
@@ -250,6 +262,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "pasar",
     name: "Pasar",
     character: "Pop berani ala poster pasar — gerobak, jajanan & franchise lokal",
+    tags: ["terang", "berani", "pop", "kuning", "brutal", "playful"],
     colors: {
       bg: "#FFD335",
       surface: "#FFFFFF",
@@ -270,6 +283,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "kertas",
     name: "Kertas",
     character: "Minimal tenang berbingkai — omakase, teh & fine dining kecil",
+    tags: ["terang", "minimal", "zen", "tenang", "mewah"],
     colors: {
       bg: "#FBFAF7",
       surface: "#FFFFFF",
@@ -290,6 +304,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "tropis",
     name: "Tropis",
     character: "Resort hijau-mangga dengan lengkung — jus bar, poke & brunch",
+    tags: ["terang", "hijau", "resort", "lengkung", "segar"],
     colors: {
       bg: "#FBF7EC",
       surface: "#FFFFFF",
@@ -311,6 +326,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "warisan",
     name: "Warisan",
     character: "Mewah klasik navy-emas berornamen — hidangan istimewa & hampers",
+    tags: ["terang", "mewah", "klasik", "navy", "emas", "ornamen"],
     colors: {
       bg: "#FBF9F4",
       surface: "#FFFFFF",
@@ -332,6 +348,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "retro",
     name: "Retro",
     character: "Nuansa 70-an oranye-krem chunky — kedai kopi susu & toast",
+    tags: ["terang", "retro", "oranye", "70an", "chunky", "playful"],
     colors: {
       bg: "#FFF6E9",
       surface: "#FFFDF7",
@@ -353,6 +370,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "mono",
     name: "Mono",
     character: "Swiss hitam-putih aksen merah — tegas, grid, tanpa basa-basi",
+    tags: ["terang", "minimal", "hitam-putih", "swiss", "tegas"],
     colors: {
       bg: "#FFFFFF",
       surface: "#FFFFFF",
@@ -373,6 +391,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "lampion",
     name: "Lampion",
     character: "Merah-emas pecinan hangat — chinese food, dimsum & bakmi",
+    tags: ["terang", "merah", "emas", "pecinan", "chinese", "tradisional"],
     colors: {
       bg: "#FDF6EC",
       surface: "#FFFFFF",
@@ -394,6 +413,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "sketsa",
     name: "Sketsa",
     character: "Papan kapur gelap coretan tangan — angkringan, burjo & kafe santai",
+    tags: ["gelap", "unik", "kapur", "santai", "playful"],
     colors: {
       bg: "#22303C",
       surface: "#283947",
@@ -415,6 +435,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "blueprint",
     name: "Blueprint",
     character: "Cetak biru teknis garis cyan — dapur terbuka & konsep industrial",
+    tags: ["gelap", "unik", "teknis", "biru", "industrial"],
     colors: {
       bg: "#10243E",
       surface: "#16304F",
@@ -436,6 +457,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "koran",
     name: "Koran",
     character: "Surat kabar klasik hitam-gading — depot legendaris & kuliner lawas",
+    tags: ["terang", "klasik", "koran", "editorial", "hitam-putih"],
     colors: {
       bg: "#F7F4EC",
       surface: "#FFFEF9",
@@ -456,6 +478,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "aurora",
     name: "Aurora",
     character: "Kaca beku bercahaya di kegelapan — dessert bar & speakeasy",
+    tags: ["gelap", "mewah", "kaca", "glow", "modern", "animasi"],
     colors: {
       bg: "#0D1022",
       surface: "#171B33",
@@ -477,6 +500,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "keramik",
     name: "Keramik",
     character: "Ubin mediterania kobalt-terakota — resto keluarga & pasta",
+    tags: ["terang", "biru", "mediterania", "keramik", "keluarga"],
     colors: {
       bg: "#FDFCF8",
       surface: "#FFFFFF",
@@ -498,6 +522,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "piksel",
     name: "Piksel",
     character: "Arcade 8-bit kontras tinggi — gaming cafe & kedai anak muda",
+    tags: ["gelap", "unik", "pixel", "arcade", "gaming", "playful"],
     colors: {
       bg: "#101828",
       surface: "#182338",
@@ -519,6 +544,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "stempel",
     name: "Stempel",
     character: "Kertas kraft & cap karet — kopi manual brew dan roti artisan",
+    tags: ["terang", "earth", "kraft", "artisan", "kopi", "unik"],
     colors: {
       bg: "#EFE3CC",
       surface: "#F9F2E3",
@@ -539,6 +565,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "disko",
     name: "Disko",
     character: "Y2K gradasi panas miring — milkshake, boba & hangout larut",
+    tags: ["gelap", "y2k", "gradasi", "playful", "malam", "animasi"],
     colors: {
       bg: "#170B1E",
       surface: "#221230",
@@ -560,6 +587,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "hutan",
     name: "Hutan",
     character: "Botani gelap mewah emas tipis — fine dining & wine pairing lokal",
+    tags: ["gelap", "mewah", "hijau", "botani", "emas", "fine-dining"],
     colors: {
       bg: "#12231A",
       surface: "#1A3024",
@@ -581,6 +609,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "mentega",
     name: "Mentega",
     character: "Kuning mentega lembut menggemaskan — toko kue & sarapan",
+    tags: ["terang", "kuning", "lembut", "manis", "bakery", "playful"],
     colors: {
       bg: "#FFFBEB",
       surface: "#FFFFFF",
@@ -602,6 +631,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "dermaga",
     name: "Dermaga",
     character: "Pasir-teluk tenang khas tepi laut — kafe pantai & grill ikan",
+    tags: ["terang", "pantai", "earth", "tenang", "seafood"],
     colors: {
       bg: "#F4EAD5",
       surface: "#FDF8EC",
@@ -622,6 +652,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "kunyit",
     name: "Kunyit",
     character: "Kunyit menyala tipografi raksasa — nasi kuning & masakan rempah",
+    tags: ["terang", "oranye", "berani", "tebal", "rempah", "nusantara"],
     colors: {
       bg: "#FFFDF6",
       surface: "#FFFFFF",
@@ -643,6 +674,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "anggrek",
     name: "Anggrek",
     character: "Ungu anggrek lembut feminin — dessert cantik & tea house",
+    tags: ["terang", "ungu", "pastel", "feminin", "lembut", "manis"],
     colors: {
       bg: "#FBF8FF",
       surface: "#FFFFFF",
@@ -664,6 +696,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "tanah",
     name: "Tanah",
     character: "Lempung monokrom hangat membumi — gerabah, angkringan modern",
+    tags: ["terang", "earth", "gerabah", "membumi", "artisan"],
     colors: {
       bg: "#F6EFE8",
       surface: "#FDF9F4",
@@ -684,6 +717,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "salju",
     name: "Salju",
     character: "Es biru putih sebening kaca — gelato, es kopi & minuman dingin",
+    tags: ["terang", "biru", "minimal", "dingin", "es", "bersih"],
     colors: {
       bg: "#F6FAFD",
       surface: "#FFFFFF",
@@ -704,6 +738,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "bara",
     name: "Bara",
     character: "Arang membara oranye menyala — sate, bakaran & smoked bbq",
+    tags: ["gelap", "oranye", "menyala", "bakaran", "berani", "animasi"],
     colors: {
       bg: "#160F0B",
       surface: "#211712",
@@ -725,6 +760,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "pandan",
     name: "Pandan",
     character: "Hijau pandan santan lembut — jajan pasar & kue tradisional",
+    tags: ["terang", "hijau", "tradisional", "jajan", "lembut"],
     colors: {
       bg: "#F7FBF2",
       surface: "#FFFFFF",
@@ -745,6 +781,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "teraso",
     name: "Teraso",
     character: "Lantai teraso bertabur warna — kedai es krim & brunch ceria",
+    tags: ["terang", "playful", "warna", "teraso", "ceria"],
     colors: {
       bg: "#FBF9F5",
       surface: "#FFFFFF",
@@ -765,6 +802,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "kabut",
     name: "Kabut",
     character: "Abu hangat berkabut aksen blush — brunch tenang & patisserie",
+    tags: ["terang", "minimal", "lembut", "sutra", "tenang"],
     colors: {
       bg: "#F3F1EE",
       surface: "#FBFAF8",
@@ -785,6 +823,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "jeruk",
     name: "Jeruk",
     character: "Jeruk pop tebal bergaris hitam — juice bar & rujak modern",
+    tags: ["terang", "oranye", "pop", "segar", "berani", "playful"],
     colors: {
       bg: "#FFF8EF",
       surface: "#FFFFFF",
@@ -805,6 +844,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "merak",
     name: "Merak",
     character: "Teal merak berhias emas — resto peranakan & seafood premium",
+    tags: ["terang", "mewah", "teal", "emas", "peranakan"],
     colors: {
       bg: "#F6F7F2",
       surface: "#FFFFFF",
@@ -826,6 +866,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "sinar",
     name: "Sinar",
     character: "Cahaya sore keemasan bergerak pelan — rumah makan sore & kopi senja",
+    tags: ["terang", "emas", "hangat", "animasi", "lembut"],
     colors: {
       bg: "#FFF9EE",
       surface: "#FFFFFF",
@@ -846,6 +887,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "kunang",
     name: "Kunang",
     character: "Malam hutan dengan kunang-kunang melayang — dinner outdoor & taman",
+    tags: ["gelap", "hijau", "malam", "animasi", "romantis"],
     colors: {
       bg: "#101C14",
       surface: "#17271C",
@@ -867,6 +909,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "uap",
     name: "Uap",
     character: "Kepulan uap kopi hangat naik perlahan — kedai kopi tenang",
+    tags: ["terang", "kopi", "earth", "tenang", "animasi"],
     colors: {
       bg: "#F3EDE5",
       surface: "#FCF8F2",
@@ -887,6 +930,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "denyut",
     name: "Denyut",
     character: "Detak neon mint di kegelapan — bar jus sehat & gym cafe",
+    tags: ["gelap", "mint", "menyala", "modern", "animasi", "sehat"],
     colors: {
       bg: "#0A1418",
       surface: "#122029",
@@ -908,6 +952,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "melayang",
     name: "Melayang",
     character: "Kartu mengambang pelan di langit pastel — dessert ringan & pastry",
+    tags: ["terang", "pastel", "biru", "lembut", "animasi", "playful"],
     colors: {
       bg: "#F2F7FF",
       surface: "#FFFFFF",
@@ -928,6 +973,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "tinta",
     name: "Tinta",
     character: "Sapuan kuas tinta dengan garis merah tergores — ramen & izakaya",
+    tags: ["terang", "minimal", "jepang", "kuas", "animasi"],
     colors: {
       bg: "#FAFAF7",
       surface: "#FFFFFF",
@@ -948,6 +994,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "prisma",
     name: "Prisma",
     character: "Holografik lembut berputar warna — gelato artisan & dessert lab",
+    tags: ["terang", "pastel", "holografik", "modern", "animasi"],
     colors: {
       bg: "#FDFCFF",
       surface: "#FFFFFF",
@@ -969,6 +1016,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "loket",
     name: "Loket",
     character: "Marquee bioskop lawas berlampu berlari — snack bar & cinema cafe",
+    tags: ["gelap", "retro", "bioskop", "merah", "animasi", "playful"],
     colors: {
       bg: "#1D0F12",
       surface: "#2A171B",
@@ -990,6 +1038,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "sawah",
     name: "Sawah",
     character: "Terasering hijau bergoyang angin — nasi liwet & masakan desa",
+    tags: ["terang", "hijau", "desa", "natural", "animasi"],
     colors: {
       bg: "#F4FAEE",
       surface: "#FFFFFF",
@@ -1010,6 +1059,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "kilau",
     name: "Kilau",
     character: "Emas sampanye berkilau menyapu judul — omakase & tasting menu",
+    tags: ["gelap", "mewah", "emas", "shimmer", "animasi", "fine-dining"],
     colors: {
       bg: "#17150F",
       surface: "#211E15",
@@ -1031,6 +1081,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "gelembung",
     name: "Gelembung",
     character: "Gelembung boba naik pelan, hover memantul — kedai boba & milk bar",
+    tags: ["terang", "boba", "coklat", "manis", "animasi", "playful"],
     colors: {
       bg: "#FFF7F0",
       surface: "#FFFFFF",
@@ -1051,6 +1102,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "lilin",
     name: "Lilin",
     character: "Cahaya lilin berkedip hangat bernapas — dinner romantis & steak",
+    tags: ["gelap", "romantis", "hangat", "lilin", "animasi", "malam"],
     colors: {
       bg: "#191410",
       surface: "#231C15",
@@ -1072,6 +1124,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "orbit",
     name: "Orbit",
     character: "Angkasa playful bintang berkedip — kedai malam & 24 jam",
+    tags: ["gelap", "angkasa", "playful", "bintang", "animasi", "malam"],
     colors: {
       bg: "#12122B",
       surface: "#1B1B3D",
@@ -1093,6 +1146,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "gugur",
     name: "Gugur",
     character: "Daun musim gugur melayang jatuh — kedai teh & roastery",
+    tags: ["terang", "earth", "musim-gugur", "hangat", "animasi"],
     colors: {
       bg: "#FBF3E9",
       surface: "#FFFCF7",
@@ -1113,6 +1167,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "sirup",
     name: "Sirup",
     character: "Blob sirup permen bermorf pelan — es campur & dessert manis",
+    tags: ["terang", "pink", "manis", "permen", "animasi", "playful"],
     colors: {
       bg: "#FFF4F7",
       surface: "#FFFFFF",
@@ -1133,6 +1188,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "jendela",
     name: "Jendela",
     character: "Berkas cahaya pagi menyapu ruangan — brunch terang & toko roti",
+    tags: ["terang", "minimal", "cahaya", "tenang", "animasi"],
     colors: {
       bg: "#FCFBF7",
       surface: "#FFFFFF",
@@ -1153,6 +1209,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "komet",
     name: "Komet",
     character: "Bintang jatuh melintas sesekali — mie malam & wedangan",
+    tags: ["gelap", "biru", "malam", "bintang", "animasi"],
     colors: {
       bg: "#0B1026",
       surface: "#141A38",
@@ -1174,6 +1231,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "angin",
     name: "Angin",
     character: "Sage sejuk kartu miring tertiup lembut — salad bar & poke sehat",
+    tags: ["terang", "hijau", "sage", "sehat", "animasi", "lembut"],
     colors: {
       bg: "#F3F7F1",
       surface: "#FFFFFF",
@@ -1194,6 +1252,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "aksara",
     name: "Aksara",
     character: "Tagline mengetik sendiri gaya editor — kedai buku & kopi",
+    tags: ["terang", "minimal", "ketik", "editorial", "animasi", "unik"],
     colors: {
       bg: "#FBFAF4",
       surface: "#FFFFFF",
@@ -1214,6 +1273,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
     slug: "karnaval",
     name: "Karnaval",
     character: "Bendera pesta berkibar warna-warni — jajanan pasar malam & festival",
+    tags: ["terang", "merah", "festival", "bendera", "animasi", "playful"],
     colors: {
       bg: "#FFFBEF",
       surface: "#FFFFFF",

@@ -14,7 +14,10 @@ export type MenuItem = {
   price?: number;
   desc?: string;
   image_key?: string;
+  images?: string[];
   featured?: boolean;
+  special?: boolean;
+  active?: boolean;
 };
 
 export type MenuCategory = {

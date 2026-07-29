@@ -83,6 +83,101 @@ export function parseMenuItemForm(form: FormValues): ParseResult<{
   return { ok: true, value: { category, item } };
 }
 
+export const MAX_ITEM_PHOTOS = 3;
+
+export function isItemActive(item: MenuItem): boolean {
+  return item.active !== false;
+}
+
+export function itemPhotos(item: MenuItem): string[] {
+  const keys = [item.image_key, ...(item.images ?? [])].filter((key): key is string =>
+    Boolean(key),
+  );
+  return [...new Set(keys)].slice(0, MAX_ITEM_PHOTOS);
+}
+
+function cloneMenu(menu: MenuCategory[] | undefined): MenuCategory[] {
+  return (menu ?? []).map((entry) => ({
+    category: entry.category,
+    items: (entry.items ?? []).map((item) => ({ ...item })),
+  }));
+}
+
+export function findMenuItem(
+  menu: MenuCategory[] | undefined,
+  categoryIndex: number,
+  itemIndex: number,
+): MenuItem | null {
+  return (menu ?? [])[categoryIndex]?.items?.[itemIndex] ?? null;
+}
+
+export function updateMenuItem(
+  menu: MenuCategory[] | undefined,
+  categoryIndex: number,
+  itemIndex: number,
+  patch: Partial<MenuItem>,
+): MenuCategory[] {
+  const next = cloneMenu(menu);
+  const item = next[categoryIndex]?.items?.[itemIndex];
+  if (item) Object.assign(item, patch);
+  return next;
+}
+
+export function addItemPhoto(
+  menu: MenuCategory[] | undefined,
+  categoryIndex: number,
+  itemIndex: number,
+  imageKey: string,
+): ParseResult<MenuCategory[]> {
+  const item = findMenuItem(menu, categoryIndex, itemIndex);
+  if (!item) return { ok: false, error: "Item tidak ditemukan." };
+  if (itemPhotos(item).length >= MAX_ITEM_PHOTOS) {
+    return {
+      ok: false,
+      error: `Maksimal ${MAX_ITEM_PHOTOS} foto per menu. Hapus salah satu dulu.`,
+    };
+  }
+  const images = itemPhotos(item).concat(imageKey);
+  return {
+    ok: true,
+    value: updateMenuItem(menu, categoryIndex, itemIndex, {
+      image_key: images[0],
+      images: images.slice(1),
+    }),
+  };
+}
+
+export function removeItemPhoto(
+  menu: MenuCategory[] | undefined,
+  categoryIndex: number,
+  itemIndex: number,
+  photoIndex: number,
+): { menu: MenuCategory[]; removedKey: string | null } {
+  const item = findMenuItem(menu, categoryIndex, itemIndex);
+  if (!item) return { menu: cloneMenu(menu), removedKey: null };
+  const photos = itemPhotos(item);
+  const removedKey = photos[photoIndex] ?? null;
+  const rest = photos.filter((_, index) => index !== photoIndex);
+  return {
+    menu: updateMenuItem(menu, categoryIndex, itemIndex, {
+      image_key: rest[0],
+      images: rest.slice(1),
+    }),
+    removedKey,
+  };
+}
+
+export function parseItemEditForm(form: FormValues): ParseResult<Partial<MenuItem>> {
+  const name = (form.item_name ?? "").trim();
+  const price = Number((form.price ?? "").replace(/\D/g, ""));
+  if (name.length < 2) return { ok: false, error: "Nama item wajib diisi." };
+  if (!Number.isInteger(price) || price <= 0) {
+    return { ok: false, error: "Harga wajib angka lebih dari 0." };
+  }
+  const desc = (form.desc ?? "").trim();
+  return { ok: true, value: { name, price, desc: desc || undefined } };
+}
+
 export function countFeatured(menu: MenuCategory[] | undefined): number {
   return (menu ?? []).flatMap((category) => category.items ?? []).filter((item) => item.featured)
     .length;
