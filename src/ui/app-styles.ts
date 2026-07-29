@@ -60,23 +60,15 @@ header.app-header {
   justify-content: space-between;
   gap: 0.75rem;
 }
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+.brand-logo img { display: block; width: auto; }
 .brand-mark {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: 1.05rem;
-  color: var(--text);
-  text-decoration: none;
-  letter-spacing: -0.01em;
-}
-.brand-mark .dot {
-  width: 0.6rem;
-  height: 0.6rem;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), var(--primary-hot));
-  box-shadow: 0 0 0 3px rgba(196, 80, 27, 0.15);
 }
 .header-title {
   font-family: var(--display);

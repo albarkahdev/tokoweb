@@ -1,4 +1,5 @@
 import type { Child } from "hono/jsx";
+import { BrandLogo, FaviconLinks } from "@/ui/brand";
 import { FONTS_CSS } from "@/ui/fonts-css";
 
 const DISPLAY_FONT = "'Fraunces', ui-serif, 'New York', Georgia, 'Times New Roman', serif";
@@ -51,8 +52,8 @@ body {
 .topnav a { color: var(--ink-soft); text-decoration: none; font-weight: 600; font-size: 0.92rem; }
 .topnav a:hover { color: var(--brand-deep); }
 @media (max-width: 44rem) { .topnav { display: none; } }
-.brand { font-family: var(--display); font-weight: 700; font-size: 1.25rem; letter-spacing: -0.01em; text-decoration: none; color: var(--ink); }
-.brand em { color: var(--brand); font-style: normal; }
+.brand-logo { display: inline-flex; align-items: center; text-decoration: none; }
+.brand-logo img { display: block; width: auto; }
 
 .hero { position: relative; padding: clamp(1.5rem, 4vw, 3rem) 0 clamp(2.5rem, 6vw, 4rem); }
 .hero .wrap { max-width: 82rem; }
@@ -274,6 +275,7 @@ body {
 .footer .wrap { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; align-items: center; }
 .footer a { color: var(--ink-soft); text-decoration: none; font-weight: 600; }
 .footer a:hover { color: var(--brand-deep); }
+.footer-brand { display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 
 .mitra-form { max-width: 26rem; margin-top: 2rem; display: grid; gap: 0.9rem; }
 .mitra-form label { display: grid; gap: 0.3rem; font-weight: 700; font-size: 0.88rem; }
@@ -354,6 +356,8 @@ export function LandingShell(props: {
         <meta property="og:description" content={props.description} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={props.canonical} />
+        <meta property="og:image" content="https://tokoweb.id/assets/logo-square.png" />
+        <FaviconLinks />
         <style dangerouslySetInnerHTML={{ __html: LANDING_STYLES }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: props.jsonLd }} />
       </head>
@@ -373,9 +377,7 @@ export function TopBar(props: {
   return (
     <header class="topbar">
       <div class="wrap">
-        <a class="brand" href="/">
-          toko<em>web</em>.id
-        </a>
+        <BrandLogo href="/" height={30} />
         {props.links ? (
           <nav class="topnav">
             {props.links.map((link) => (
@@ -701,11 +703,9 @@ export function LandingFooter(props: { links: { href: string; label: string }[] 
   return (
     <footer class="footer">
       <div class="wrap">
-        <span>
-          <a class="brand" href="/">
-            toko<em>web</em>.id
-          </a>{" "}
-          — website kilat untuk UMKM Indonesia
+        <span class="footer-brand">
+          <BrandLogo href="/" height={22} />
+          <span>— website kilat untuk UMKM Indonesia</span>
         </span>
         <span>
           {props.links.map((link, index) => (
