@@ -1,4 +1,5 @@
 import type { Child } from "hono/jsx";
+import type { BlogBlock } from "@/domain/blog";
 import { BrandLogo, FaviconLinks } from "@/ui/brand";
 import { FONTS_CSS } from "@/ui/fonts-css";
 import { TurnstileWidget } from "@/ui/turnstile-widget";
@@ -295,6 +296,31 @@ body {
   .reveal { opacity: 1; transform: none; transition: none; }
   .float-chip { animation: none; }
 }
+
+.prose-wrap { max-width: 46rem; margin: 0 auto; padding: clamp(2rem, 6vw, 4rem) 1.3rem 1rem; }
+.prose-meta { font-size: 0.82rem; color: var(--muted); font-weight: 600; margin: 0 0 0.6rem; }
+.prose-title { font-size: clamp(1.8rem, 5vw, 2.7rem); line-height: 1.15; margin: 0 0 1.3rem; letter-spacing: -0.02em; }
+.prose { font-size: 1.05rem; line-height: 1.75; color: var(--ink); }
+.prose h2 { font-size: 1.3rem; line-height: 1.3; margin: 2rem 0 0.7rem; letter-spacing: -0.01em; }
+.prose p { margin: 0 0 1.05rem; }
+.prose ul { margin: 0 0 1.2rem; padding-left: 1.2rem; }
+.prose li { margin: 0 0 0.5rem; }
+.blog-grid { display: grid; gap: 1.1rem; grid-template-columns: 1fr; }
+@media (min-width: 40rem) { .blog-grid { grid-template-columns: 1fr 1fr; } }
+.blog-card { display: block; text-decoration: none; color: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 1rem; padding: 1.3rem 1.4rem; transition: transform 0.2s ease, border-color 0.2s ease; }
+.blog-card:hover { transform: translateY(-3px); border-color: var(--brand); }
+.blog-card h3 { font-size: 1.12rem; line-height: 1.3; margin: 0 0 0.5rem; }
+.blog-card p { font-size: 0.9rem; color: var(--muted); margin: 0 0 0.6rem; line-height: 1.55; }
+.blog-card .meta { font-size: 0.78rem; color: var(--brand); font-weight: 700; }
+.dir-grid { display: grid; gap: 0.9rem; grid-template-columns: 1fr; }
+@media (min-width: 34rem) { .dir-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 52rem) { .dir-grid { grid-template-columns: 1fr 1fr 1fr; } }
+.dir-card { display: flex; align-items: center; gap: 0.85rem; text-decoration: none; color: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 0.9rem; padding: 1rem 1.15rem; transition: transform 0.2s ease, border-color 0.2s ease; }
+.dir-card:hover { transform: translateY(-2px); border-color: var(--brand); }
+.dir-card .dir-mono { width: 2.6rem; height: 2.6rem; flex-shrink: 0; border-radius: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; background: linear-gradient(135deg, var(--brand), var(--brand-hot)); color: #fff; }
+.dir-card strong { display: block; font-size: 0.98rem; }
+.dir-card span { font-size: 0.8rem; color: var(--muted); }
+.dir-empty { text-align: center; color: var(--muted); padding: 2rem 0; }
 `;
 
 export const LANDING_REVEAL_SCRIPT = `(function(){if(!("IntersectionObserver" in window))return;
@@ -719,5 +745,81 @@ export function LandingFooter(props: { links: { href: string; label: string }[] 
         </span>
       </div>
     </footer>
+  );
+}
+
+export function ArticleBody(props: { blocks: BlogBlock[] }) {
+  const out: Child[] = [];
+  let list: string[] = [];
+  const flush = () => {
+    if (list.length) {
+      out.push(
+        <ul>
+          {list.map((text) => (
+            <li>{text}</li>
+          ))}
+        </ul>,
+      );
+      list = [];
+    }
+  };
+  for (const block of props.blocks) {
+    if (block.type === "li") {
+      list.push(block.text);
+      continue;
+    }
+    flush();
+    if (block.type === "h2") out.push(<h2>{block.text}</h2>);
+    else out.push(<p>{block.text}</p>);
+  }
+  flush();
+  return <div class="prose">{out}</div>;
+}
+
+export function ArticleHeader(props: { title: string; meta: string }) {
+  return (
+    <>
+      <p class="prose-meta">{props.meta}</p>
+      <h1 class="prose-title">{props.title}</h1>
+    </>
+  );
+}
+
+export function BlogGrid(props: {
+  items: { href: string; title: string; description: string; meta: string }[];
+}) {
+  return (
+    <div class="blog-grid">
+      {props.items.map((item) => (
+        <a class="blog-card reveal" href={item.href}>
+          <h3>{item.title}</h3>
+          <p>{item.description}</p>
+          <span class="meta">{item.meta} →</span>
+        </a>
+      ))}
+    </div>
+  );
+}
+
+export function DirectoryGrid(props: {
+  items: { href: string; name: string; vertical: string; initial: string }[];
+}) {
+  if (props.items.length === 0) {
+    return <p class="dir-empty">Belum ada toko yang tampil. Jadilah yang pertama! 🎉</p>;
+  }
+  return (
+    <div class="dir-grid">
+      {props.items.map((item) => (
+        <a class="dir-card reveal" href={item.href}>
+          <span class="dir-mono" aria-hidden="true">
+            {item.initial}
+          </span>
+          <span>
+            <strong>{item.name}</strong>
+            <span>{item.vertical}</span>
+          </span>
+        </a>
+      ))}
+    </div>
   );
 }
