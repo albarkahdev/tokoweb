@@ -3,6 +3,20 @@
 Paket sebelum modul Pemesanan (Fase 5). Keputusan: **ADR-0011**.
 Bukan Fase 1. Dikerjakan setelah Fase 1 DoD lengkap.
 
+## Status implementasi (2026-07-31)
+
+Semua 14 item terimplementasi di branch `feat/fase4` (234 unit test hijau). Catatan:
+
+- **#6 reset via WA:** cek "terdaftar" memakai tabel `leads` (nomor saat daftar) sebagai
+  proksi, sebab akun login berbasis email. Founder kirim link set-password (flow `/atur-sandi`
+  yang sudah ada). Anti-abuse: Turnstile + rate limit 5/jam/IP.
+- **#11 slug:** domain validasi (blocklist/format/ketersediaan/saran) + endpoint
+  `/admin/slug-check` + tolak reserved saat buat tenant. Alur "owner pilih slug sendiri saat
+  aktivasi" belum diubah karena onboarding masih admin-driven (admin set slug); domain siap
+  dipakai bila kelak onboarding self-service.
+- Verifikasi visual subdomain tertunda ke deploy (dev lokal miniflare selalu lihat host
+  `localhost`, lihat memory `local-dev-quirks`). Perilaku tercakup unit test.
+
 ## Daftar item (14)
 
 | # | Item | Ringkas |
