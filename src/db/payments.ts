@@ -8,6 +8,38 @@ import { nextDueDateAfterPayment, wibDateOf } from "@/domain/subscription";
 
 export type PaymentKind = "setup" | "monthly";
 
+export type PaymentRow = {
+  id: number;
+  tenant_id: number;
+  kind: PaymentKind;
+  amount: number;
+  period: string;
+  confirmed_at: string | null;
+};
+
+export async function listPayments(db: D1Database, tenantId: number): Promise<PaymentRow[]> {
+  const { results } = await db
+    .prepare(
+      "SELECT id, tenant_id, kind, amount, period, confirmed_at FROM payments WHERE tenant_id = ?1 ORDER BY confirmed_at DESC, id DESC",
+    )
+    .bind(tenantId)
+    .all<PaymentRow>();
+  return results ?? [];
+}
+
+export async function findPayment(
+  db: D1Database,
+  id: number,
+  tenantId: number,
+): Promise<PaymentRow | null> {
+  return await db
+    .prepare(
+      "SELECT id, tenant_id, kind, amount, period, confirmed_at FROM payments WHERE id = ?1 AND tenant_id = ?2",
+    )
+    .bind(id, tenantId)
+    .first<PaymentRow>();
+}
+
 export type VerifyPaymentResult = {
   paymentId: number;
   unlockedInstallment: number | null;

@@ -17,6 +17,7 @@ export const CMS_NAV: NavItem[] = [
   { href: "/galeri", label: "Galeri", icon: "image" },
   { href: "/pesan", label: "Pesan", icon: "chat" },
   { href: "/statistik", label: "Statistik", icon: "chart" },
+  { href: "/langganan", label: "Langganan", icon: "cash" },
 ];
 
 export const ADMIN_CMS_COOKIE = "admin_cms_tenant";
