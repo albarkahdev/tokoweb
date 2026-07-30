@@ -7,11 +7,17 @@ export function demoChromeHtml(
   currentPath: string,
 ): string {
   const active = themes.find((theme) => theme.slug === activeTheme);
-  const items = themes
-    .map(
-      (theme) =>
-        `<a href="${currentPath}?tema=${theme.slug}" class="demo-tp-item${theme.slug === activeTheme ? " on" : ""}" data-f="${`${theme.name} ${theme.character} ${(theme.tags ?? []).join(" ")}`.toLowerCase()}"><b>${theme.name}</b><span>${theme.character}</span></a>`,
-    )
+  const ordered = themes
+    .slice()
+    .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
+  const items = ordered
+    .map((theme) => {
+      const f = `${theme.name} ${theme.character} ${(theme.tags ?? []).join(" ")}`.toLowerCase();
+      if (theme.featured) {
+        return `<a href="${currentPath}?tema=${theme.slug}" class="demo-tp-item${theme.slug === activeTheme ? " on" : ""}" data-f="${f}"><b>${theme.name}</b><span>${theme.character}</span></a>`;
+      }
+      return `<div class="demo-tp-item lock" data-f="${f}" aria-disabled="true" title="Tema premium — segera hadir"><b>🔒 ${theme.name}</b><span>${theme.character}</span><em class="tag">Premium</em></div>`;
+    })
     .join("");
   return `
 <style>
@@ -42,6 +48,10 @@ export function demoChromeHtml(
 .demo-tp-item b{font-size:0.92rem}
 .demo-tp-item.on b::after{content:" ✓ dipakai";color:#FFD166;font-size:0.75rem}
 .demo-tp-item span{color:#8F86AB;font-size:0.78rem}
+.demo-tp-item.lock{opacity:0.6;cursor:not-allowed;position:relative}
+.demo-tp-item.lock:hover{background:transparent;border-color:transparent}
+.demo-tp-item.lock b{color:#B9B3C8}
+.demo-tp-item.lock .tag{position:absolute;top:0.6rem;right:0.7rem;font-style:normal;font-size:0.6rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:#1D1410;background:#FFD166;border-radius:9999px;padding:0.1rem 0.5rem}
 body{padding-top:3.1rem;padding-bottom:7rem}
 .promo-ticker{top:3.1rem}
 .site-nav{top:3.1rem}

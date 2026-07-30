@@ -7,6 +7,7 @@ import { createFixedWindowLimiter } from "@/domain/rate-limit";
 import { generateReferralCode, isValidPin } from "@/domain/referral-code";
 import { verifyTurnstile } from "@/domain/turnstile";
 import type { AppEnv } from "@/env";
+import { featuredThemes, themeSwatch } from "@/themes/kuliner/configs";
 import { AppLayout } from "@/ui/app-layout";
 import { Card, PageTitle, Text, TextLink } from "@/ui/display";
 import {
@@ -200,35 +201,20 @@ export const landing = new Hono<AppEnv>()
           <SectionHeader
             kicker="Pilih gayamu"
             title="60 tema premium, satu klik ganti"
-            sub="Tiga contoh di bawah — klik untuk demo hidup, lalu jelajahi semua 60 tema dengan nama usahamu."
+            sub="Sepuluh tema unggulan di bawah — klik untuk demo hidup, lalu jelajahi selengkapnya dengan nama usahamu."
           />
           <ThemeStrip
-            themes={[
-              {
-                slug: "hangat",
-                name: "Hangat",
-                character: "Earth tone membumi — untuk warung & rumah makan keluarga.",
-                gradient: "linear-gradient(135deg, #FFFBF5 0%, #E8A03C 60%, #C4501B 100%)",
-                textColor: "#3B2413",
-                demoUrl: `${demoUrl}?tema=hangat`,
-              },
-              {
-                slug: "arang",
-                name: "Arang",
-                character: "Gelap elegan berlapis emas — untuk grill, kopi, dining malam.",
-                gradient: "linear-gradient(135deg, #1A1815 0%, #242019 55%, #C9A227 130%)",
-                textColor: "#EDE6DA",
-                demoUrl: `${demoUrl}?tema=arang`,
-              },
-              {
-                slug: "ceria",
-                name: "Ceria",
-                character: "Cerah playful — untuk kedai kekinian, dessert & minuman.",
-                gradient: "linear-gradient(135deg, #FFFDF7 0%, #4ECDC4 55%, #FF6B57 115%)",
-                textColor: "#27221C",
-                demoUrl: `${demoUrl}?tema=ceria`,
-              },
-            ]}
+            themes={featuredThemes().map((theme) => {
+              const swatch = themeSwatch(theme);
+              return {
+                slug: theme.slug,
+                name: theme.name,
+                character: theme.character,
+                gradient: swatch.gradient,
+                textColor: swatch.textColor,
+                demoUrl: `${demoUrl}?tema=${theme.slug}`,
+              };
+            })}
           />
         </LandingSection>
         <LandingSection>
