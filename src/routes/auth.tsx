@@ -1,16 +1,21 @@
 import { type Context, Hono } from "hono";
 import { deleteCookie, setCookie } from "hono/cookie";
 import { consumeToken } from "@/db/auth-tokens";
+import { findLeadByWa } from "@/db/leads";
 import { bumpSessionVersion, findUserByEmail, findUserById, updateUserPassword } from "@/db/users";
 import { hashPassword, isAcceptablePassword, verifyPassword } from "@/domain/password";
+import { createFixedWindowLimiter } from "@/domain/rate-limit";
+import { isValidWaNumber, normalizeWaNumber, resetWaLink } from "@/domain/reset";
 import { createSessionToken, SESSION_TTL_MS } from "@/domain/session";
 import { verifyTurnstile } from "@/domain/turnstile";
 import type { AppEnv } from "@/env";
 import { SESSION_COOKIE } from "@/routes/middleware";
 import { AppLayout, AuthBrand } from "@/ui/app-layout";
-import { Alert, Card, PageTitle, Text } from "@/ui/display";
-import { Button, Field, Form, HiddenInput } from "@/ui/form";
+import { Alert, Card, PageTitle, Text, TextLink } from "@/ui/display";
+import { Button, Field, Form, HiddenInput, LinkButton } from "@/ui/form";
 import { TurnstileWidget } from "@/ui/turnstile-widget";
+
+const resetLimiter = createFixedWindowLimiter(5, 3_600_000);
 
 function LoginPage(props: { error?: string; siteKey?: string }) {
   return (
@@ -26,8 +31,55 @@ function LoginPage(props: { error?: string; siteKey?: string }) {
           <Button block>Masuk</Button>
         </Form>
         <Text small muted last>
-          Lupa password? Hubungi kami via WhatsApp — kami kirim link atur ulang.
+          <TextLink href="/lupa">Lupa password?</TextLink>
         </Text>
+      </Card>
+    </AppLayout>
+  );
+}
+
+function ForgotPage(props: { siteKey?: string; error?: string; waHref?: string; phone?: string }) {
+  return (
+    <AppLayout title="Lupa Password — tokoweb" centered>
+      <AuthBrand tagline="Atur ulang password lewat WhatsApp" />
+      <Card>
+        <PageTitle>Lupa Password</PageTitle>
+        {props.error ? <Alert tone="danger">{props.error}</Alert> : null}
+        {props.waHref ? (
+          <>
+            <Text>
+              Nomor <strong>{props.phone}</strong> terdaftar. Klik tombol di bawah untuk minta link
+              atur ulang lewat WhatsApp — kami balas secepatnya.
+            </Text>
+            <LinkButton href={props.waHref} external>
+              💬 Minta Reset via WhatsApp
+            </LinkButton>
+            <Text small muted last>
+              <TextLink href="/masuk">← Kembali ke Masuk</TextLink>
+            </Text>
+          </>
+        ) : (
+          <>
+            <Text small muted>
+              Masukkan nomor WhatsApp yang kamu pakai saat daftar. Kalau terdaftar, muncul tombol
+              untuk minta reset.
+            </Text>
+            <Form action="/lupa">
+              <Field
+                label="Nomor WhatsApp"
+                name="wa_number"
+                inputmode="numeric"
+                required
+                hint="Format 08xx atau 62xx"
+              />
+              <TurnstileWidget siteKey={props.siteKey} />
+              <Button block>Lanjut</Button>
+            </Form>
+            <Text small muted last>
+              <TextLink href="/masuk">← Kembali ke Masuk</TextLink>
+            </Text>
+          </>
+        )}
       </Card>
     </AppLayout>
   );
@@ -89,6 +141,60 @@ export const auth = new Hono<AppEnv>()
     }
     await startSession(c, user.id, user.role, user.tenant_id, user.session_version);
     return c.redirect(user.role === "admin" ? "/admin" : "/");
+  })
+  .get("/lupa", (c) => c.html(String(<ForgotPage siteKey={c.env.TURNSTILE_SITE_KEY} />)))
+  .post("/lupa", async (c) => {
+    const ip = c.req.header("cf-connecting-ip") ?? "0.0.0.0";
+    const form = await c.req.formData();
+    const captcha = String(form.get("cf-turnstile-response") ?? "");
+    const humanOk = await verifyTurnstile(c.env.TURNSTILE_SECRET, captcha, ip);
+    if (!humanOk) {
+      return c.html(
+        String(
+          <ForgotPage
+            error="Verifikasi anti-robot gagal. Coba lagi."
+            siteKey={c.env.TURNSTILE_SITE_KEY}
+          />,
+        ),
+        400,
+      );
+    }
+    if (!resetLimiter.allow(ip, Date.now())) {
+      return c.html(
+        String(
+          <ForgotPage
+            error="Terlalu banyak percobaan. Coba lagi nanti."
+            siteKey={c.env.TURNSTILE_SITE_KEY}
+          />,
+        ),
+        429,
+      );
+    }
+    const raw = String(form.get("wa_number") ?? "");
+    if (!isValidWaNumber(raw)) {
+      return c.html(
+        String(
+          <ForgotPage error="Nomor WhatsApp tidak valid." siteKey={c.env.TURNSTILE_SITE_KEY} />,
+        ),
+        400,
+      );
+    }
+    const phone = normalizeWaNumber(raw);
+    const registered = await findLeadByWa(c.env.DB, phone);
+    if (!registered || !c.env.CONTACT_WA_NUMBER) {
+      return c.html(
+        String(
+          <ForgotPage
+            error="Nomor tidak ditemukan. Pastikan sama dengan nomor saat daftar, atau hubungi admin."
+            siteKey={c.env.TURNSTILE_SITE_KEY}
+          />,
+        ),
+        404,
+      );
+    }
+    return c.html(
+      String(<ForgotPage phone={phone} waHref={resetWaLink(c.env.CONTACT_WA_NUMBER, phone)} />),
+    );
   })
   .post("/keluar", async (c) => {
     const session = c.get("session");
