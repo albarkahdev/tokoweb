@@ -73,6 +73,8 @@ body{padding-top:3.1rem;padding-bottom:7rem}
 .demo-cta button{background:linear-gradient(135deg,#FF6B57,#FF8A3D);color:#1D1410;border:none;border-radius:0.55rem;padding:0.6rem 1.2rem;font-weight:800;cursor:pointer;font-family:inherit;font-size:0.9rem;transition:transform 0.15s ease}
 .demo-cta button:hover{transform:translateY(-1px)}
 .wa-float{display:none}
+.demo-toast{position:fixed;left:50%;bottom:8.5rem;transform:translate(-50%,1rem);z-index:90;background:#17141F;color:#fff;border:1px solid #453F55;border-radius:9999px;padding:0.65rem 1.15rem;font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:0.82rem;font-weight:600;box-shadow:0 12px 40px rgb(0 0 0 / 0.45);opacity:0;pointer-events:none;transition:opacity 0.2s ease,transform 0.2s ease;max-width:90vw;text-align:center}
+.demo-toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
 <div class="demo-top">
   <span class="lbl">Tema</span>
@@ -86,6 +88,7 @@ body{padding-top:3.1rem;padding-bottom:7rem}
     <div class="demo-tp-list">${items}</div>
   </div>
 </div>
+<div class="demo-toast" id="demo-toast" role="status"></div>
 <div class="demo-cta" id="demo-cta">
   <div class="inner">
     <p class="pitch"><strong>Suka website ini?</strong> <span>Punya versimu — jadi ≤ 1 hari,</span> <span class="price">mulai Rp 75rb/bulan.</span> <button type="button" id="demo-cta-mau" class="cta-mini-btn">Saya mau! →</button> <button type="button" id="demo-cta-toggle" class="cta-hide" aria-label="Sembunyikan form">▾</button></p>
@@ -158,6 +161,15 @@ tpSearch.addEventListener("input",function(){
     item.style.display=!q||(item.getAttribute("data-f")||"").toLowerCase().indexOf(q)!==-1?"":"none";
   });
 });
+var toast=document.getElementById("demo-toast");var toastTimer;
+function showToast(msg){toast.textContent=msg;toast.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(function(){toast.classList.remove("show")},2600)}
+document.addEventListener("click",function(e){
+  var a=e.target.closest("a");if(!a)return;
+  var href=a.getAttribute("href")||"";
+  if(/^(https:\\/\\/wa\\.me|tel:|https:\\/\\/(www\\.)?(maps|goo)\\.)/i.test(href)||a.classList.contains("btn-wa")||a.classList.contains("nav-wa")){
+    e.preventDefault();showToast("Ini demo — tombol asli aktif di website kamu ✨");
+  }
+},true);
 })();
 </script>`;
 }
