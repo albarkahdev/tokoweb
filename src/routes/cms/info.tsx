@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { getSiteContent, saveSiteContent } from "@/db/contents";
+import { storageFromEnv } from "@/db/storage-env";
 import {
   DAY_KEYS,
   DAY_LABELS,
@@ -8,10 +9,14 @@ import {
   parseInfoForm,
 } from "@/domain/cms";
 import type { SiteContent } from "@/domain/content";
+import { buildImageKey } from "@/domain/image-key";
+import { generateOneTimeToken } from "@/domain/one-time-token";
 import type { AppEnv } from "@/env";
 import { type CmsContext, CmsPage, html, loadCms, purgeTenantPages } from "@/routes/cms/shared";
-import { Card, CardTitle, SubTitle } from "@/ui/display";
-import { Button, CheckboxField, Field, Form, TextAreaField, TimeRow } from "@/ui/form";
+import { Card, CardTitle, EmptyState, MediaRow, SubTitle } from "@/ui/display";
+import { Button, CheckboxField, Field, FileField, Form, TextAreaField, TimeRow } from "@/ui/form";
+
+const MAX_LOGO_BYTES = 256_000;
 
 function InfoPage(props: {
   cms: CmsContext;
@@ -29,6 +34,31 @@ function InfoPage(props: {
       notice={props.notice}
       error={props.error}
     >
+      <Card>
+        <CardTitle>Logo Usaha</CardTitle>
+        {info.logo_key ? (
+          <MediaRow src={`/img/${info.logo_key}`} alt="Logo usaha">
+            <Form action="/info/logo/hapus" confirm="Hapus logo?">
+              <Button variant="danger">Hapus</Button>
+            </Form>
+          </MediaRow>
+        ) : (
+          <EmptyState
+            icon="🖼️"
+            title="Belum ada logo"
+            hint="Logo tampil di header website & invoice. Kalau kosong, dipakai inisial nama usaha."
+          />
+        )}
+        <Form action="/info/logo" multipart webpUpload>
+          <FileField
+            label="Unggah logo"
+            name="logo"
+            required
+            hint="Bentuk persegi paling bagus. Otomatis dikompres (maks 250 KB)."
+          />
+          <Button block>Simpan Logo</Button>
+        </Form>
+      </Card>
       <Card>
         <CardTitle>Info Usaha</CardTitle>
         <Form action="/info">
@@ -132,4 +162,50 @@ export const cmsInfo = new Hono<AppEnv>()
     });
     await purgeTenantPages(c, cms.tenant);
     return c.redirect("/info?ok=Tersimpan. Perubahan tampil beberapa detik lagi.");
+  })
+  .post("/info/logo", async (c) => {
+    const cms = await loadCms(c);
+    if (!cms) return c.redirect("/masuk");
+    if (cms.readOnly) return c.redirect("/info");
+    const content = await getSiteContent(c.env.DB, cms.tenant.id);
+    const logo = (await c.req.formData()).get("logo");
+    if (!(logo instanceof File) || logo.size === 0 || logo.type !== "image/webp") {
+      return c.html(
+        html(<InfoPage cms={cms} content={content} error="Logo wajib gambar (WebP)." />),
+        400,
+      );
+    }
+    if (logo.size > MAX_LOGO_BYTES) {
+      return c.html(
+        html(<InfoPage cms={cms} content={content} error="Logo terlalu besar (maks 250 KB)." />),
+        400,
+      );
+    }
+    const oldKey = content.info?.logo_key;
+    const key = buildImageKey(
+      cms.tenant.slug,
+      "logo",
+      `${generateOneTimeToken().slice(0, 12)}.webp`,
+    );
+    await storageFromEnv(c.env).put(key, await logo.arrayBuffer(), "image/webp");
+    await saveSiteContent(c.env.DB, cms.tenant.id, {
+      ...content,
+      info: { ...content.info, logo_key: key },
+    });
+    if (oldKey) c.executionCtx.waitUntil(storageFromEnv(c.env).delete(oldKey));
+    await purgeTenantPages(c, cms.tenant);
+    return c.redirect("/info?ok=Logo tersimpan.");
+  })
+  .post("/info/logo/hapus", async (c) => {
+    const cms = await loadCms(c);
+    if (!cms) return c.redirect("/masuk");
+    if (cms.readOnly) return c.redirect("/info");
+    const content = await getSiteContent(c.env.DB, cms.tenant.id);
+    const oldKey = content.info?.logo_key;
+    const info = { ...content.info };
+    info.logo_key = undefined;
+    await saveSiteContent(c.env.DB, cms.tenant.id, { ...content, info });
+    if (oldKey) c.executionCtx.waitUntil(storageFromEnv(c.env).delete(oldKey));
+    await purgeTenantPages(c, cms.tenant);
+    return c.redirect("/info?ok=Logo dihapus.");
   });

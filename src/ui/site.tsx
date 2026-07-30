@@ -53,10 +53,14 @@ export function SiteNav(props: {
   links: { href: string; label: string }[];
   waHref: string;
   withTicker?: boolean;
+  logoSrc?: string | null;
 }) {
   return (
     <nav class={`site-nav${props.withTicker ? " with-ticker" : ""}`}>
       <a class="nav-brand" href={props.homeHref}>
+        {props.logoSrc ? (
+          <img class="nav-logo" src={props.logoSrc} alt={props.brand} width="30" height="30" />
+        ) : null}
         {props.brand}
       </a>
       <span class="nav-links">

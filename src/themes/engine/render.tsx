@@ -397,6 +397,7 @@ export function renderKulinerPage(data: RenderData): string {
         links={navLinks(data)}
         waHref={waLink(waNumber, `Halo ${businessName}, saya mau pesan.`)}
         withTicker={isHome}
+        logoSrc={info.logo_key ? `/img/${info.logo_key}` : null}
       />
       {isHome ? null : (
         <SubpageNav

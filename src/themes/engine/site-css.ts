@@ -101,8 +101,9 @@ section > h2, .sec-title { font-size: clamp(1.7rem, 5vw, 2.5rem); margin-bottom:
 .nav-brand {
   font-family: var(--f-heading); font-weight: var(--w-heading); font-size: 1.15rem;
   text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.01em; display: inline-flex; align-items: center; gap: 0.5rem;
 }
+.nav-brand .nav-logo { width: 1.9rem; height: 1.9rem; border-radius: 0.45rem; object-fit: cover; flex-shrink: 0; }
 .nav-links { display: none; margin-left: auto; gap: 1.15rem; }
 @media (min-width: 52rem) { .nav-links { display: flex; } }
 .nav-links a {
