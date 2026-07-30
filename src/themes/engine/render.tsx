@@ -1,4 +1,4 @@
-import { DAY_KEYS, DAY_LABELS, isItemActive, itemPhotos } from "@/domain/cms";
+import { DAY_KEYS, DAY_LABELS, isItemActive, itemPhotos, trustBadges } from "@/domain/cms";
 import type { MenuItem } from "@/domain/content";
 import { formatRupiah } from "@/domain/money";
 import {
@@ -36,6 +36,7 @@ import {
   SubpageNav,
   TestimonialCard,
   TestimonialGrid,
+  TrustStrip,
   WaFloat,
 } from "@/ui/site";
 
@@ -148,6 +149,7 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
   const menuClass = `menu-${theme.layout.menu}`;
   const gallery = galleryPhotos(data);
   const specials = items.filter((item) => item.special);
+  const trustList = trustBadges(data.site.content.trust);
 
   return (
     <>
@@ -161,6 +163,7 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
         waHref={waLink(waNumber, `Halo ${businessName}, saya mau pesan.`)}
         menuAnchor="#menu"
       />
+      {trustList.length > 0 ? <TrustStrip badges={trustList} /> : null}
       {specials.length > 0 ? (
         <SiteSection
           id="spesial"

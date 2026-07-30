@@ -81,6 +81,28 @@ describe("parseInfoForm", () => {
   });
 });
 
+describe("parseTrustForm & trustBadges", () => {
+  it("parses rating, halal, certs; validates rating range", async () => {
+    const { parseTrustForm, trustBadges } = await import("@/domain/cms");
+    const result = parseTrustForm({
+      google_rating: "4,8",
+      google_url: "https://maps.google.com/x",
+      halal: "on",
+      certs: "Higienis\nPIRT",
+    });
+    expect(result.ok && result.value.google_rating).toBe("4.8");
+    expect(result.ok && result.value.halal).toBe(true);
+    const badges = result.ok ? trustBadges(result.value) : [];
+    expect(badges.map((b) => b.label)).toEqual(["4.8 di Google", "Halal", "Higienis", "PIRT"]);
+  });
+
+  it("rejects rating di luar 0-5 dan url non-https", async () => {
+    const { parseTrustForm } = await import("@/domain/cms");
+    expect(parseTrustForm({ google_rating: "9" }).ok).toBe(false);
+    expect(parseTrustForm({ google_url: "http://x.com" }).ok).toBe(false);
+  });
+});
+
 describe("parseHoursForm", () => {
   it("parses open days and closed days", () => {
     const form: Record<string, string> = {};

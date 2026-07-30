@@ -7,6 +7,7 @@ import {
   formDataToValues,
   parseHoursForm,
   parseInfoForm,
+  parseTrustForm,
 } from "@/domain/cms";
 import type { SiteContent } from "@/domain/content";
 import { buildImageKey } from "@/domain/image-key";
@@ -26,6 +27,7 @@ function InfoPage(props: {
 }) {
   const info = props.content.info ?? {};
   const hours = props.content.hours ?? {};
+  const trust = props.content.trust ?? {};
   return (
     <CmsPage
       title="Info Usaha"
@@ -107,6 +109,22 @@ function InfoPage(props: {
             value={info.temp_closed?.reason}
             hint="Contoh: Libur sampai Senin. Tampil di badge status."
           />
+          <SubTitle>Kepercayaan (opsional)</SubTitle>
+          <Field
+            label="Rating Google"
+            name="google_rating"
+            value={trust.google_rating}
+            inputmode="decimal"
+            hint="Isi manual, contoh: 4.8. Kosongkan kalau belum ada."
+          />
+          <Field label="Link Google Maps/Bisnis" name="google_url" value={trust.google_url} />
+          <CheckboxField label="Bersertifikat Halal" name="halal" checked={trust.halal} />
+          <TextAreaField
+            label="Sertifikat lain"
+            name="certs"
+            value={trust.certs}
+            hint="Satu per baris. Contoh: Higienis · PIRT · Juara Kuliner 2025."
+          />
           <SubTitle>Jam buka</SubTitle>
           {DAY_KEYS.map((day) => {
             const entry = hours[day];
@@ -155,10 +173,15 @@ export const cmsInfo = new Hono<AppEnv>()
     if (!hours.ok) {
       return c.html(html(<InfoPage cms={cms} content={content} error={hours.error} />), 400);
     }
+    const trust = parseTrustForm(values);
+    if (!trust.ok) {
+      return c.html(html(<InfoPage cms={cms} content={content} error={trust.error} />), 400);
+    }
     await saveSiteContent(c.env.DB, cms.tenant.id, {
       ...content,
       info: { ...content.info, ...info.value },
       hours: hours.value,
+      trust: trust.value,
     });
     await purgeTenantPages(c, cms.tenant);
     return c.redirect("/info?ok=Tersimpan. Perubahan tampil beberapa detik lagi.");

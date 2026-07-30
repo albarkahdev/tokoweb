@@ -92,6 +92,35 @@ export function PromoTicker(props: { line: string; href?: string }) {
   return <span class="promo-ticker">{inner}</span>;
 }
 
+export function TrustStrip(props: {
+  badges: { icon: string; label: string; sub?: string; link?: string }[];
+}) {
+  return (
+    <div class="trust-strip">
+      {props.badges.map((badge) => {
+        const inner = (
+          <>
+            <span class="trust-icon" aria-hidden="true">
+              {badge.icon}
+            </span>
+            <span class="trust-text">
+              <strong>{badge.label}</strong>
+              {badge.sub ? <span>{badge.sub}</span> : null}
+            </span>
+          </>
+        );
+        return badge.link ? (
+          <a class="trust-badge reveal" href={badge.link} target="_blank" rel="noopener noreferrer">
+            {inner}
+          </a>
+        ) : (
+          <span class="trust-badge reveal">{inner}</span>
+        );
+      })}
+    </div>
+  );
+}
+
 export function AnnouncementBar(props: { text: string; dismissKey: string }) {
   return (
     <div class="announce-bar" id="announce-bar" data-key={props.dismissKey}>
