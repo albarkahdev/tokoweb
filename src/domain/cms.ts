@@ -25,6 +25,8 @@ export const MAX_ABOUT = 1000;
 export const MAX_TAGLINE = 160;
 export const MAX_CATEGORY = 40;
 export const MAX_PRICE = 100_000_000;
+export const MAX_ANNOUNCE = 160;
+export const MAX_CLOSED_REASON = 120;
 
 const FIELD_CAPS: Partial<Record<keyof SiteInfo, number>> = {
   tagline: MAX_TAGLINE,
@@ -67,6 +69,22 @@ export function parseInfoForm(form: FormValues): ParseResult<SiteInfo> {
   if (info.maps_url && !info.maps_url.startsWith("https://")) {
     return { ok: false, error: "Link Maps harus diawali https://" };
   }
+  const announceText = (form.announcement_text ?? "").trim();
+  if (announceText.length > MAX_ANNOUNCE) {
+    return { ok: false, error: `Pengumuman terlalu panjang (maks ${MAX_ANNOUNCE} karakter).` };
+  }
+  info.announcement = {
+    text: announceText,
+    active: announceText !== "" && form.announcement_active === "on",
+  };
+  const closedReason = (form.temp_closed_reason ?? "").trim();
+  if (closedReason.length > MAX_CLOSED_REASON) {
+    return {
+      ok: false,
+      error: `Alasan tutup terlalu panjang (maks ${MAX_CLOSED_REASON} karakter).`,
+    };
+  }
+  info.temp_closed = { active: form.temp_closed_active === "on", reason: closedReason };
   return { ok: true, value: info };
 }
 

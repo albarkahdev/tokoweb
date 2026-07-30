@@ -5,6 +5,7 @@ t("page_view",null)})();`;
 }
 
 export const OPEN_NOW_SCRIPT = `(function(){var el=document.getElementById("open-badge");if(!el)return;
+if(el.getAttribute("data-forced"))return;
 var hours=JSON.parse(el.getAttribute("data-hours"));
 var f=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Jakarta",weekday:"short",hour:"2-digit",minute:"2-digit",hour12:false});
 var parts=f.formatToParts(new Date()),map={};parts.forEach(function(p){map[p.type]=p.value});
@@ -13,6 +14,12 @@ var today=hours[days[map.weekday]];var now=map.hour+":"+map.minute;
 var open=today&&now>=today[0]&&now<=today[1];
 el.textContent=open?"● Buka sekarang":"● Tutup — cek jam buka";
 el.classList.add(open?"open":"closed")})();`;
+
+export const ANNOUNCE_SCRIPT = `(function(){var el=document.getElementById("announce-bar");if(!el)return;
+var t=el.querySelector(".announce-text");var txt=t?t.textContent:"";var key="announce_"+el.getAttribute("data-key");
+if(localStorage.getItem(key)===txt){el.remove();return;}
+var btn=document.getElementById("announce-close");
+if(btn)btn.addEventListener("click",function(){try{localStorage.setItem(key,txt)}catch(_){}el.remove();});})();`;
 
 export const REVEAL_SCRIPT = `(function(){var els=document.querySelectorAll(".reveal");
 function showAll(){els.forEach(function(el){el.classList.add("in")})}

@@ -11,7 +11,7 @@ import type { SiteContent } from "@/domain/content";
 import type { AppEnv } from "@/env";
 import { type CmsContext, CmsPage, html, loadCms, purgeTenantPages } from "@/routes/cms/shared";
 import { Card, CardTitle, SubTitle } from "@/ui/display";
-import { Button, Field, Form, TextAreaField, TimeRow } from "@/ui/form";
+import { Button, CheckboxField, Field, Form, TextAreaField, TimeRow } from "@/ui/form";
 
 function InfoPage(props: {
   cms: CmsContext;
@@ -53,6 +53,30 @@ function InfoPage(props: {
           />
           <Field label="Telepon" name="phone" value={info.phone} inputmode="numeric" />
           <Field label="Instagram" name="instagram" value={info.instagram} hint="Tanpa @" />
+          <SubTitle>Pengumuman</SubTitle>
+          <Field
+            label="Teks pengumuman"
+            name="announcement_text"
+            value={info.announcement?.text}
+            hint="Info singkat 1 baris (libur, pindah, jam berubah). Tampil di banner atas, bisa ditutup pengunjung."
+          />
+          <CheckboxField
+            label="Tampilkan pengumuman"
+            name="announcement_active"
+            checked={info.announcement?.active}
+          />
+          <SubTitle>Tutup sementara</SubTitle>
+          <CheckboxField
+            label="Tutup toko sekarang (menimpa jam buka)"
+            name="temp_closed_active"
+            checked={info.temp_closed?.active}
+          />
+          <Field
+            label="Alasan (opsional)"
+            name="temp_closed_reason"
+            value={info.temp_closed?.reason}
+            hint="Contoh: Libur sampai Senin. Tampil di badge status."
+          />
           <SubTitle>Jam buka</SubTitle>
           {DAY_KEYS.map((day) => {
             const entry = hours[day];

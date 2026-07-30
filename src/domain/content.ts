@@ -8,6 +8,8 @@ export type SiteInfo = {
   wa_number?: string;
   phone?: string;
   instagram?: string;
+  announcement?: { text?: string; active?: boolean };
+  temp_closed?: { active?: boolean; reason?: string };
 };
 
 export type MenuItem = {

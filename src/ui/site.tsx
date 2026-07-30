@@ -88,7 +88,31 @@ export function PromoTicker(props: { line: string; href?: string }) {
   return <span class="promo-ticker">{inner}</span>;
 }
 
-export function OpenBadge(props: { hoursJson: string }) {
+export function AnnouncementBar(props: { text: string; dismissKey: string }) {
+  return (
+    <div class="announce-bar" id="announce-bar" data-key={props.dismissKey}>
+      <span class="announce-text">📢 {props.text}</span>
+      <button
+        type="button"
+        class="announce-close"
+        id="announce-close"
+        aria-label="Tutup pengumuman"
+      >
+        ×
+      </button>
+    </div>
+  );
+}
+
+export function OpenBadge(props: { hoursJson: string; forcedClosed?: { reason?: string } | null }) {
+  if (props.forcedClosed) {
+    return (
+      <span id="open-badge" class="open-badge closed" data-forced="1">
+        ● Tutup sementara
+        {props.forcedClosed.reason ? ` — ${props.forcedClosed.reason}` : ""}
+      </span>
+    );
+  }
   return (
     <span id="open-badge" class="open-badge" data-hours={props.hoursJson}>
       ● Jam buka di bawah
@@ -102,6 +126,7 @@ export function SiteHero(props: {
   tagline?: string;
   image?: { src: string; alt: string } | null;
   hoursJson: string;
+  forcedClosed?: { reason?: string } | null;
   waHref: string;
   menuAnchor?: string;
 }) {
@@ -128,7 +153,7 @@ export function SiteHero(props: {
         </span>
       ) : null}
       <div class="hero-inner">
-        <OpenBadge hoursJson={props.hoursJson} />
+        <OpenBadge hoursJson={props.hoursJson} forcedClosed={props.forcedClosed} />
         <h1>{props.name}</h1>
         {props.tagline ? <p class="tagline">{props.tagline}</p> : null}
         <div class="hero-cta">

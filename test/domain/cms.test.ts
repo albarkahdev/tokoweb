@@ -21,8 +21,41 @@ describe("parseInfoForm", () => {
     const result = parseInfoForm({ name: "Warung Bu Sari", wa_number: "6281234567890" });
     expect(result).toEqual({
       ok: true,
-      value: { name: "Warung Bu Sari", wa_number: "6281234567890" },
+      value: {
+        name: "Warung Bu Sari",
+        wa_number: "6281234567890",
+        announcement: { text: "", active: false },
+        temp_closed: { active: false, reason: "" },
+      },
     });
+  });
+
+  it("parses announcement and temp_closed toggles", () => {
+    const result = parseInfoForm({
+      name: "Warung",
+      wa_number: "6281234567890",
+      announcement_text: "Libur Idul Fitri 3 hari",
+      announcement_active: "on",
+      temp_closed_active: "on",
+      temp_closed_reason: "Sampai Senin",
+    });
+    expect(result.ok && result.value.announcement).toEqual({
+      text: "Libur Idul Fitri 3 hari",
+      active: true,
+    });
+    expect(result.ok && result.value.temp_closed).toEqual({
+      active: true,
+      reason: "Sampai Senin",
+    });
+  });
+
+  it("announcement inactive when text empty even if checked", () => {
+    const result = parseInfoForm({
+      name: "Warung",
+      wa_number: "6281234567890",
+      announcement_active: "on",
+    });
+    expect(result.ok && result.value.announcement).toEqual({ text: "", active: false });
   });
 
   it("normalizes wa number and keeps optional fields", () => {
