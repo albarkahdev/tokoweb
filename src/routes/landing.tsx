@@ -137,7 +137,7 @@ const BLOG_DESC =
 export const landing = new Hono<AppEnv>()
   .get("/", async (c) => {
     const url = new URL(c.req.url);
-    const cached = await matchCachedPage(url.hostname, "/landing-v8");
+    const cached = await matchCachedPage(url.hostname, "/landing-v9");
     if (cached) return cached;
 
     const demoUrl = `https://demo.${c.env.BASE_DOMAIN}/kuliner`;
@@ -160,6 +160,7 @@ export const landing = new Hono<AppEnv>()
             { href: "#fitur", label: "Fitur" },
             { href: "#tema", label: "Tema" },
             { href: "#harga", label: "Harga" },
+            { href: "/blog", label: "Blog" },
             { href: "/mitra", label: "Jadi Mitra" },
             { href: `https://app.${c.env.BASE_DOMAIN}/masuk`, label: "Masuk" },
           ]}
@@ -331,6 +332,22 @@ export const landing = new Hono<AppEnv>()
             />
           </PricingGrid>
         </LandingSection>
+        <LandingSection id="blog">
+          <SectionHeader
+            kicker="Blog"
+            title="Tips jualan & bikin website warung"
+            sub="Panduan singkat dan praktis biar usahamu makin ramai — online maupun offline."
+          />
+          <BlogGrid
+            items={BLOG_ARTICLES.slice(0, 3).map((article) => ({
+              href: `/blog/${article.slug}`,
+              title: article.title,
+              description: article.description,
+              meta: `${article.readMinutes} menit baca`,
+            }))}
+          />
+          <CtaRow links={[{ href: "/blog", label: "Baca semua artikel →", fill: true }]} />
+        </LandingSection>
         <LandingSection id="faq">
           <SectionHeader kicker="FAQ" title="Pertanyaan yang sering muncul" />
           <FaqList
@@ -368,6 +385,8 @@ export const landing = new Hono<AppEnv>()
         <LandingFooter
           links={[
             { href: demoUrl, label: "Demo" },
+            { href: "/blog", label: "Blog" },
+            { href: "/toko", label: "Toko Bergabung" },
             { href: "/mitra", label: "Jadi Mitra" },
             { href: `https://app.${c.env.BASE_DOMAIN}/masuk`, label: "Masuk CMS" },
           ]}
@@ -381,7 +400,7 @@ export const landing = new Hono<AppEnv>()
         "cache-control": "public, max-age=300, s-maxage=86400",
       },
     });
-    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/landing-v8", response.clone()));
+    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/landing-v9", response.clone()));
     return response;
   })
   .get("/mitra", async (c) => {
