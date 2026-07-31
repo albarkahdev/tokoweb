@@ -10,8 +10,13 @@ import {
 } from "@/themes/kuliner/configs";
 
 describe("kurasi tema unggulan", () => {
-  it("tepat 10 tema unggulan sesuai urutan", () => {
+  it("tepat 15 tema unggulan sesuai urutan", () => {
     expect(FEATURED_THEME_SLUGS).toEqual([
+      "hangat",
+      "senja",
+      "sambal",
+      "kopi",
+      "manis",
       "lampion",
       "pasar",
       "karnaval",
@@ -23,7 +28,7 @@ describe("kurasi tema unggulan", () => {
       "kunang",
       "jeruk",
     ]);
-    expect(featuredThemes()).toHaveLength(10);
+    expect(featuredThemes()).toHaveLength(15);
   });
 
   it("hanya tema unggulan yang bertanda featured", () => {
@@ -33,7 +38,7 @@ describe("kurasi tema unggulan", () => {
 
   it("isFeaturedTheme benar untuk unggulan & non-unggulan", () => {
     expect(isFeaturedTheme("lampion")).toBe(true);
-    expect(isFeaturedTheme("hangat")).toBe(false);
+    expect(isFeaturedTheme("arang")).toBe(false);
     expect(isFeaturedTheme("tidak-ada")).toBe(false);
   });
 

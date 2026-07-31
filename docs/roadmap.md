@@ -67,9 +67,10 @@ Spec lengkap: `docs/ordering-spec.md`. Keputusan: `docs/adr/0010-pemesanan-onlin
 ### Fase 4 — Polish & fondasi pertumbuhan
 Paket 14 item sebelum modul Pemesanan: tombol dummy demo, section pengumuman,
 SEO situs mitra + sitemap (demo `noindex`), section kepercayaan, disclaimer SEO,
-reset password via WA, invoice langganan, blog pusat 10 artikel, kurasi 10 tema
-unggulan (Lampion, Pasar, Karnaval, Blueprint, Bara, Loket, Lilin, Sawah, Kunang,
-Jeruk; sisa terkunci 🔒), slug wajib + direktori "Toko Bergabung", upload logo
+reset password via WA, invoice langganan, blog pusat 10 artikel, kurasi 15 tema
+unggulan (carousel di landing: Hangat, Senja, Sambal, Kopi, Manis, Lampion, Pasar,
+Karnaval, Blueprint, Bara, Loket, Lilin, Sawah, Kunang, Jeruk; sisa terkunci 🔒),
+slug wajib + direktori "Toko Bergabung", upload logo
 toko, fix pill buka/tutup, tutup manual override jadwal.
 Spec: `docs/fase4-spec.md`. Keputusan: `docs/adr/0011-fase4-keputusan.md`.
 

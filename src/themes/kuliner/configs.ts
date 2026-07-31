@@ -10,6 +10,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   hangat: {
     slug: "hangat",
     name: "Hangat",
+    featured: true,
     character: "Earth tone membumi — warung & rumah makan keluarga",
     tags: ["terang", "earth", "klasik", "foto", "keluarga"],
     colors: {
@@ -72,6 +73,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   kopi: {
     slug: "kopi",
     name: "Kopi",
+    featured: true,
     character: "Monokrom krem-espresso — coffee shop minimal",
     tags: ["terang", "minimal", "kopi", "earth", "klasik"],
     colors: {
@@ -92,6 +94,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   senja: {
     slug: "senja",
     name: "Senja",
+    featured: true,
     character: "Gradasi matahari terbenam — cafe rooftop & outdoor",
     tags: ["terang", "gradasi", "romantis", "modern"],
     colors: {
@@ -154,6 +157,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   manis: {
     slug: "manis",
     name: "Manis",
+    featured: true,
     character: "Pastel lembut membulat — bakery, kue & dessert box",
     tags: ["terang", "pastel", "lembut", "manis", "bakery"],
     colors: {
@@ -175,6 +179,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   sambal: {
     slug: "sambal",
     name: "Sambal",
+    featured: true,
     character: "Merah berani tipografi tebal — ayam geprek & pedas-pedasan",
     tags: ["terang", "merah", "berani", "tebal", "pedas"],
     colors: {
@@ -1306,6 +1311,11 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
 export const DEFAULT_THEME = "hangat";
 
 export const FEATURED_THEME_SLUGS = [
+  "hangat",
+  "senja",
+  "sambal",
+  "kopi",
+  "manis",
   "lampion",
   "pasar",
   "karnaval",

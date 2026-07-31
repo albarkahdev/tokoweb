@@ -30,7 +30,7 @@ Semua 14 item terimplementasi di branch `feat/fase4` (234 unit test hijau). Cata
 | 7 | Invoice langganan | HTML printable profesional, rapi di HP |
 | 8 | Promo banner posisi | (di-ignore user — sudah paling atas di situs asli) |
 | 9 | Blog pusat SEO | 10 artikel manual berkualitas + CTA gabung |
-| 10 | Kurasi tema | 10 unggulan di landing, 50 terkunci 🔒 di demo |
+| 10 | Kurasi tema | 15 unggulan (carousel di landing), sisanya terkunci 🔒 di demo |
 | 11 | Slug + direktori toko | Wajib pilih slug, auto-saran, dikunci, list "Toko Bergabung" |
 | 12 | Upload logo toko | CMS upload → WebP → storage |
 | 13 | Fix pill buka/tutup | Lebar ngepas konten, teks tetap |
@@ -88,7 +88,7 @@ Di-ignore. Di situs tenant asli `PromoTicker` sudah paling atas (render.tsx). Ta
 - Komponen artikel dari `src/ui/`.
 
 ### 10. Kurasi tema (10 unggulan)
-**10 di landing:** Lampion, Pasar, Karnaval, Blueprint, Bara, Loket, Lilin, Sawah, Kunang, Jeruk.
+**15 di landing (carousel):** Hangat, Senja, Sambal, Kopi, Manis, Lampion, Pasar, Karnaval, Blueprint, Bara, Loket, Lilin, Sawah, Kunang, Jeruk.
 - Flag tema: `featured: boolean` (atau `tier: "featured" | "locked"`) di config tema.
 - Landing: hanya 10 featured.
 - Demo: semua 60 tampil; yang non-featured **disabled + ikon 🔒** (label "Segera/Premium"),

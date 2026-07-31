@@ -252,7 +252,7 @@ export const landing = new Hono<AppEnv>()
           <SectionHeader
             kicker="Pilih gayamu"
             title="60 tema premium, satu klik ganti"
-            sub="Sepuluh tema unggulan di bawah — klik untuk demo hidup, lalu jelajahi selengkapnya dengan nama usahamu."
+            sub="Lima belas tema unggulan di bawah — geser carousel-nya, klik untuk demo hidup, lalu jelajahi selengkapnya dengan nama usahamu."
           />
           <ThemeStrip
             themes={featuredThemes().map((theme) => {

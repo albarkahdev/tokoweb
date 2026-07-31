@@ -210,13 +210,35 @@ body {
 .step h3 { font-size: 1.1rem; padding-top: 0.6rem; }
 .step p { color: var(--muted); font-size: 0.95rem; }
 
-.theme-strip { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); margin-top: 2.5rem; }
+.theme-carousel { position: relative; margin-top: 2.5rem; }
+.theme-strip {
+  display: flex; gap: 1.1rem; overflow-x: auto; scroll-snap-type: x mandatory;
+  scroll-behavior: smooth; padding: 0.5rem 0.2rem 1.2rem; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.theme-strip::-webkit-scrollbar { display: none; }
 .theme-card {
+  flex: 0 0 15rem; scroll-snap-align: start;
   border-radius: 1.4rem; overflow: hidden; text-decoration: none;
   border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+@media (min-width: 48rem) { .theme-card { flex-basis: 16rem; } }
 .theme-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.tc-nav {
+  position: absolute; top: 40%; transform: translateY(-50%); z-index: 2;
+  width: 2.8rem; height: 2.8rem; border-radius: 9999px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface); color: var(--ink);
+  font-size: 1.4rem; line-height: 1; display: none; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-md); transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.tc-nav:hover { transform: translateY(-50%) scale(1.08); }
+.tc-nav:disabled { opacity: 0.35; cursor: default; }
+.tc-nav.prev { left: -0.6rem; }
+.tc-nav.next { right: -0.6rem; }
+@media (min-width: 48rem) { .tc-nav { display: inline-flex; } }
+.tc-hint { text-align: center; color: var(--muted); font-size: 0.82rem; margin-top: 0.3rem; }
+@media (min-width: 48rem) { .tc-hint { display: none; } }
 .theme-swatch { height: 7.5rem; display: flex; align-items: flex-end; padding: 1rem; }
 .theme-swatch .name { font-family: var(--display); font-size: 1.5rem; font-weight: 650; }
 .theme-card .meta { padding: 1rem 1.2rem; color: var(--muted); font-size: 0.88rem; }
@@ -625,24 +647,44 @@ export function ThemeStrip(props: {
   }[];
 }) {
   return (
-    <div class="theme-strip">
-      {props.themes.map((theme) => (
-        <a class="theme-card reveal" href={theme.demoUrl}>
-          <div
-            class="theme-swatch"
-            style={`background:${theme.gradient}; color:${theme.textColor};`}
-          >
-            <span class="name">{theme.name}</span>
-          </div>
-          <div class="meta">
-            <strong>Tema {theme.name}</strong>
-            {theme.character}
-          </div>
-        </a>
-      ))}
+    <div class="theme-carousel">
+      <button type="button" class="tc-nav prev" data-tc="prev" aria-label="Tema sebelumnya">
+        ‹
+      </button>
+      <div class="theme-strip" id="theme-track">
+        {props.themes.map((theme) => (
+          <a class="theme-card reveal" href={theme.demoUrl}>
+            <div
+              class="theme-swatch"
+              style={`background:${theme.gradient}; color:${theme.textColor};`}
+            >
+              <span class="name">{theme.name}</span>
+            </div>
+            <div class="meta">
+              <strong>Tema {theme.name}</strong>
+              {theme.character}
+            </div>
+          </a>
+        ))}
+      </div>
+      <button type="button" class="tc-nav next" data-tc="next" aria-label="Tema berikutnya">
+        ›
+      </button>
+      <p class="tc-hint">← geser untuk lihat semua →</p>
+      <script dangerouslySetInnerHTML={{ __html: THEME_CAROUSEL_SCRIPT }} />
     </div>
   );
 }
+
+const THEME_CAROUSEL_SCRIPT = `(function(){
+var track=document.getElementById("theme-track");if(!track)return;
+var prev=document.querySelector('[data-tc="prev"]'),next=document.querySelector('[data-tc="next"]');
+function step(){var card=track.querySelector(".theme-card");return card?card.getBoundingClientRect().width+18:300}
+function upd(){if(!prev||!next)return;prev.disabled=track.scrollLeft<=4;next.disabled=track.scrollLeft+track.clientWidth>=track.scrollWidth-4;}
+if(prev)prev.addEventListener("click",function(){track.scrollBy({left:-step(),behavior:"smooth"})});
+if(next)next.addEventListener("click",function(){track.scrollBy({left:step(),behavior:"smooth"})});
+track.addEventListener("scroll",upd,{passive:true});window.addEventListener("resize",upd);upd();
+})();`;
 
 export function PriceCard(props: {
   plan: string;
