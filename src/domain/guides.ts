@@ -78,13 +78,24 @@ Tips: harga wajib jelas. Pembeli malas bertanya satu-satu.`,
     {
       title: "Statistik",
       body: `Lihat berapa orang membuka websitemu dan menekan tombol WhatsApp/telepon/Maps.
-Gunakan ini untuk tahu promo mana yang menarik dan jam ramai pengunjung.`,
+Kalau Pesan Online aktif, ada juga ringkasan pesanan 30 hari: berapa masuk, berapa selesai,
+berapa dibatalkan, menu terlaris, dan jam paling ramai. Pakai ini untuk atur stok & jam sibuk.
+Statistik tidak menampilkan nominal uang — hanya jumlah dan tren.`,
     },
     {
-      title: "Langganan & Invoice",
-      body: `Di menu Langganan kamu lihat riwayat pembayaran dan status langganan.
-- Tekan "Invoice" pada tiap pembayaran untuk membuka versi cetak.
-- Tekan "Cetak / Simpan PDF" — bisa disimpan sebagai PDF dari HP maupun komputer.
+      title: "Terima Pesanan Online",
+      body: `Kalau fitur Pesan Online kamu aktifkan (menu Pesanan → Setelan):
+- Atur metode bayar (QRIS/transfer/e-wallet), pajak/biaya bila ada, dan jumlah meja untuk QR makan di tempat.
+- Pesanan masuk muncul di menu Pesanan dengan tanda + suara. Konfirmasi → proses → tandai siap → selesai.
+- Pembeli tidak perlu login. Bukti bayar (bila diunggah) tampil di detail pesanan.
+- Tombol "Pesan Online" & "Pesan" di websitemu menggantikan "Tanya via WA" saat fitur ini aktif.`,
+    },
+    {
+      title: "Langganan, Invoice & Bayar",
+      body: `Di menu Langganan kamu lihat status langganan dan riwayat pembayaran.
+- Tekan "Bayar Sekarang" → halaman Bayar menampilkan total tagihan + rekening TokoWeb.
+- Transfer sesuai nominal, lalu upload bukti transfer (foto/tangkapan layar). Kami cek dan tandai lunas.
+- Tekan "Invoice" pada tiap pembayaran untuk membuka versi cetak / simpan PDF.
 Kalau tagihan jatuh tempo, segera bayar agar website tidak dinonaktifkan.`,
     },
     {
@@ -106,6 +117,14 @@ export const GUIDE_MITRA: Guide = {
 2. Mereka scan → lihat demo website hidup.
 3. Tertarik? Mereka isi form "Saya mau" di halaman demo.
 4. Tim kami menghubungi & meng-closing. Begitu jadi klien, komisimu otomatis tercatat.`,
+    },
+    {
+      title: "Nilai jual ke calon klien",
+      body: `Yang bikin mereka tertarik:
+- Website jadi cepat, mulai Rp75rb/bulan — jauh lebih murah dari bikin sendiri.
+- Bisa terima Pesan Online langsung dari website (makan di tempat via QR meja / ambil sendiri), bukan cuma etalase.
+- Muncul rapi di HP pelanggan, ada tombol WhatsApp & lokasi Maps.
+- Bonus: klien yang daftar lewat kamu dapat diskon 30% biaya setup. Ini alasan kuat untuk closing saat itu juga.`,
     },
     {
       title: "Brosur & QR unikmu",
@@ -148,11 +167,17 @@ export const GUIDE_ADMIN: Guide = {
 5. Go Live setelah konten siap dan biaya setup lunas → status active, website tayang.`,
     },
     {
-      title: "Verifikasi pembayaran (QRIS/transfer)",
+      title: "Verifikasi pembayaran (transfer)",
       body: `Pembayaran manual — admin sumber kebenaran status.
-1. Klien bayar (QRIS/transfer) dan konfirmasi.
-2. Cek mutasi, lalu catat pembayaran di halaman tenant (setup atau bulanan).
-3. Sistem otomatis: update jatuh tempo, reaktivasi bila sempat suspended, dan membuka cicilan komisi mitra terkait.`,
+1. Klien transfer lalu upload bukti di CMS (menu Bayar). Buktinya muncul di halaman tenant sebagai "Bukti Bayar dari Klien".
+2. Cek mutasi rekening. Cocok → form "Tandai Lunas" sudah ter-prefill periode & nominal → catat (setup atau bulanan). Tidak cocok → "Tolak Bukti", klien diminta upload ulang.
+3. Setup untuk klien referral (ada mitra) dapat diskon 30% — nominal rekomendasi tampil di kartu verifikasi. Diskon ditanggung owner; komisi mitra tetap penuh.
+4. Sistem otomatis: update jatuh tempo, reaktivasi bila sempat suspended, dan membuka cicilan komisi mitra terkait.`,
+    },
+    {
+      title: "Statistik & pemantauan",
+      body: `- Beranda admin: ringkasan platform — tenant aktif, lead baru, intake, payout siap cair, dan volume pesanan 30 hari lintas tenant (jumlah saja, tanpa nominal).
+- Halaman tiap tenant: kartu "Statistik Toko" (pesanan masuk/selesai/batal + menu terlaris) untuk pantau kesehatan toko.`,
     },
     {
       title: "Closing lead → komisi mitra",

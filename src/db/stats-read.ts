@@ -45,6 +45,94 @@ export async function statTotalsBetween(
   return totals;
 }
 
+export type OrderStatCounts = {
+  masuk: number;
+  selesai: number;
+  dibatalkan: number;
+  diproses: number;
+};
+
+const EMPTY_ORDERS: OrderStatCounts = { masuk: 0, selesai: 0, dibatalkan: 0, diproses: 0 };
+
+function aggregateOrderRows(rows: { status: string; total: number }[]): OrderStatCounts {
+  const counts = { ...EMPTY_ORDERS };
+  for (const row of rows) {
+    counts.masuk += row.total;
+    if (row.status === "selesai") counts.selesai += row.total;
+    else if (row.status === "dibatalkan") counts.dibatalkan += row.total;
+    else counts.diproses += row.total;
+  }
+  return counts;
+}
+
+export async function orderCountsBetween(
+  db: D1Database,
+  tenantId: number,
+  fromDate: string,
+  toDate: string,
+): Promise<OrderStatCounts> {
+  const { results } = await db
+    .prepare(
+      "SELECT status, COUNT(*) AS total FROM orders WHERE tenant_id = ?1 AND created_at >= ?2 || ' 00:00:00' AND created_at <= ?3 || ' 23:59:59' GROUP BY status",
+    )
+    .bind(tenantId, fromDate, toDate)
+    .all<{ status: string; total: number }>();
+  return aggregateOrderRows(results ?? []);
+}
+
+export async function platformOrderCountsBetween(
+  db: D1Database,
+  fromDate: string,
+  toDate: string,
+): Promise<OrderStatCounts> {
+  const { results } = await db
+    .prepare(
+      "SELECT status, COUNT(*) AS total FROM orders WHERE created_at >= ?1 || ' 00:00:00' AND created_at <= ?2 || ' 23:59:59' GROUP BY status",
+    )
+    .bind(fromDate, toDate)
+    .all<{ status: string; total: number }>();
+  return aggregateOrderRows(results ?? []);
+}
+
+export async function topOrderItemsBetween(
+  db: D1Database,
+  tenantId: number,
+  fromDate: string,
+  toDate: string,
+  limit: number,
+): Promise<{ name: string; qty: number }[]> {
+  const { results } = await db
+    .prepare(
+      `SELECT oi.name AS name, SUM(oi.qty) AS qty
+       FROM order_items oi JOIN orders o ON o.id = oi.order_id
+       WHERE o.tenant_id = ?1 AND o.status != 'dibatalkan'
+         AND o.created_at >= ?2 || ' 00:00:00' AND o.created_at <= ?3 || ' 23:59:59'
+       GROUP BY oi.name ORDER BY qty DESC, oi.name ASC LIMIT ?4`,
+    )
+    .bind(tenantId, fromDate, toDate, limit)
+    .all<{ name: string; qty: number }>();
+  return results ?? [];
+}
+
+export async function peakOrderHourBetween(
+  db: D1Database,
+  tenantId: number,
+  fromDate: string,
+  toDate: string,
+): Promise<{ hour: number; count: number } | null> {
+  const row = await db
+    .prepare(
+      `SELECT CAST(strftime('%H', datetime(created_at, '+7 hours')) AS INTEGER) AS hour, COUNT(*) AS count
+       FROM orders
+       WHERE tenant_id = ?1 AND status != 'dibatalkan'
+         AND created_at >= ?2 || ' 00:00:00' AND created_at <= ?3 || ' 23:59:59'
+       GROUP BY hour ORDER BY count DESC, hour ASC LIMIT 1`,
+    )
+    .bind(tenantId, fromDate, toDate)
+    .first<{ hour: number; count: number }>();
+  return row ?? null;
+}
+
 export async function busiestDayBetween(
   db: D1Database,
   tenantId: number,

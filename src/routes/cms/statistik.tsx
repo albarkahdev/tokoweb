@@ -1,10 +1,15 @@
 import { Hono } from "hono";
+import { getSiteContent } from "@/db/contents";
 import {
   busiestDayBetween,
+  orderCountsBetween,
+  peakOrderHourBetween,
   type StatTotals,
   statTotalsBetween,
+  topOrderItemsBetween,
   topPromoBetween,
 } from "@/db/stats-read";
+import { narrateOrders } from "@/domain/order-stats";
 import { addDays, sqlUtcDateTime } from "@/domain/stats";
 import { wibDateOf } from "@/domain/subscription";
 import type { AppEnv } from "@/env";
@@ -73,6 +78,20 @@ export const cmsStatistik = new Hono<AppEnv>().get("/statistik", async (c) => {
     sqlUtcDateTime(Date.now() - 30 * DAY_MS),
   );
 
+  const content = await getSiteContent(c.env.DB, cms.tenant.id);
+  const orderingOn = content.order_settings?.enabled ?? false;
+  const monthFrom = addDays(today, -30);
+  const monthTo = addDays(today, -1);
+  const orderCounts = orderingOn
+    ? await orderCountsBetween(c.env.DB, cms.tenant.id, monthFrom, monthTo)
+    : null;
+  const topItems = orderingOn
+    ? await topOrderItemsBetween(c.env.DB, cms.tenant.id, monthFrom, monthTo, 3)
+    : [];
+  const peakHour = orderingOn
+    ? await peakOrderHourBetween(c.env.DB, cms.tenant.id, monthFrom, monthTo)
+    : null;
+
   return c.html(
     html(
       <CmsPage title="Statistik" currentPath="/statistik" cms={cms}>
@@ -108,6 +127,31 @@ export const cmsStatistik = new Hono<AppEnv>().get("/statistik", async (c) => {
             pribadi.
           </Text>
         </Card>
+        {orderCounts ? (
+          <>
+            <Card>
+              <CardTitle>Pesanan (30 hari)</CardTitle>
+              {narrateOrders(orderCounts, topItems, peakHour).map((insight) => (
+                <Insight>{insight}</Insight>
+              ))}
+            </Card>
+            <StatRow>
+              <StatTile value={String(orderCounts.masuk)} label="pesanan masuk" />
+              <StatTile value={String(orderCounts.selesai)} label="selesai" />
+              <StatTile value={String(orderCounts.dibatalkan)} label="dibatalkan" />
+            </StatRow>
+            {topItems.length > 0 ? (
+              <Card>
+                <CardTitle>Menu terlaris</CardTitle>
+                {topItems.map((item, index) => (
+                  <Text last={index === topItems.length - 1}>
+                    {index + 1}. <Strong>{item.name}</Strong> — {item.qty} porsi
+                  </Text>
+                ))}
+              </Card>
+            ) : null}
+          </>
+        ) : null}
       </CmsPage>,
     ),
   );
