@@ -35,7 +35,8 @@ var img=ov.querySelector(".mp-media img"),media=ov.querySelector(".mp-media"),h3
 var fotos=[],idx=0;
 function slide(i){if(!fotos.length)return;idx=(i+fotos.length)%fotos.length;img.src=fotos[idx];count.textContent=(idx+1)+" / "+fotos.length;
 var many=fotos.length>1;prev.style.display=next.style.display=count.style.display=many?"":"none"}
-function open(data){h3.textContent=data.n;price.textContent=data.p;desc.textContent=data.d;wa.href=data.w;
+function open(data){h3.textContent=data.n;price.textContent=data.p;desc.textContent=data.d;wa.href=data.o||data.w;
+if(data.o){wa.removeAttribute("data-track")}else{wa.setAttribute("data-track","click_wa")}
 fotos=data.f||[];media.style.display=fotos.length?"":"none";slide(0);
 ov.classList.add("show");document.body.style.overflow="hidden"}
 function close(){ov.classList.remove("show");document.body.style.overflow=""}

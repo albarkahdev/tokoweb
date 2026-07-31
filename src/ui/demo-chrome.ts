@@ -167,7 +167,7 @@ function showToast(msg){toast.textContent=msg;toast.classList.add("show");clearT
 document.addEventListener("click",function(e){
   var a=e.target.closest("a");if(!a)return;
   var href=a.getAttribute("href")||"";
-  if(/^(https:\\/\\/wa\\.me|tel:|https:\\/\\/(www\\.)?(maps|goo)\\.)/i.test(href)||a.classList.contains("btn-wa")||a.classList.contains("nav-wa")){
+  if(/^(https:\\/\\/wa\\.me|tel:|https:\\/\\/(www\\.)?(maps|goo)\\.)/i.test(href)){
     e.preventDefault();showToast("Ini demo — tombol asli aktif di website kamu ✨");
   }
 },true);

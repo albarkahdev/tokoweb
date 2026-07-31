@@ -183,7 +183,7 @@ async function serveDemo(c: Context<AppEnv>, pagePath: PublicPagePath): Promise<
   const requested = c.req.query("tema") ?? FEATURED_DEMO_THEME;
   const themeSlug = isFeaturedTheme(requested) ? requested : FEATURED_DEMO_THEME;
 
-  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=21`;
+  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=22`;
   const cached = await caches.default.match(cacheKey);
   if (cached) return cached;
 

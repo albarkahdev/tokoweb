@@ -82,7 +82,17 @@ function heroImage(data: RenderData): { src: string; alt: string } | null {
   return null;
 }
 
-function itemCard(item: FlatItem, businessName: string, waNumber: string, listMode: boolean) {
+function orderLink(data: RenderData): string | null {
+  return data.site.content.order_settings?.enabled ? pageHref(data, "/pesan") : null;
+}
+
+function itemCard(
+  item: FlatItem,
+  businessName: string,
+  waNumber: string,
+  listMode: boolean,
+  orderHref: string | null,
+) {
   const photos = itemPhotos(item).map((key) => `/img/${key}`);
   return (
     <MenuItemCard
@@ -95,6 +105,7 @@ function itemCard(item: FlatItem, businessName: string, waNumber: string, listMo
       featured={item.featured}
       special={item.special}
       askHref={waLink(waNumber, `Halo ${businessName}, mau pesan ${item.name}.`)}
+      orderHref={orderHref}
     />
   );
 }
@@ -150,9 +161,7 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
   const gallery = galleryPhotos(data);
   const specials = items.filter((item) => item.special);
   const trustList = trustBadges(data.site.content.trust);
-  const orderHref = data.site.content.order_settings?.enabled
-    ? `${data.basePath ?? ""}/pesan`
-    : null;
+  const orderHref = orderLink(data);
 
   return (
     <>
@@ -176,14 +185,14 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
           menuVariant={`${menuClass} special-sec`}
         >
           <MenuGrid>
-            {specials.map((item) => itemCard(item, businessName, waNumber, listMode))}
+            {specials.map((item) => itemCard(item, businessName, waNumber, listMode, orderHref))}
           </MenuGrid>
         </SiteSection>
       ) : null}
       {shown.length > 0 ? (
         <SiteSection id="menu" kicker="Paling laris" title="Menu Andalan" menuVariant={menuClass}>
           <MenuGrid>
-            {shown.map((item) => itemCard(item, businessName, waNumber, listMode))}
+            {shown.map((item) => itemCard(item, businessName, waNumber, listMode, orderHref))}
           </MenuGrid>
           {items.length > MAX_FEATURED ? (
             <MoreMenuLink
@@ -273,6 +282,7 @@ function FullMenuSections(props: { data: RenderData; theme: ThemeConfig; waNumbe
     .filter((category) => category.items.length > 0);
   const listMode = theme.layout.menu === "list";
   const menuClass = `menu-${theme.layout.menu}`;
+  const orderHref = orderLink(data);
 
   return (
     <>
@@ -295,6 +305,7 @@ function FullMenuSections(props: { data: RenderData; theme: ThemeConfig; waNumbe
                 businessName,
                 waNumber,
                 listMode,
+                orderHref,
               ),
             )}
           </MenuGrid>
@@ -403,9 +414,7 @@ export function renderKulinerPage(data: RenderData): string {
         homeHref={pageHref(data, "/")}
         links={navLinks(data)}
         waHref={waLink(waNumber, `Halo ${businessName}, saya mau pesan.`)}
-        orderHref={
-          data.site.content.order_settings?.enabled ? `${data.basePath ?? ""}/pesan` : null
-        }
+        orderHref={orderLink(data)}
         withTicker={isHome}
         logoSrc={info.logo_key ? `/img/${info.logo_key}` : null}
       />

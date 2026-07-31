@@ -71,7 +71,7 @@ export function SiteNav(props: {
       </span>
       {props.orderHref ? (
         <a class="nav-wa" href={props.orderHref}>
-          🛒 Pesan Online
+          💬 Pesan Online
         </a>
       ) : (
         <a class="nav-wa" data-track="click_wa" href={props.waHref}>
@@ -200,7 +200,7 @@ export function SiteHero(props: {
         <div class="hero-cta">
           {props.orderHref ? (
             <a class="btn-wa" href={props.orderHref}>
-              🛒 Pesan Online
+              💬 Pesan Online
             </a>
           ) : (
             <a class="btn-wa" data-track="click_wa" href={props.waHref}>
@@ -266,6 +266,7 @@ export function MenuItemCard(props: {
   featured?: boolean;
   special?: boolean;
   askHref: string;
+  orderHref?: string | null;
 }) {
   const photo = props.imageSrc ? (
     <img
@@ -289,6 +290,7 @@ export function MenuItemCard(props: {
     d: props.desc ?? "",
     f: props.photos ?? (props.imageSrc ? [props.imageSrc] : []),
     w: props.askHref,
+    o: props.orderHref ?? "",
   });
   return (
     <div class={`menu-item reveal has-pop${props.imageSrc ? "" : " no-photo"}`} data-mi={popData}>
@@ -308,9 +310,15 @@ export function MenuItemCard(props: {
           </>
         )}
         {props.desc ? <p class="desc">{props.desc}</p> : null}
-        <a class="ask" data-track="click_wa" href={props.askHref}>
-          Tanya via WA →
-        </a>
+        {props.orderHref ? (
+          <a class="ask" href={props.orderHref}>
+            💬 Pesan →
+          </a>
+        ) : (
+          <a class="ask" data-track="click_wa" href={props.askHref}>
+            Tanya via WA →
+          </a>
+        )}
       </div>
     </div>
   );
