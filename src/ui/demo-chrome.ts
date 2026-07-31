@@ -10,6 +10,7 @@ export function demoChromeHtml(
   const ordered = themes
     .slice()
     .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
+  const usableCount = ordered.filter((theme) => theme.featured).length;
   const items = ordered
     .map((theme) => {
       const f = `${theme.name} ${theme.character} ${(theme.tags ?? []).join(" ")}`.toLowerCase();
@@ -83,7 +84,7 @@ body{padding-top:3.1rem;padding-bottom:7rem}
 </div>
 <div class="demo-tp" id="demo-tp">
   <div class="demo-tp-box" role="dialog" aria-modal="true" aria-label="Pilih tema">
-    <div class="demo-tp-head"><strong>Pilih Tema (${themes.length})</strong><button type="button" class="demo-tp-close" aria-label="Tutup">×</button></div>
+    <div class="demo-tp-head"><strong>Pilih Tema · ${usableCount} bisa dicoba</strong><button type="button" class="demo-tp-close" aria-label="Tutup">×</button></div>
     <input class="demo-tp-search" id="demo-tp-search" placeholder="Cari: gelap, mewah, playful, animasi…">
     <div class="demo-tp-list">${items}</div>
   </div>
