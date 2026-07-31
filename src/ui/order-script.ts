@@ -142,12 +142,66 @@ export const ORDER_SCRIPT = `
       return { c:Number(p[0]), i:Number(p[1]), qty:l.qty, note:l.note||"" };
     }));
   }
-  function renderAll(){ renderCards(); renderBar(); renderSheet(); syncHidden(); persist(); }
+  function renderAll(){ renderCards(); renderBar(); renderSheet(); syncHidden(); persist(); if(modal && modal.classList.contains("open")) renderModalActions(); }
   function openSheet(v){
     var sheet = document.querySelector("[data-cart-sheet]");
     if(sheet) sheet.classList.toggle("open", v);
     document.body.style.overflow = v ? "hidden" : "";
   }
+  function filterCat(idx){
+    document.querySelectorAll(".ord-cat").forEach(function(sec){
+      sec.style.display = (idx==="all" || sec.getAttribute("data-cat")===idx) ? "" : "none";
+    });
+    document.querySelectorAll("[data-cat-tab]").forEach(function(tab){
+      tab.classList.toggle("on", tab.getAttribute("data-cat-tab")===idx);
+    });
+  }
+  var modal=null, modalFotos=[], modalIdx=0;
+  function slideModal(d){
+    if(!modal || !modalFotos.length) return;
+    modalIdx = (modalIdx + d + modalFotos.length) % modalFotos.length;
+    var img = modal.querySelector(".ord-modal-media img"); if(img) img.src = modalFotos[modalIdx];
+    var c = modal.querySelector(".ord-modal-count"); if(c) c.textContent = (modalIdx+1)+" / "+modalFotos.length;
+  }
+  function renderModalActions(){
+    if(!modal) return;
+    var box = modal.querySelector(".ord-modal-actions"); if(!box) return;
+    var data = modal.__data;
+    if(!data){ box.innerHTML=""; return; }
+    if(!data.a){ box.innerHTML='<span class="ord-modal-sold">Menu ini sedang habis</span>'; return; }
+    var q = qtyOfKey(data.k);
+    if(q<=0){ box.innerHTML='<button type="button" class="ord-btn block" data-modal-add>+ Tambah ke Keranjang</button>'; }
+    else { box.innerHTML='<div class="ord-modal-step"><button type="button" data-modal-sub aria-label="Kurangi">−</button><span>'+q+'</span><button type="button" data-modal-plus aria-label="Tambah">+</button></div>'; }
+  }
+  function buildModal(){
+    modal = document.createElement("div"); modal.className="ord-modal";
+    modal.innerHTML = '<div class="ord-modal-box" role="dialog" aria-modal="true"><button type="button" class="ord-modal-close" aria-label="Tutup">\\u2715</button><div class="ord-modal-media"><img alt=""><button type="button" class="ord-modal-prev" aria-label="Sebelumnya">\\u2039</button><button type="button" class="ord-modal-next" aria-label="Berikutnya">\\u203A</button><span class="ord-modal-count"></span></div><div class="ord-modal-body"><h3></h3><span class="ord-modal-price"></span><p class="ord-modal-desc"></p><div class="ord-modal-actions"></div></div></div>';
+    document.body.appendChild(modal);
+    modal.addEventListener("click", function(e){
+      var t=e.target; if(!(t instanceof Element)) return;
+      if(t===modal || t.classList.contains("ord-modal-close")) return closeDetail();
+      if(t.classList.contains("ord-modal-prev")) return slideModal(-1);
+      if(t.classList.contains("ord-modal-next")) return slideModal(1);
+    });
+  }
+  function openDetail(card){
+    if(!modal) buildModal();
+    var data; try{ data=JSON.parse(card.getAttribute("data-mi")); }catch(e){ return; }
+    modal.__data = data;
+    modal.querySelector("h3").textContent = data.n;
+    modal.querySelector(".ord-modal-price").textContent = fmt(data.p);
+    var desc = modal.querySelector(".ord-modal-desc"); desc.textContent = data.d||""; desc.style.display = data.d ? "" : "none";
+    modalFotos = data.f||[]; modalIdx = 0;
+    var media = modal.querySelector(".ord-modal-media");
+    media.style.display = modalFotos.length ? "" : "none";
+    if(modalFotos.length){ var img=media.querySelector("img"); if(img) img.src=modalFotos[0]; }
+    var many = modalFotos.length>1;
+    ["ord-modal-prev","ord-modal-next","ord-modal-count"].forEach(function(c){ var el=modal.querySelector("."+c); if(el) el.style.display = many ? "" : "none"; });
+    if(many){ var cc=modal.querySelector(".ord-modal-count"); if(cc) cc.textContent="1 / "+modalFotos.length; }
+    renderModalActions();
+    modal.classList.add("open"); document.body.style.overflow="hidden";
+  }
+  function closeDetail(){ if(modal) modal.classList.remove("open"); document.body.style.overflow=""; }
   function num(el, attr){ return Number(el.getAttribute(attr)); }
   document.addEventListener("click", function(e){
     var t = e.target;
@@ -163,8 +217,15 @@ export const ORDER_SCRIPT = `
     if(t.hasAttribute("data-line-sub")) return setLineQty(num(t,"data-line-sub"), -1);
     if(t.hasAttribute("data-line-rm")) return removeLine(num(t,"data-line-rm"));
     if(t.hasAttribute("data-line-split")) return splitLine(num(t,"data-line-split"));
+    if((t.hasAttribute("data-modal-add")||t.hasAttribute("data-modal-plus")) && modal && modal.__data) return addKey(modal.__data.k);
+    if(t.hasAttribute("data-modal-sub") && modal && modal.__data) return subKey(modal.__data.k);
+    var tab = t.closest("[data-cat-tab]"); if(tab) return filterCat(tab.getAttribute("data-cat-tab"));
     if(t.hasAttribute("data-open-cart") || t.closest("[data-open-cart]")) return openSheet(true);
     if(t.hasAttribute("data-close-cart")) return openSheet(false);
+    var oc = t.closest(".ord-item[data-mi]"); if(oc) return openDetail(oc);
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key==="Escape"){ if(modal && modal.classList.contains("open")) closeDetail(); else openSheet(false); }
   });
   document.addEventListener("input", function(e){
     var t = e.target;

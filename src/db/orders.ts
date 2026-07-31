@@ -27,6 +27,7 @@ export type OrderRow = {
   ready_at: string | null;
   completed_at: string | null;
   cancelled_at: string | null;
+  cancel_reason: string | null;
 };
 
 export type OrderItemRow = {
@@ -65,7 +66,7 @@ export type CreateOrderInput = {
 };
 
 const ORDER_COLUMNS =
-  "id, tenant_id, code, customer_name, customer_email, customer_phone, fulfillment, table_no, status, cash, subtotal, tax_amount, fee_amount, total, payment_method_id, payment_snapshot, proof_key, note, created_at, confirmed_at, paid_at, verified_at, processed_at, ready_at, completed_at, cancelled_at";
+  "id, tenant_id, code, customer_name, customer_email, customer_phone, fulfillment, table_no, status, cash, subtotal, tax_amount, fee_amount, total, payment_method_id, payment_snapshot, proof_key, note, created_at, confirmed_at, paid_at, verified_at, processed_at, ready_at, completed_at, cancelled_at, cancel_reason";
 
 export async function createOrder(db: D1Database, input: CreateOrderInput): Promise<OrderRow> {
   const order = await db
@@ -181,7 +182,7 @@ export async function listOrdersForCsv(
     .prepare(
       `SELECT o.code, strftime('%Y-%m-%d %H:%M', datetime(o.created_at, '+7 hours')) AS created_at,
               o.customer_name, o.customer_phone, o.fulfillment, o.table_no,
-              o.status, o.cash, o.subtotal, o.fee_amount, o.tax_amount, o.total, o.note,
+              o.status, o.cash, o.subtotal, o.fee_amount, o.tax_amount, o.total, o.note, o.cancel_reason,
               (SELECT GROUP_CONCAT(oi.name || ' x' || oi.qty, '; ') FROM order_items oi WHERE oi.order_id = o.id) AS items
        FROM orders o WHERE o.tenant_id = ?1 ORDER BY o.created_at DESC, o.id DESC LIMIT ?2`,
     )
@@ -211,10 +212,11 @@ export async function saveOrderTransition(
   id: number,
   tenantId: number,
   next: OrderState,
+  cancelReason: string | null = null,
 ): Promise<void> {
   await db
     .prepare(
-      "UPDATE orders SET status = ?3, confirmed_at = ?4, paid_at = ?5, verified_at = ?6, processed_at = ?7, ready_at = ?8, completed_at = ?9, cancelled_at = ?10 WHERE id = ?1 AND tenant_id = ?2",
+      "UPDATE orders SET status = ?3, confirmed_at = ?4, paid_at = ?5, verified_at = ?6, processed_at = ?7, ready_at = ?8, completed_at = ?9, cancelled_at = ?10, cancel_reason = COALESCE(?11, cancel_reason) WHERE id = ?1 AND tenant_id = ?2",
     )
     .bind(
       id,
@@ -227,6 +229,7 @@ export async function saveOrderTransition(
       next.ready_at,
       next.completed_at,
       next.cancelled_at,
+      cancelReason,
     )
     .run();
 }

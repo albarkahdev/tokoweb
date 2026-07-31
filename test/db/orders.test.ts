@@ -88,6 +88,15 @@ describe("orders db", () => {
     expect(reloaded?.confirmed_at).toBe("2026-07-31T10:00:00Z");
   });
 
+  it("stores a cancellation reason and keeps it on later writes", async () => {
+    const order = await createOrder(env.DB, orderInput("CANCEL01"));
+    const cancelled = applyTransition(order, "dibatalkan", "2026-07-31T10:00:00Z");
+    await saveOrderTransition(env.DB, order.id, 1, cancelled, "Menu/stok habis");
+    expect((await getOrderById(env.DB, order.id, 1))?.cancel_reason).toBe("Menu/stok habis");
+    await saveOrderTransition(env.DB, order.id, 1, cancelled);
+    expect((await getOrderById(env.DB, order.id, 1))?.cancel_reason).toBe("Menu/stok habis");
+  });
+
   it("auto-cancels stale unpaid orders past the cutoff", async () => {
     const fresh = await createOrder(env.DB, orderInput("FRESH001"));
     const stale = await createOrder(env.DB, orderInput("STALE001"));

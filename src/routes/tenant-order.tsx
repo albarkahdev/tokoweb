@@ -514,6 +514,8 @@ export const tenantOrder = new Hono<AppEnv>()
           createdLabel={createdLabel}
           waReceiptHref={waReceipt}
           justCreated={c.req.query("baru") === "1"}
+          cancelReason={order.cancel_reason}
+          paidBefore={order.paid_at !== null}
         >
           <OrderStatusHint
             status={order.status}

@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
+    "dev:demo": "wrangler dev --host demo.localhost --var BASE_DOMAIN:localhost",
+    "dev:app": "wrangler dev --host app.localhost --var BASE_DOMAIN:localhost",
     "deploy": "wrangler deploy",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",

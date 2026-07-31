@@ -88,6 +88,7 @@ Statistik tidak menampilkan nominal uang — hanya jumlah dan tren.`,
 - Atur metode bayar (QRIS/transfer/e-wallet), pajak/biaya bila ada, dan jumlah meja untuk QR makan di tempat.
 - Pesanan masuk muncul di menu Pesanan dengan tanda + suara. Konfirmasi → proses → tandai siap → selesai.
 - Pembeli tidak perlu login. Bukti bayar (bila diunggah) tampil di detail pesanan.
+- Kalau menu habis/tak sanggup, batalkan pesanan dengan memilih alasan (mis. "Menu/stok habis"). Alasan itu tampil ke pembeli di halaman status. Pembeli baru bisa bayar setelah kamu konfirmasi, jadi kalau dibatalkan sebelum itu, dia tidak keburu bayar.
 - Tombol "Pesan Online" & "Pesan" di websitemu menggantikan "Tanya via WA" saat fitur ini aktif.`,
     },
     {

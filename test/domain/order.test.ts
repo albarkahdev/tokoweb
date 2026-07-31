@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   applyTransition,
+  buildCancelReason,
   buildWaMessage,
   calculateOrderTotal,
   canTransition,
@@ -271,5 +272,31 @@ describe("buildWaMessage", () => {
     expect(msg).toContain("Rp 38.000");
     expect(msg).toContain("https://warung.tokoweb.id/o/AB12CD34");
     expect(msg).not.toContain("Pajak:");
+  });
+});
+
+describe("buildCancelReason", () => {
+  it("returns the preset alone when no note", () => {
+    expect(buildCancelReason("Menu/stok habis", "")).toBe("Menu/stok habis");
+  });
+
+  it("appends the note to the preset", () => {
+    expect(buildCancelReason("Menu/stok habis", " ayam bakar habis ")).toBe(
+      "Menu/stok habis: ayam bakar habis",
+    );
+  });
+
+  it("uses the free note when the preset is unknown", () => {
+    expect(buildCancelReason("", "tutup mendadak")).toBe("tutup mendadak");
+  });
+
+  it("returns null when nothing is provided", () => {
+    expect(buildCancelReason("", "   ")).toBeNull();
+  });
+
+  it("caps the reason length", () => {
+    const reason = buildCancelReason("", "x".repeat(200));
+    expect(reason).not.toBeNull();
+    expect((reason as string).length).toBe(120);
   });
 });
