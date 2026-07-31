@@ -27,14 +27,16 @@ export const ORDER_CSS = `
 .ord-item-ph{font-size:2rem;opacity:0.45}
 .ord-item-body{display:flex;flex-direction:column;gap:0.4rem;padding:0.6rem 0.7rem 0.7rem;flex:1}
 .ord-item-body h3{margin:0;font-size:0.92rem;font-family:var(--f-heading);color:var(--text);line-height:1.25}
-.ord-item-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:0.4rem}
-.ord-item-price{font-weight:800;color:var(--text);font-size:0.92rem}
+.ord-item-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:0.4rem 0.5rem;flex-wrap:wrap}
+.ord-item-foot .ord-actions{margin-left:auto}
+.ord-item-price{font-weight:800;color:var(--text);font-size:0.9rem;white-space:nowrap}
+.ord-item-body h3{-webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
 .ord-sold-badge{position:absolute;top:0.5rem;left:0.5rem;font-size:0.72rem;font-weight:700;color:#b42318;background:#fee4e2;padding:0.2rem 0.5rem;border-radius:99px}
-.ord-actions{position:relative;z-index:2}
-.ord-add{width:38px;height:38px;border-radius:50%;border:none;background:var(--primary);color:var(--primary-contrast);font-size:1.5rem;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
-.ord-step{display:flex;align-items:center;gap:0.5rem}
-.ord-step button{width:32px;height:32px;border-radius:50%;border:none;background:var(--primary);color:var(--primary-contrast);font-size:1.1rem;font-weight:800;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
-.ord-count{min-width:1.1rem;text-align:center;font-weight:800;color:var(--text)}
+.ord-actions{position:relative;z-index:2;flex-shrink:0}
+.ord-add{width:36px;height:36px;border-radius:50%;border:none;background:var(--primary);color:var(--primary-contrast);font-size:1.45rem;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.ord-step{display:flex;align-items:center;gap:0.3rem}
+.ord-step button{width:30px;height:30px;border-radius:50%;border:none;background:var(--primary);color:var(--primary-contrast);font-size:1.05rem;font-weight:800;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
+.ord-count{min-width:0.9rem;text-align:center;font-weight:800;color:var(--text);font-size:0.9rem}
 .ord-empty-filter{text-align:center;color:var(--muted);padding:2rem 0}
 .ord-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:1rem;z-index:30;display:flex;align-items:center;gap:0.7rem;width:min(92%,600px);border:none;cursor:pointer;padding:0.9rem 1.1rem;border-radius:99px;background:var(--primary);color:var(--primary-contrast);font:inherit;font-weight:700;box-shadow:var(--shadow-pop,0 10px 30px rgba(0,0,0,0.2))}
 .ord-bar-count{background:var(--primary-contrast);color:var(--primary);min-width:1.5rem;height:1.5rem;border-radius:99px;display:flex;align-items:center;justify-content:center;font-weight:800}
