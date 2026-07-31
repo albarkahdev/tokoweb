@@ -391,6 +391,7 @@ export function LandingShell(props: {
   description: string;
   canonical: string;
   jsonLd: string;
+  noindex?: boolean;
   children: Child;
 }) {
   return (
@@ -400,6 +401,7 @@ export function LandingShell(props: {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{props.title}</title>
         <meta name="description" content={props.description} />
+        {props.noindex ? <meta name="robots" content="noindex" /> : null}
         <link rel="canonical" href={props.canonical} />
         <meta property="og:title" content={props.title} />
         <meta property="og:description" content={props.description} />

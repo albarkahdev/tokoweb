@@ -105,10 +105,17 @@ describe("landing tokoweb.id", () => {
     expect(html).not.toContain("landing-shot.webp");
   });
 
-  it("mitra page has self-register form", async () => {
+  it("mitra page links to the dedicated register page (no Turnstile form inline)", async () => {
     const html = await (await get("/mitra")).text();
+    expect(html).toContain('href="/mitra/daftar"');
+    expect(html).not.toContain('class="mitra-form"');
+  });
+
+  it("register page has the self-register form and is noindex", async () => {
+    const html = await (await get("/mitra/daftar")).text();
     expect(html).toContain('class="mitra-form"');
     expect(html).toContain('action="/mitra/daftar"');
+    expect(html).toContain('name="robots" content="noindex"');
   });
 
   it("registers mitra as pending, blocks duplicates, gates /r until approved", async () => {
