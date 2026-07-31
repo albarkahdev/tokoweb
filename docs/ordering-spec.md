@@ -3,6 +3,25 @@
 Modul pemesanan online untuk tenant kuliner. Referensi keputusan: **ADR-0010**.
 Bukan Fase 1. Dikerjakan setelah Fase 1 DoD lengkap.
 
+## Status implementasi (2026-07-31)
+
+Terimplementasi di branch `feat/fase4` (lanjutan). Catatan:
+
+- **Data:** migrasi `0012_orders` (tabel `orders`, `order_items`, `tenant_payment_methods`).
+  `contents.data.order_settings` untuk enable/pajak/biaya/min/meja; `menu[].items[].available`
+  untuk tandai habis.
+- **Domain (`src/domain/order.ts`):** `canTransition`/`applyTransition` (state machine murni),
+  `calculateOrderTotal`, `validateCheckout`, `generateOrderCode` (Web Crypto),
+  `buildWaMessage`, `parseOrderSettings`, `isItemAvailable`. Plus `src/domain/payment-method.ts`.
+- **Publik (surface tenant, tanpa edge-cache):** `GET/POST /pesan`, `GET /o/{code}`,
+  `POST /o/{code}/bayar` di `src/routes/tenant-order.tsx`. Turnstile + rate limit. Harga
+  di-hitung ulang di server (anti-tamper), item habis/nonaktif ditolak. QR meja → `?meja=n`.
+- **CMS:** `src/routes/cms/pesanan.tsx` (inbox badge+suara+auto-refresh, detail, state machine,
+  invoice cetak) + `pesanan-setelan.tsx` (setelan, metode bayar CRUD, QR meja).
+- **Notif:** badge + suara + polling (auto-refresh 20 dtk). Web Push tetap ditahan (ADR sendiri).
+- Verifikasi visual subdomain tertunda ke deploy (miniflare lokal selalu lihat host `localhost`).
+  Perilaku tercakup unit + route test.
+
 ## Ringkasan alur
 
 **Pembeli (tamu, tanpa login):**

@@ -142,6 +142,15 @@ describe("CMS pesanan", () => {
     expect(count?.n).toBe(1);
   });
 
+  it("toggles menu item availability (habis)", async () => {
+    const res = await post("/menu/item/stok?c=0&i=0", {});
+    expect(res.status).toBe(302);
+    const row = await env.DB.prepare("SELECT data FROM contents WHERE tenant_id = 1").first<{
+      data: string;
+    }>();
+    expect(JSON.parse(row?.data ?? "{}").menu[0].items[0].available).toBe(false);
+  });
+
   it("shows table QR codes", async () => {
     const html = await (await get("/pesanan/meja")).text();
     expect(html).toContain("Meja 1");
