@@ -10,11 +10,13 @@ export type OrderRow = {
   fulfillment: Fulfillment;
   table_no: string | null;
   status: OrderStatus;
+  cash: number;
   subtotal: number;
   tax_amount: number;
   fee_amount: number;
   total: number;
   payment_method_id: number | null;
+  payment_snapshot: string | null;
   proof_key: string | null;
   note: string | null;
   created_at: string;
@@ -22,6 +24,7 @@ export type OrderRow = {
   paid_at: string | null;
   verified_at: string | null;
   processed_at: string | null;
+  ready_at: string | null;
   completed_at: string | null;
   cancelled_at: string | null;
 };
@@ -52,6 +55,7 @@ export type CreateOrderInput = {
   customerPhone: string | null;
   fulfillment: Fulfillment;
   tableNo: string | null;
+  cash: boolean;
   subtotal: number;
   taxAmount: number;
   feeAmount: number;
@@ -61,12 +65,12 @@ export type CreateOrderInput = {
 };
 
 const ORDER_COLUMNS =
-  "id, tenant_id, code, customer_name, customer_email, customer_phone, fulfillment, table_no, status, subtotal, tax_amount, fee_amount, total, payment_method_id, proof_key, note, created_at, confirmed_at, paid_at, verified_at, processed_at, completed_at, cancelled_at";
+  "id, tenant_id, code, customer_name, customer_email, customer_phone, fulfillment, table_no, status, cash, subtotal, tax_amount, fee_amount, total, payment_method_id, payment_snapshot, proof_key, note, created_at, confirmed_at, paid_at, verified_at, processed_at, ready_at, completed_at, cancelled_at";
 
 export async function createOrder(db: D1Database, input: CreateOrderInput): Promise<OrderRow> {
   const order = await db
     .prepare(
-      "INSERT INTO orders (tenant_id, code, customer_name, customer_email, customer_phone, fulfillment, table_no, subtotal, tax_amount, fee_amount, total, note) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12) RETURNING id",
+      "INSERT INTO orders (tenant_id, code, customer_name, customer_email, customer_phone, fulfillment, table_no, cash, subtotal, tax_amount, fee_amount, total, note) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13) RETURNING id",
     )
     .bind(
       input.tenantId,
@@ -76,6 +80,7 @@ export async function createOrder(db: D1Database, input: CreateOrderInput): Prom
       input.customerPhone,
       input.fulfillment,
       input.tableNo,
+      input.cash ? 1 : 0,
       input.subtotal,
       input.taxAmount,
       input.feeAmount,
@@ -182,7 +187,7 @@ export async function saveOrderTransition(
 ): Promise<void> {
   await db
     .prepare(
-      "UPDATE orders SET status = ?3, confirmed_at = ?4, paid_at = ?5, verified_at = ?6, processed_at = ?7, completed_at = ?8, cancelled_at = ?9 WHERE id = ?1 AND tenant_id = ?2",
+      "UPDATE orders SET status = ?3, confirmed_at = ?4, paid_at = ?5, verified_at = ?6, processed_at = ?7, ready_at = ?8, completed_at = ?9, cancelled_at = ?10 WHERE id = ?1 AND tenant_id = ?2",
     )
     .bind(
       id,
@@ -192,6 +197,7 @@ export async function saveOrderTransition(
       next.paid_at,
       next.verified_at,
       next.processed_at,
+      next.ready_at,
       next.completed_at,
       next.cancelled_at,
     )
@@ -204,11 +210,22 @@ export async function setOrderPayment(
   tenantId: number,
   paymentMethodId: number | null,
   proofKey: string | null,
+  paymentSnapshot: string | null,
 ): Promise<void> {
   await db
     .prepare(
-      "UPDATE orders SET payment_method_id = ?3, proof_key = ?4 WHERE id = ?1 AND tenant_id = ?2",
+      "UPDATE orders SET payment_method_id = ?3, proof_key = ?4, payment_snapshot = ?5 WHERE id = ?1 AND tenant_id = ?2",
     )
-    .bind(id, tenantId, paymentMethodId, proofKey)
+    .bind(id, tenantId, paymentMethodId, proofKey, paymentSnapshot)
     .run();
+}
+
+export async function cancelStaleUnpaidOrders(db: D1Database, cutoffIso: string): Promise<number> {
+  const result = await db
+    .prepare(
+      "UPDATE orders SET status = 'dibatalkan', cancelled_at = datetime('now') WHERE status = 'menunggu_bayar' AND created_at < ?1",
+    )
+    .bind(cutoffIso)
+    .run();
+  return result.meta.changes ?? 0;
 }

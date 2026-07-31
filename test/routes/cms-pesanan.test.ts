@@ -151,6 +151,27 @@ describe("CMS pesanan", () => {
     expect(JSON.parse(row?.data ?? "{}").menu[0].items[0].available).toBe(false);
   });
 
+  it("cash order: terima → diproses → siap", async () => {
+    await env.DB.prepare(
+      "INSERT INTO orders (id, tenant_id, code, customer_name, fulfillment, status, cash, subtotal, total) VALUES (2, 1, 'CASH0001', 'Tono', 'pickup', 'baru', 1, 10000, 10000)",
+    ).run();
+    await post("/pesanan/CASH0001/terima", {});
+    const afterTerima = await env.DB.prepare("SELECT status FROM orders WHERE id = 2").first<{
+      status: string;
+    }>();
+    expect(afterTerima?.status).toBe("diproses");
+
+    await post("/pesanan/CASH0001/siap", {});
+    const afterSiap = await env.DB.prepare(
+      "SELECT status, ready_at FROM orders WHERE id = 2",
+    ).first<{
+      status: string;
+      ready_at: string;
+    }>();
+    expect(afterSiap?.status).toBe("siap");
+    expect(afterSiap?.ready_at).not.toBeNull();
+  });
+
   it("shows table QR codes", async () => {
     const html = await (await get("/pesanan/meja")).text();
     expect(html).toContain("Meja 1");

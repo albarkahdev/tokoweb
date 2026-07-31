@@ -61,6 +61,11 @@ function SetelanPage(props: {
             name="enabled"
             checked={settings.enabled === true}
           />
+          <CheckboxField
+            label="Izinkan bayar tunai di tempat (pembeli tak perlu bayar di muka)"
+            name="cash"
+            checked={settings.cash === true}
+          />
           <Field
             label="Pajak (%)"
             name="tax_percent"
@@ -256,6 +261,7 @@ export const cmsPesananSetelan = new Hono<AppEnv>()
     const values = formDataToValues(await c.req.formData());
     const settings = parseOrderSettings({
       enabled: Boolean(values.enabled),
+      cash: Boolean(values.cash),
       taxPercent: values.tax_percent ?? "",
       minOrder: values.min_order ?? "",
       tables: values.tables ?? "",

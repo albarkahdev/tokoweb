@@ -48,6 +48,48 @@ export function paymentMethodLines(
   return [];
 }
 
+export type PaymentSnapshot = {
+  type: PaymentType;
+  label: string;
+  detail: Record<string, string>;
+  image_key: string | null;
+};
+
+export function buildPaymentSnapshot(method: {
+  type: string;
+  label: string;
+  detail: string;
+  image_key: string | null;
+}): PaymentSnapshot {
+  const type = isPaymentType(method.type) ? method.type : "qris";
+  return {
+    type,
+    label: method.label,
+    detail: parsePaymentDetail(method.detail),
+    image_key: method.image_key,
+  };
+}
+
+export function parsePaymentSnapshot(json: string | null): PaymentSnapshot | null {
+  if (!json) return null;
+  try {
+    const parsed = JSON.parse(json);
+    if (typeof parsed !== "object" || parsed === null) return null;
+    const type = isPaymentType(parsed.type) ? parsed.type : "qris";
+    return {
+      type,
+      label: typeof parsed.label === "string" ? parsed.label : "",
+      detail:
+        typeof parsed.detail === "object" && parsed.detail !== null
+          ? (parsed.detail as Record<string, string>)
+          : {},
+      image_key: typeof parsed.image_key === "string" ? parsed.image_key : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function buildPaymentDetail(
   type: PaymentType,
   values: Record<string, string>,

@@ -22,12 +22,14 @@ CREATE TABLE orders (
   fulfillment TEXT NOT NULL CHECK (fulfillment IN ('dine_in', 'pickup')),
   table_no TEXT,
   status TEXT NOT NULL DEFAULT 'baru'
-    CHECK (status IN ('baru', 'menunggu_bayar', 'cek_bayar', 'diproses', 'selesai', 'dibatalkan')),
+    CHECK (status IN ('baru', 'menunggu_bayar', 'cek_bayar', 'diproses', 'siap', 'selesai', 'dibatalkan')),
+  cash INTEGER NOT NULL DEFAULT 0 CHECK (cash IN (0, 1)),
   subtotal INTEGER NOT NULL,
   tax_amount INTEGER NOT NULL DEFAULT 0,
   fee_amount INTEGER NOT NULL DEFAULT 0,
   total INTEGER NOT NULL,
   payment_method_id INTEGER REFERENCES tenant_payment_methods(id),
+  payment_snapshot TEXT,
   proof_key TEXT,
   note TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -35,6 +37,7 @@ CREATE TABLE orders (
   paid_at TEXT,
   verified_at TEXT,
   processed_at TEXT,
+  ready_at TEXT,
   completed_at TEXT,
   cancelled_at TEXT
 );

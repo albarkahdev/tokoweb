@@ -6,6 +6,7 @@ export const ORDER_STATUSES = [
   "menunggu_bayar",
   "cek_bayar",
   "diproses",
+  "siap",
   "selesai",
   "dibatalkan",
 ] as const;
@@ -20,6 +21,7 @@ export type OrderTimestamps = {
   paid_at: string | null;
   verified_at: string | null;
   processed_at: string | null;
+  ready_at: string | null;
   completed_at: string | null;
   cancelled_at: string | null;
 };
@@ -27,10 +29,11 @@ export type OrderTimestamps = {
 export type OrderState = { status: OrderStatus } & OrderTimestamps;
 
 const TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
-  baru: ["menunggu_bayar", "dibatalkan"],
+  baru: ["menunggu_bayar", "diproses", "dibatalkan"],
   menunggu_bayar: ["cek_bayar", "dibatalkan"],
   cek_bayar: ["diproses", "menunggu_bayar", "dibatalkan"],
-  diproses: ["selesai"],
+  diproses: ["siap", "selesai"],
+  siap: ["selesai"],
   selesai: [],
   dibatalkan: [],
 };
@@ -40,6 +43,7 @@ const STATUS_STAMP: Record<OrderStatus, (keyof OrderTimestamps)[]> = {
   menunggu_bayar: ["confirmed_at"],
   cek_bayar: ["paid_at"],
   diproses: ["verified_at", "processed_at"],
+  siap: ["ready_at"],
   selesai: ["completed_at"],
   dibatalkan: ["cancelled_at"],
 };
@@ -196,6 +200,11 @@ export function buildWaMessage(order: WaOrderSummary, statusUrl: string): string
 
 export const MAX_TABLES = 200;
 export const MAX_FEES = 3;
+export const STALE_UNPAID_HOURS = 24;
+
+export function staleUnpaidCutoffIso(nowMs: number, hours: number = STALE_UNPAID_HOURS): string {
+  return new Date(nowMs - hours * 3_600_000).toISOString().replace("T", " ").slice(0, 19);
+}
 
 function toInt(value: string, max: number): number {
   const n = Math.trunc(Number(value));
@@ -205,6 +214,7 @@ function toInt(value: string, max: number): number {
 
 export function parseOrderSettings(input: {
   enabled: boolean;
+  cash: boolean;
   taxPercent: string;
   minOrder: string;
   tables: string;
@@ -216,6 +226,7 @@ export function parseOrderSettings(input: {
     .slice(0, MAX_FEES);
   return {
     enabled: input.enabled,
+    cash: input.cash,
     tax_percent: toInt(input.taxPercent, 100),
     min_order: toInt(input.minOrder, 100_000_000),
     tables: toInt(input.tables, MAX_TABLES),
@@ -227,7 +238,15 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   baru: "Baru masuk",
   menunggu_bayar: "Menunggu pembayaran",
   cek_bayar: "Cek pembayaran",
-  diproses: "Sedang diproses",
+  diproses: "Sedang dibuat",
+  siap: "Siap",
   selesai: "Selesai",
   dibatalkan: "Dibatalkan",
 };
+
+export function statusLabelFor(status: OrderStatus, fulfillment: Fulfillment): string {
+  if (status === "siap") {
+    return fulfillment === "dine_in" ? "Siap disajikan" : "Siap diambil";
+  }
+  return ORDER_STATUS_LABELS[status];
+}

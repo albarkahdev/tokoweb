@@ -29,6 +29,7 @@ export type OrderFeeSetting = { label?: string; amount?: number };
 
 export type OrderSettings = {
   enabled?: boolean;
+  cash?: boolean;
   tax_percent?: number;
   fees?: OrderFeeSetting[];
   min_order?: number;

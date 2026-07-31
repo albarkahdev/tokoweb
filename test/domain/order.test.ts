@@ -11,6 +11,8 @@ import {
   ORDER_CODE_LENGTH,
   type OrderState,
   parseOrderSettings,
+  staleUnpaidCutoffIso,
+  statusLabelFor,
   validateCheckout,
 } from "@/domain/order";
 
@@ -21,6 +23,7 @@ function freshOrder(status: OrderState["status"] = "baru"): OrderState {
     paid_at: null,
     verified_at: null,
     processed_at: null,
+    ready_at: null,
     completed_at: null,
     cancelled_at: null,
   };
@@ -31,7 +34,20 @@ describe("state machine", () => {
     expect(canTransition("baru", "menunggu_bayar")).toBe(true);
     expect(canTransition("menunggu_bayar", "cek_bayar")).toBe(true);
     expect(canTransition("cek_bayar", "diproses")).toBe(true);
+    expect(canTransition("diproses", "siap")).toBe(true);
+    expect(canTransition("siap", "selesai")).toBe(true);
     expect(canTransition("diproses", "selesai")).toBe(true);
+  });
+
+  it("allows the cash path (baru straight to diproses)", () => {
+    expect(canTransition("baru", "diproses")).toBe(true);
+    expect(canTransition("menunggu_bayar", "diproses")).toBe(false);
+  });
+
+  it("stamps ready_at on siap", () => {
+    const ready = applyTransition(freshOrder("diproses"), "siap", "2026-07-31T12:00:00Z");
+    expect(ready.status).toBe("siap");
+    expect(ready.ready_at).toBe("2026-07-31T12:00:00Z");
   });
 
   it("allows reject back to waiting and cancel from early states", () => {
@@ -42,11 +58,11 @@ describe("state machine", () => {
   });
 
   it("rejects illegal transitions", () => {
-    expect(canTransition("baru", "diproses")).toBe(false);
     expect(canTransition("baru", "selesai")).toBe(false);
     expect(canTransition("diproses", "dibatalkan")).toBe(false);
     expect(canTransition("selesai", "diproses")).toBe(false);
     expect(canTransition("dibatalkan", "menunggu_bayar")).toBe(false);
+    expect(canTransition("siap", "diproses")).toBe(false);
   });
 
   it("applyTransition stamps the right timestamp", () => {
@@ -186,6 +202,7 @@ describe("parseOrderSettings", () => {
   it("clamps and filters", () => {
     const s = parseOrderSettings({
       enabled: true,
+      cash: true,
       taxPercent: "250",
       minOrder: "-5",
       tables: "9999",
@@ -196,6 +213,7 @@ describe("parseOrderSettings", () => {
       ],
     });
     expect(s.enabled).toBe(true);
+    expect(s.cash).toBe(true);
     expect(s.tax_percent).toBe(100);
     expect(s.min_order).toBe(0);
     expect(s.tables).toBe(200);
@@ -205,14 +223,29 @@ describe("parseOrderSettings", () => {
   it("handles disabled and empty", () => {
     const s = parseOrderSettings({
       enabled: false,
+      cash: false,
       taxPercent: "",
       minOrder: "",
       tables: "",
       fees: [],
     });
     expect(s.enabled).toBe(false);
+    expect(s.cash).toBe(false);
     expect(s.tax_percent).toBe(0);
     expect(s.fees).toEqual([]);
+  });
+});
+
+describe("statusLabelFor & stale cutoff", () => {
+  it("labels siap per fulfillment", () => {
+    expect(statusLabelFor("siap", "dine_in")).toBe("Siap disajikan");
+    expect(statusLabelFor("siap", "pickup")).toBe("Siap diambil");
+    expect(statusLabelFor("diproses", "pickup")).toBe("Sedang dibuat");
+  });
+
+  it("computes a stale cutoff in the past", () => {
+    const now = Date.UTC(2026, 6, 31, 12, 0, 0);
+    expect(staleUnpaidCutoffIso(now, 24)).toBe("2026-07-30 12:00:00");
   });
 });
 

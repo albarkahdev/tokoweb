@@ -1,6 +1,7 @@
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+  cancelStaleUnpaidOrders,
   countOrdersByStatus,
   createOrder,
   findOrderByCode,
@@ -37,6 +38,7 @@ function orderInput(code: string, tenantId = 1) {
     customerPhone: "628123",
     fulfillment: "dine_in" as const,
     tableNo: "5",
+    cash: false,
     subtotal: 36000,
     taxAmount: 0,
     feeAmount: 2000,
@@ -85,6 +87,24 @@ describe("orders db", () => {
     expect(reloaded?.confirmed_at).toBe("2026-07-31T10:00:00Z");
   });
 
+  it("auto-cancels stale unpaid orders past the cutoff", async () => {
+    const fresh = await createOrder(env.DB, orderInput("FRESH001"));
+    const stale = await createOrder(env.DB, orderInput("STALE001"));
+    await env.DB.prepare(
+      "UPDATE orders SET status = 'menunggu_bayar', created_at = '2020-01-01 00:00:00' WHERE id = ?1",
+    )
+      .bind(stale.id)
+      .run();
+    await env.DB.prepare("UPDATE orders SET status = 'menunggu_bayar' WHERE id = ?1")
+      .bind(fresh.id)
+      .run();
+
+    const cancelled = await cancelStaleUnpaidOrders(env.DB, "2021-01-01 00:00:00");
+    expect(cancelled).toBe(1);
+    expect((await getOrderById(env.DB, stale.id, 1))?.status).toBe("dibatalkan");
+    expect((await getOrderById(env.DB, fresh.id, 1))?.status).toBe("menunggu_bayar");
+  });
+
   it("records buyer payment method and proof", async () => {
     const methodId = await createPaymentMethod(env.DB, {
       tenantId: 1,
@@ -95,10 +115,18 @@ describe("orders db", () => {
       sort: 0,
     });
     const order = await createOrder(env.DB, orderInput("PAY00001"));
-    await setOrderPayment(env.DB, order.id, 1, methodId, "t/warung/proof/x.webp");
+    await setOrderPayment(
+      env.DB,
+      order.id,
+      1,
+      methodId,
+      "t/warung/proof/x.webp",
+      JSON.stringify({ type: "qris", label: "QRIS" }),
+    );
     const reloaded = await getOrderById(env.DB, order.id, 1);
     expect(reloaded?.payment_method_id).toBe(methodId);
     expect(reloaded?.proof_key).toBe("t/warung/proof/x.webp");
+    expect(reloaded?.payment_snapshot).toContain("QRIS");
   });
 });
 

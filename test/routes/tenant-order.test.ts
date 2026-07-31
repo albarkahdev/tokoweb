@@ -29,6 +29,7 @@ const CONTENT = {
   info: { name: "Warung Order", wa_number: "6281234567890" },
   order_settings: {
     enabled: true,
+    cash: true,
     tax_percent: 10,
     fees: [{ label: "Kemasan", amount: 2000 }],
     min_order: 0,
@@ -157,6 +158,40 @@ describe("public ordering", () => {
     expect(row?.status).toBe("cek_bayar");
     expect(row?.payment_method_id).toBe(10);
     expect(row?.paid_at).not.toBeNull();
+  });
+
+  it("creates a cash order that skips payment", async () => {
+    const res = await post("https://warung.tokoweb.id/pesan", {
+      customer_name: "Tunai",
+      fulfillment: "pickup",
+      payment_mode: "cash",
+      cart: JSON.stringify([{ c: 0, i: 0, qty: 1 }]),
+    });
+    expect(res.status).toBe(302);
+    const code = (res.headers.get("location") ?? "").slice(3, 11);
+    const row = await env.DB.prepare("SELECT cash, status FROM orders WHERE code = ?1")
+      .bind(code)
+      .first<{ cash: number; status: string }>();
+    expect(row?.cash).toBe(1);
+    expect(row?.status).toBe("baru");
+  });
+
+  it("snapshots the payment destination on pay", async () => {
+    const create = await post("https://warung.tokoweb.id/pesan", {
+      customer_name: "Snap",
+      fulfillment: "pickup",
+      cart: JSON.stringify([{ c: 0, i: 0, qty: 1 }]),
+    });
+    const code = (create.headers.get("location") ?? "").slice(3, 11);
+    await env.DB.prepare("UPDATE orders SET status = 'menunggu_bayar' WHERE code = ?1")
+      .bind(code)
+      .run();
+    await post(`https://warung.tokoweb.id/o/${code}/bayar`, { payment_method_id: "10" });
+    const row = await env.DB.prepare("SELECT payment_snapshot FROM orders WHERE code = ?1")
+      .bind(code)
+      .first<{ payment_snapshot: string }>();
+    expect(row?.payment_snapshot).toContain("BCA");
+    expect(row?.payment_snapshot).toContain("123456");
   });
 
   it("404s an unknown order code", async () => {

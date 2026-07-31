@@ -26,6 +26,7 @@ import {
   validateCheckout,
 } from "@/domain/order";
 import {
+  buildPaymentSnapshot,
   isPaymentType,
   PAYMENT_TYPE_LABELS,
   parsePaymentDetail,
@@ -165,6 +166,7 @@ function renderOrderPage(
         tables={settings.tables ?? 0}
         prefillTable={opts.prefillTable}
         minOrder={settings.min_order ?? 0}
+        cashEnabled={settings.cash === true}
         siteKey={siteKey}
       />
     </>
@@ -314,6 +316,7 @@ export const tenantOrder = new Hono<AppEnv>()
     const note = String(form.get("note") ?? "")
       .trim()
       .slice(0, MAX_ITEM_NOTE);
+    const cash = settings.cash === true && String(form.get("payment_mode") ?? "") === "cash";
 
     const cart = parseCart(String(form.get("cart") ?? "[]"));
     const { lines, hadUnavailable } = resolveLines(site, cart);
@@ -373,6 +376,7 @@ export const tenantOrder = new Hono<AppEnv>()
       customerPhone: customerPhone || null,
       fulfillment,
       tableNo: fulfillment === "dine_in" ? tableNo || null : null,
+      cash,
       subtotal: totals.subtotal,
       taxAmount: totals.tax_amount,
       feeAmount: totals.fee_amount,
@@ -455,6 +459,7 @@ export const tenantOrder = new Hono<AppEnv>()
         <OrderStatusView
           code={order.code}
           status={order.status}
+          cash={order.cash === 1}
           customerName={order.customer_name}
           fulfillment={order.fulfillment}
           tableNo={order.table_no}
@@ -467,7 +472,11 @@ export const tenantOrder = new Hono<AppEnv>()
           waReceiptHref={waReceipt}
           justCreated={c.req.query("baru") === "1"}
         >
-          <OrderStatusHint status={order.status} />
+          <OrderStatusHint
+            status={order.status}
+            cash={order.cash === 1}
+            fulfillment={order.fulfillment}
+          />
           {paymentPanel}
         </OrderStatusView>
       </>
@@ -518,7 +527,14 @@ export const tenantOrder = new Hono<AppEnv>()
       }
     }
 
-    await setOrderPayment(c.env.DB, order.id, site.tenantId, methodId, proofKey);
+    await setOrderPayment(
+      c.env.DB,
+      order.id,
+      site.tenantId,
+      methodId,
+      proofKey,
+      JSON.stringify(buildPaymentSnapshot(method)),
+    );
     const fresh = await getOrderById(c.env.DB, order.id, site.tenantId);
     if (fresh && fresh.status === "menunggu_bayar") {
       const next: OrderState = applyTransition(fresh, "cek_bayar", sqlUtcDateTime(Date.now()));

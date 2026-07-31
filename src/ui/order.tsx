@@ -1,5 +1,5 @@
 import { formatRupiah } from "@/domain/money";
-import { ORDER_STATUS_LABELS, type OrderStatus } from "@/domain/order";
+import { ORDER_STATUS_LABELS, type OrderStatus, statusLabelFor } from "@/domain/order";
 import type { PaymentLine } from "@/domain/payment-method";
 import { TurnstileWidget } from "@/ui/turnstile-widget";
 
@@ -137,6 +137,7 @@ export function OrderCartSheet(props: {
   tables: number;
   prefillTable?: string;
   minOrder: number;
+  cashEnabled?: boolean;
   siteKey?: string;
 }) {
   return (
@@ -211,6 +212,20 @@ export function OrderCartSheet(props: {
                 <span>Ambil sendiri</span>
               </label>
             </div>
+            {props.cashEnabled ? (
+              <div class="ord-fulfill">
+                <label class="ord-radio">
+                  <input type="radio" name="payment_mode" value="online" checked />
+                  <span>Bayar online</span>
+                </label>
+                <label class="ord-radio">
+                  <input type="radio" name="payment_mode" value="cash" />
+                  <span>Bayar tunai di tempat</span>
+                </label>
+              </div>
+            ) : (
+              <input type="hidden" name="payment_mode" value="online" />
+            )}
             <div class="ord-field" data-table-field hidden={props.tables <= 0}>
               <label for="ord-table">Nomor meja</label>
               <input
@@ -248,6 +263,7 @@ export function OrderCartSheet(props: {
 export function OrderStatusView(props: {
   code: string;
   status: OrderStatus;
+  cash?: boolean;
   customerName: string;
   fulfillment: "dine_in" | "pickup";
   tableNo?: string | null;
@@ -261,14 +277,22 @@ export function OrderStatusView(props: {
   justCreated?: boolean;
   children?: unknown;
 }) {
-  const steps: { key: OrderStatus; label: string }[] = [
-    { key: "baru", label: "Diterima" },
-    { key: "menunggu_bayar", label: "Konfirmasi" },
-    { key: "cek_bayar", label: "Bayar" },
-    { key: "diproses", label: "Diproses" },
-    { key: "selesai", label: "Selesai" },
-  ];
-  const order: OrderStatus[] = ["baru", "menunggu_bayar", "cek_bayar", "diproses", "selesai"];
+  const steps: { key: OrderStatus; label: string }[] = props.cash
+    ? [
+        { key: "baru", label: "Diterima" },
+        { key: "diproses", label: "Dibuat" },
+        { key: "siap", label: props.fulfillment === "dine_in" ? "Disajikan" : "Siap" },
+        { key: "selesai", label: "Selesai" },
+      ]
+    : [
+        { key: "baru", label: "Diterima" },
+        { key: "menunggu_bayar", label: "Konfirmasi" },
+        { key: "cek_bayar", label: "Bayar" },
+        { key: "diproses", label: "Dibuat" },
+        { key: "siap", label: props.fulfillment === "dine_in" ? "Disajikan" : "Siap" },
+        { key: "selesai", label: "Selesai" },
+      ];
+  const order = steps.map((step) => step.key);
   const activeIndex =
     props.status === "dibatalkan" ? -1 : order.indexOf(props.status as OrderStatus);
   return (
@@ -278,7 +302,9 @@ export function OrderStatusView(props: {
       ) : null}
       <div class="ord-status-head">
         <span class="ord-code">#{props.code}</span>
-        <span class={`ord-badge s-${props.status}`}>{ORDER_STATUS_LABELS[props.status]}</span>
+        <span class={`ord-badge s-${props.status}`}>
+          {statusLabelFor(props.status, props.fulfillment)}
+        </span>
       </div>
       {props.status === "dibatalkan" ? (
         <p class="ord-cancelled">Pesanan ini dibatalkan.</p>
@@ -344,11 +370,24 @@ export function OrderStatusView(props: {
   );
 }
 
-export function OrderStatusHint(props: { status: OrderStatus }) {
+export function OrderStatusHint(props: {
+  status: OrderStatus;
+  cash?: boolean;
+  fulfillment: "dine_in" | "pickup";
+}) {
+  const cashPay = props.cash
+    ? props.fulfillment === "dine_in"
+      ? " Bayar tunai di kasir/meja ya."
+      : " Bayar tunai saat ambil ya."
+    : "";
   const map: Partial<Record<OrderStatus, string>> = {
-    baru: "Menunggu penjual mengonfirmasi pesananmu. Halaman ini akan diperbarui otomatis.",
+    baru: `Menunggu penjual menerima pesananmu.${cashPay} Halaman ini diperbarui otomatis.`,
     cek_bayar: "Bukti bayar terkirim. Penjual sedang memverifikasi pembayaranmu.",
-    diproses: "Pembayaran diterima. Pesananmu sedang disiapkan 🍳",
+    diproses: `Pesananmu sedang disiapkan 🍳${cashPay}`,
+    siap:
+      props.fulfillment === "dine_in"
+        ? "Pesananmu siap disajikan 🎉"
+        : `Pesananmu siap diambil 🎉${cashPay}`,
     selesai: "Pesanan selesai. Terima kasih! 🙏",
   };
   const text = map[props.status];

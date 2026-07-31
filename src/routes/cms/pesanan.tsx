@@ -7,9 +7,13 @@ import {
   type OrderRow,
   saveOrderTransition,
 } from "@/db/orders";
-import { findPaymentMethod } from "@/db/payment-methods";
 import { formatRupiah } from "@/domain/money";
 import { applyTransition, ORDER_STATUS_LABELS, type OrderStatus } from "@/domain/order";
+import {
+  PAYMENT_TYPE_LABELS,
+  parsePaymentSnapshot,
+  paymentMethodLines,
+} from "@/domain/payment-method";
 import { sqlUtcDateTime } from "@/domain/stats";
 import type { AppEnv } from "@/env";
 import { type CmsContext, CmsPage, html, loadCms } from "@/routes/cms/shared";
@@ -34,8 +38,10 @@ const ACTIONABLE: OrderStatus[] = ["baru", "cek_bayar"];
 
 const ACTION_TARGET: Record<string, OrderStatus> = {
   konfirmasi: "menunggu_bayar",
+  terima: "diproses",
   verifikasi: "diproses",
   tolak: "menunggu_bayar",
+  siap: "siap",
   selesai: "selesai",
   batal: "dibatalkan",
 };
@@ -71,7 +77,7 @@ function wib(ts: string | null): string {
 
 function statusBadge(status: OrderStatus) {
   const tone: "success" | "warning" | "muted" =
-    status === "selesai" || status === "diproses"
+    status === "selesai" || status === "diproses" || status === "siap"
       ? "success"
       : status === "dibatalkan"
         ? "muted"
@@ -182,7 +188,11 @@ function OrderActions(props: { order: OrderRow; readOnly: boolean }) {
     confirm?: string;
   }[] = [];
   if (order.status === "baru") {
-    actions.push({ action: "konfirmasi", label: "Konfirmasi & buka pembayaran" });
+    if (order.cash === 1) {
+      actions.push({ action: "terima", label: "Terima & buat pesanan (bayar tunai)" });
+    } else {
+      actions.push({ action: "konfirmasi", label: "Konfirmasi & buka pembayaran" });
+    }
     actions.push({
       action: "batal",
       label: "Tolak pesanan",
@@ -206,6 +216,12 @@ function OrderActions(props: { order: OrderRow; readOnly: boolean }) {
       confirm: "Batalkan pesanan ini?",
     });
   } else if (order.status === "diproses") {
+    actions.push({
+      action: "siap",
+      label: order.fulfillment === "dine_in" ? "Tandai siap disajikan" : "Tandai siap diambil",
+    });
+    actions.push({ action: "selesai", label: "Tandai selesai", variant: "secondary" });
+  } else if (order.status === "siap") {
     actions.push({ action: "selesai", label: "Tandai selesai" });
   }
   if (actions.length === 0) return null;
@@ -291,6 +307,29 @@ function DetailPage(props: {
           ]}
         />
       </Card>
+      {(() => {
+        const snap = parsePaymentSnapshot(order.payment_snapshot);
+        if (!snap) return null;
+        const lines = paymentMethodLines(snap.type, snap.detail);
+        return (
+          <Card>
+            <CardTitle>Tujuan bayar (saat pesan)</CardTitle>
+            <Text small muted>
+              {PAYMENT_TYPE_LABELS[snap.type]} · {snap.label}
+            </Text>
+            {snap.image_key ? (
+              <img
+                src={`/img/${snap.image_key}`}
+                alt="QR pembayaran"
+                style="max-width:200px;border-radius:12px;margin-top:0.5rem"
+              />
+            ) : null}
+            {lines.length > 0 ? (
+              <DataList rows={lines.map((line) => ({ label: line.label, value: line.value }))} />
+            ) : null}
+          </Card>
+        );
+      })()}
       {order.proof_key ? (
         <Card>
           <CardTitle>Bukti bayar</CardTitle>
@@ -306,14 +345,11 @@ function DetailPage(props: {
   );
 }
 
-async function methodLabelFor(
-  c: Parameters<typeof loadCms>[0],
-  order: OrderRow,
-  tenantId: number,
-): Promise<string | null> {
-  if (!order.payment_method_id) return null;
-  const method = await findPaymentMethod(c.env.DB, order.payment_method_id, tenantId);
-  return method ? method.label : null;
+function paymentLabel(order: OrderRow): string | null {
+  const snap = parsePaymentSnapshot(order.payment_snapshot);
+  if (snap) return `${PAYMENT_TYPE_LABELS[snap.type]} · ${snap.label}`;
+  if (order.cash === 1) return "Tunai (bayar di tempat)";
+  return null;
 }
 
 export const cmsPesanan = new Hono<AppEnv>()
@@ -338,7 +374,7 @@ export const cmsPesanan = new Hono<AppEnv>()
     const order = await findOrderByCode(c.env.DB, cms.tenant.id, c.req.param("code"));
     if (!order) return c.redirect("/pesanan?err=Pesanan tidak ditemukan.");
     const items = await listOrderItems(c.env.DB, order.id);
-    const methodLabel = await methodLabelFor(c, order, cms.tenant.id);
+    const methodLabel = paymentLabel(order);
     return c.html(
       html(
         <DetailPage
@@ -357,7 +393,7 @@ export const cmsPesanan = new Hono<AppEnv>()
     const order = await findOrderByCode(c.env.DB, cms.tenant.id, c.req.param("code"));
     if (!order) return c.redirect("/pesanan?err=Pesanan tidak ditemukan.");
     const items = await listOrderItems(c.env.DB, order.id);
-    const methodLabel = await methodLabelFor(c, order, cms.tenant.id);
+    const methodLabel = paymentLabel(order);
     const info = cms.tenant;
     return c.html(
       renderOrderInvoiceHtml(

@@ -73,6 +73,7 @@ export const ORDER_CSS = `
 .ord-code{font-family:var(--f-heading);font-weight:800;font-size:1.3rem;color:var(--text)}
 .ord-badge{font-size:0.8rem;font-weight:700;padding:0.3rem 0.7rem;border-radius:99px;background:var(--surface);color:var(--text);border:1px solid rgba(0,0,0,0.1)}
 .ord-badge.s-diproses{background:#eff8ff;color:#175cd3;border-color:#b2ddff}
+.ord-badge.s-siap{background:#fef0c7;color:#b54708;border-color:#fedf89}
 .ord-badge.s-selesai{background:#ecfdf3;color:#027a48;border-color:#a6f4c5}
 .ord-badge.s-dibatalkan{background:#fef3f2;color:#b42318;border-color:#fecdca}
 .ord-timeline{list-style:none;display:flex;justify-content:space-between;padding:0;margin:0 0 1.4rem;position:relative}
