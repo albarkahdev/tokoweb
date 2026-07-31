@@ -137,7 +137,7 @@ const BLOG_DESC =
 export const landing = new Hono<AppEnv>()
   .get("/", async (c) => {
     const url = new URL(c.req.url);
-    const cached = await matchCachedPage(url.hostname, "/landing-v9");
+    const cached = await matchCachedPage(url.hostname, "/landing-v10");
     if (cached) return cached;
 
     const demoUrl = `https://demo.${c.env.BASE_DOMAIN}/kuliner`;
@@ -400,12 +400,12 @@ export const landing = new Hono<AppEnv>()
         "cache-control": "public, max-age=300, s-maxage=86400",
       },
     });
-    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/landing-v9", response.clone()));
+    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/landing-v10", response.clone()));
     return response;
   })
   .get("/mitra", async (c) => {
     const url = new URL(c.req.url);
-    const cached = await matchCachedPage(url.hostname, "/mitra-v4");
+    const cached = await matchCachedPage(url.hostname, "/mitra-v5");
     if (cached) return cached;
 
     const wa = c.env.CONTACT_WA_NUMBER
@@ -507,7 +507,7 @@ export const landing = new Hono<AppEnv>()
         "cache-control": "public, max-age=300, s-maxage=86400",
       },
     });
-    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/mitra-v4", response.clone()));
+    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/mitra-v5", response.clone()));
     return response;
   })
   .get("/mitra/daftar", (c) => {
