@@ -16,7 +16,7 @@ import {
   setTenantStatus,
   tenantHostnames,
 } from "@/db/tenants";
-import { createUser, findUserByEmail } from "@/db/users";
+import { createUser, findUserByEmail, setUserPhone } from "@/db/users";
 import { formDataToValues } from "@/domain/cms";
 import { formatRupiah } from "@/domain/money";
 import { generateOneTimeToken, INTAKE_TTL_MS, SET_PASSWORD_TTL_MS } from "@/domain/one-time-token";
@@ -397,16 +397,23 @@ export const adminTenants = new Hono<AppEnv>()
     if (!email.includes("@")) {
       return c.redirect(`/admin/tenant/${tenant.id}?err=Email tidak valid.`);
     }
+    const content = await getSiteContent(c.env.DB, tenant.id);
+    const phone = content.info?.wa_number ?? null;
     const existing = await findUserByEmail(c.env.DB, email);
-    const userId =
-      existing?.id ??
-      (await createUser(
+    let userId: number;
+    if (existing) {
+      userId = existing.id;
+      if (phone && !existing.phone) await setUserPhone(c.env.DB, existing.id, phone);
+    } else {
+      userId = await createUser(
         c.env.DB,
         email,
         await hashPassword(generateOneTimeToken()),
         "owner",
         tenant.id,
-      ));
+        phone,
+      );
+    }
     const token = await issueToken(
       c.env.DB,
       "set_password",

@@ -1,8 +1,13 @@
 import { type Context, Hono } from "hono";
 import { deleteCookie, setCookie } from "hono/cookie";
 import { consumeToken } from "@/db/auth-tokens";
-import { findLeadByWa } from "@/db/leads";
-import { bumpSessionVersion, findUserByEmail, findUserById, updateUserPassword } from "@/db/users";
+import {
+  bumpSessionVersion,
+  findOwnerByPhone,
+  findUserByEmail,
+  findUserById,
+  updateUserPassword,
+} from "@/db/users";
 import { hashPassword, isAcceptablePassword, verifyPassword } from "@/domain/password";
 import { createFixedWindowLimiter } from "@/domain/rate-limit";
 import { isValidWaNumber, normalizeWaNumber, resetWaLink } from "@/domain/reset";
@@ -180,7 +185,7 @@ export const auth = new Hono<AppEnv>()
       );
     }
     const phone = normalizeWaNumber(raw);
-    const registered = await findLeadByWa(c.env.DB, phone);
+    const registered = await findOwnerByPhone(c.env.DB, phone);
     if (!registered || !c.env.CONTACT_WA_NUMBER) {
       return c.html(
         String(
