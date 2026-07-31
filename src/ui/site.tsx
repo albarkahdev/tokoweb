@@ -52,6 +52,7 @@ export function SiteNav(props: {
   homeHref: string;
   links: { href: string; label: string }[];
   waHref: string;
+  orderHref?: string | null;
   withTicker?: boolean;
   logoSrc?: string | null;
 }) {
@@ -68,9 +69,15 @@ export function SiteNav(props: {
           <a href={link.href}>{link.label}</a>
         ))}
       </span>
-      <a class="nav-wa" data-track="click_wa" href={props.waHref}>
-        💬 Pesan
-      </a>
+      {props.orderHref ? (
+        <a class="nav-wa" href={props.orderHref}>
+          🛒 Pesan Online
+        </a>
+      ) : (
+        <a class="nav-wa" data-track="click_wa" href={props.waHref}>
+          💬 Pesan
+        </a>
+      )}
     </nav>
   );
 }
@@ -161,6 +168,7 @@ export function SiteHero(props: {
   hoursJson: string;
   forcedClosed?: { reason?: string } | null;
   waHref: string;
+  orderHref?: string | null;
   menuAnchor?: string;
 }) {
   const variant = props.variant === "photo" && !props.image ? "typo" : props.variant;
@@ -190,9 +198,15 @@ export function SiteHero(props: {
         <h1>{props.name}</h1>
         {props.tagline ? <p class="tagline">{props.tagline}</p> : null}
         <div class="hero-cta">
-          <a class="btn-wa" data-track="click_wa" href={props.waHref}>
-            💬 Pesan via WhatsApp
-          </a>
+          {props.orderHref ? (
+            <a class="btn-wa" href={props.orderHref}>
+              🛒 Pesan Online
+            </a>
+          ) : (
+            <a class="btn-wa" data-track="click_wa" href={props.waHref}>
+              💬 Pesan via WhatsApp
+            </a>
+          )}
           {props.menuAnchor ? (
             <a class="btn-ghost" href={props.menuAnchor}>
               Lihat Menu ↓
