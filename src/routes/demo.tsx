@@ -413,7 +413,25 @@ function demoStatusPage(
       </OrderStatusView>
     </>
   );
-  return orderDocument(site, DEMO_BUSINESS_NAME, body, []);
+  const scripts = o.status === "diproses" ? [demoAdvanceScript(o.fulfillment)] : [];
+  return orderDocument(site, DEMO_BUSINESS_NAME, body, scripts);
+}
+
+function demoAdvanceScript(fulfillment: Fulfillment): string {
+  const siapLabel = fulfillment === "dine_in" ? "Siap disajikan" : "Siap diambil";
+  const siapHint =
+    fulfillment === "dine_in"
+      ? "Pesananmu siap disajikan 🎉 (demo)"
+      : "Pesananmu siap diambil 🎉 (demo)";
+  return `(function(){
+    var steps=document.querySelectorAll(".ord-timeline li");
+    if(steps.length<2) return;
+    var badge=document.querySelector(".ord-badge");
+    var hint=document.querySelector(".ord-hint");
+    function step(el,text,cls,htext){ if(el) el.classList.add("done"); if(badge){badge.textContent=text;badge.className="ord-badge "+cls;} if(hint) hint.textContent=htext; }
+    setTimeout(function(){ step(steps[steps.length-2], ${JSON.stringify(siapLabel)}, "s-siap", ${JSON.stringify(siapHint)}); },5000);
+    setTimeout(function(){ step(steps[steps.length-1], "Selesai", "s-selesai", "Pesanan selesai. Terima kasih! 🙏 (demo)"); },10000);
+  })();`;
 }
 
 function daftarPage(
