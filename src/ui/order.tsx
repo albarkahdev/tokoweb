@@ -83,20 +83,39 @@ export function OrderClosedNotice(props: { reason?: string; homeHref: string }) 
 
 function MenuCard(props: { item: OrderMenuItem }) {
   const { item } = props;
+  const detail = JSON.stringify({
+    n: item.name,
+    p: item.price,
+    d: item.desc ?? "",
+    f: item.imageSrc ? [item.imageSrc] : [],
+    k: item.key,
+    a: item.available,
+  });
   return (
-    <article class={`ord-item${item.available ? "" : " sold"}`} data-name={item.name.toLowerCase()}>
-      {item.imageSrc ? (
-        <img class="ord-item-img" src={item.imageSrc} alt={item.name} loading="lazy" />
-      ) : null}
+    <article
+      class={`ord-item${item.available ? "" : " sold"}`}
+      data-name={item.name.toLowerCase()}
+      data-mi={detail}
+    >
+      <button type="button" class="ord-item-open" aria-label={`Lihat detail ${item.name}`} />
+      <div class="ord-item-photo">
+        {item.imageSrc ? (
+          <img class="ord-item-img" src={item.imageSrc} alt={item.name} loading="lazy" />
+        ) : (
+          <span class="ord-item-ph" aria-hidden="true">
+            🍽️
+          </span>
+        )}
+        {item.available ? null : <span class="ord-sold-badge">Habis</span>}
+      </div>
       <div class="ord-item-body">
         <h3>{item.name}</h3>
-        {item.desc ? <p class="ord-item-desc">{item.desc}</p> : null}
         <div class="ord-item-foot">
           <span class="ord-item-price">{formatRupiah(item.price)}</span>
           {item.available ? (
             <div class="ord-actions" data-key={item.key}>
-              <button type="button" class="ord-add">
-                Tambah
+              <button type="button" class="ord-add" aria-label={`Tambah ${item.name}`}>
+                +
               </button>
               <div class="ord-step" hidden>
                 <button type="button" class="ord-sub" aria-label="Kurangi">
@@ -108,9 +127,7 @@ function MenuCard(props: { item: OrderMenuItem }) {
                 </button>
               </div>
             </div>
-          ) : (
-            <span class="ord-sold-badge">Habis</span>
-          )}
+          ) : null}
         </div>
       </div>
     </article>
@@ -140,11 +157,25 @@ export function OrderEmptyMenu() {
 export function OrderMenuGrid(props: { categories: OrderMenuCategory[] }) {
   return (
     <div class="ord-menu">
-      <div class="ord-filter">
-        <input type="search" placeholder="Cari menu…" data-menu-filter aria-label="Cari menu" />
+      <div class="ord-sticky">
+        <div class="ord-filter">
+          <input type="search" placeholder="Cari menu…" data-menu-filter aria-label="Cari menu" />
+        </div>
+        {props.categories.length > 1 ? (
+          <div class="ord-tabs" role="tablist" aria-label="Kategori menu">
+            <button type="button" class="ord-tab on" data-cat-tab="all">
+              Semua
+            </button>
+            {props.categories.map((category, index) => (
+              <button type="button" class="ord-tab" data-cat-tab={String(index)}>
+                {category.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
       {props.categories.map((category, index) => (
-        <section class="ord-cat" id={`ord-cat-${index}`}>
+        <section class="ord-cat" data-cat={String(index)} id={`ord-cat-${index}`}>
           <h2 class="ord-cat-title">{category.label}</h2>
           <div class="ord-cat-grid">
             {category.items.map((item) => (
