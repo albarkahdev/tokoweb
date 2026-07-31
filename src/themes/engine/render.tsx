@@ -428,7 +428,10 @@ export function renderKulinerPage(data: RenderData): string {
       )}
       <SiteMain>{pageSections(data, theme, waNumber)}</SiteMain>
       <SiteFooter businessName={businessName} />
-      <WaFloat waHref={waLink(waNumber, `Halo ${businessName}, saya mau pesan.`)} />
+      <WaFloat
+        waHref={waLink(waNumber, `Halo ${businessName}, saya mau pesan.`)}
+        orderHref={orderLink(data)}
+      />
     </SiteDocument>
   );
   return `<!doctype html>${String(page)}`;

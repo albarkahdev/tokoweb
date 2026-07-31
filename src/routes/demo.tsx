@@ -5,12 +5,14 @@ import { recordScan } from "@/db/referrals";
 import { findReferrerByCode } from "@/db/referrers";
 import { formDataToValues } from "@/domain/cms";
 import type { SiteContent } from "@/domain/content";
+import { formatRupiah } from "@/domain/money";
 import {
   calculateOrderTotal,
   type Fulfillment,
   isFulfillment,
   type OrderStatus,
 } from "@/domain/order";
+import { PLAN_PRICES, setupFee } from "@/domain/plan";
 import { createFixedWindowLimiter } from "@/domain/rate-limit";
 import { isValidReferralCode } from "@/domain/referral-code";
 import { addDays } from "@/domain/stats";
@@ -24,7 +26,7 @@ import { FEATURED_DEMO_THEME, isFeaturedTheme, KULINER_THEMES } from "@/themes/k
 import { DEMO_BUSINESS_NAME, DEMO_CONTENT } from "@/themes/kuliner/demo-content";
 import { AppLayout } from "@/ui/app-layout";
 import { demoChromeHtml } from "@/ui/demo-chrome";
-import { Card, PageTitle, Text, TextLink } from "@/ui/display";
+import { Alert, Card, PageTitle, Text, TextLink } from "@/ui/display";
 import { Button, Field, Form, HiddenInput } from "@/ui/form";
 import {
   OrderDemoNote,
@@ -145,7 +147,7 @@ function renderDemoPage(
         id: 0,
         tenant_id: 0,
         author_name: "Maya",
-        body: "Pesan lewat WA dari websitenya, 15 menit langsung siap diambil. Mantap.",
+        body: "Pesan online dari websitenya, 15 menit langsung siap diambil. Mantap.",
         rating: 4,
         status: "approved",
         created_at: "",
@@ -183,7 +185,7 @@ async function serveDemo(c: Context<AppEnv>, pagePath: PublicPagePath): Promise<
   const requested = c.req.query("tema") ?? FEATURED_DEMO_THEME;
   const themeSlug = isFeaturedTheme(requested) ? requested : FEATURED_DEMO_THEME;
 
-  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=22`;
+  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=23`;
   const cached = await caches.default.match(cacheKey);
   if (cached) return cached;
 
@@ -423,6 +425,13 @@ function daftarPage(
     <AppLayout title="Daftar — tokoweb" centered>
       <Card>
         <PageTitle>Satu langkah lagi 🎉</PageTitle>
+        {values.ref ? (
+          <Alert tone="success">
+            Kamu daftar lewat mitra — hemat 30% biaya setup: Basic{" "}
+            <s>{formatRupiah(PLAN_PRICES.basic.setup)}</s>{" "}
+            <strong>{formatRupiah(setupFee("basic", true))}</strong>.
+          </Alert>
+        ) : null}
         <Text muted>
           Cek datamu, lengkapi email, lalu kirim. Kami hubungi via WhatsApp hari ini juga.
         </Text>

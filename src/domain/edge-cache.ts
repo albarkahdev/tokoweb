@@ -1,4 +1,4 @@
-export const PUBLIC_CACHE_VERSION = "2";
+export const PUBLIC_CACHE_VERSION = "3";
 
 export function publicCacheKey(hostname: string, pathname: string): string {
   const host = hostname.toLowerCase();

@@ -4,18 +4,21 @@ import {
   getOrderById,
   listOrderItems,
   listOrders,
+  listOrdersForCsv,
   type OrderRow,
   saveOrderTransition,
   setOrderPayment,
 } from "@/db/orders";
 import { formatRupiah } from "@/domain/money";
 import { applyTransition, ORDER_STATUS_LABELS, type OrderStatus } from "@/domain/order";
+import { buildOrdersCsv, ordersCsvFilename } from "@/domain/order-csv";
 import {
   PAYMENT_TYPE_LABELS,
   parsePaymentSnapshot,
   paymentMethodLines,
 } from "@/domain/payment-method";
 import { sqlUtcDateTime } from "@/domain/stats";
+import { wibDateOf } from "@/domain/subscription";
 import type { AppEnv } from "@/env";
 import { type CmsContext, CmsPage, html, loadCms } from "@/routes/cms/shared";
 import {
@@ -119,7 +122,10 @@ function InboxPage(props: {
         </Text>
         <Text small>
           <TextLink href="/pesanan/setelan">⚙️ Setelan & metode bayar</TextLink> ·{" "}
-          <TextLink href="/pesanan/meja">🍽️ QR meja</TextLink>
+          <TextLink href="/pesanan/meja">🍽️ QR meja</TextLink> ·{" "}
+          <TextLink href="/pesanan/export.csv" external>
+            ⬇️ Export CSV
+          </TextLink>
         </Text>
         <span data-actionable={String(actionable.length)} hidden />
         {actionable.length === 0 ? (
@@ -346,6 +352,17 @@ function paymentLabel(order: OrderRow): string | null {
 }
 
 export const cmsPesanan = new Hono<AppEnv>()
+  .get("/pesanan/export.csv", async (c) => {
+    const cms = await loadCms(c);
+    if (!cms) return c.redirect("/masuk");
+    const rows = await listOrdersForCsv(c.env.DB, cms.tenant.id, 5000);
+    const csv = `﻿${buildOrdersCsv(rows)}`;
+    return c.body(csv, 200, {
+      "content-type": "text/csv; charset=utf-8",
+      "content-disposition": `attachment; filename="${ordersCsvFilename(cms.tenant.slug, wibDateOf(Date.now()))}"`,
+      "cache-control": "no-store",
+    });
+  })
   .get("/pesanan", async (c) => {
     const cms = await loadCms(c);
     if (!cms) return c.redirect("/masuk");

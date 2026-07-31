@@ -492,12 +492,18 @@ export function SiteFooter(props: { businessName: string }) {
   );
 }
 
-export function WaFloat(props: { waHref: string }) {
+export function WaFloat(props: { waHref: string; orderHref?: string | null }) {
   return (
     <div class="wa-float">
-      <a class="btn-wa" data-track="click_wa" href={props.waHref}>
-        💬 Pesan via WhatsApp
-      </a>
+      {props.orderHref ? (
+        <a class="btn-wa" href={props.orderHref}>
+          💬 Pesan Online
+        </a>
+      ) : (
+        <a class="btn-wa" data-track="click_wa" href={props.waHref}>
+          💬 Pesan via WhatsApp
+        </a>
+      )}
     </div>
   );
 }
