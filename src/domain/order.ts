@@ -1,4 +1,4 @@
-import type { MenuItem } from "@/domain/content";
+import type { MenuItem, OrderSettings } from "@/domain/content";
 import { formatRupiah } from "@/domain/money";
 
 export const ORDER_STATUSES = [
@@ -192,6 +192,35 @@ export function buildWaMessage(order: WaOrderSummary, statusUrl: string): string
   lines.push("");
   lines.push(`Pantau status pesananmu: ${statusUrl}`);
   return lines.join("\n");
+}
+
+export const MAX_TABLES = 200;
+export const MAX_FEES = 3;
+
+function toInt(value: string, max: number): number {
+  const n = Math.trunc(Number(value));
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return Math.min(n, max);
+}
+
+export function parseOrderSettings(input: {
+  enabled: boolean;
+  taxPercent: string;
+  minOrder: string;
+  tables: string;
+  fees: { label: string; amount: string }[];
+}): OrderSettings {
+  const fees = input.fees
+    .map((fee) => ({ label: fee.label.trim(), amount: toInt(fee.amount, 100_000_000) }))
+    .filter((fee) => fee.label.length > 0 && fee.amount > 0)
+    .slice(0, MAX_FEES);
+  return {
+    enabled: input.enabled,
+    tax_percent: toInt(input.taxPercent, 100),
+    min_order: toInt(input.minOrder, 100_000_000),
+    tables: toInt(input.tables, MAX_TABLES),
+    fees,
+  };
 }
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {

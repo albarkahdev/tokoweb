@@ -10,6 +10,7 @@ import {
   isOrderStatus,
   ORDER_CODE_LENGTH,
   type OrderState,
+  parseOrderSettings,
   validateCheckout,
 } from "@/domain/order";
 
@@ -178,6 +179,40 @@ describe("isItemAvailable", () => {
     expect(isItemAvailable({})).toBe(true);
     expect(isItemAvailable({ available: true })).toBe(true);
     expect(isItemAvailable({ available: false })).toBe(false);
+  });
+});
+
+describe("parseOrderSettings", () => {
+  it("clamps and filters", () => {
+    const s = parseOrderSettings({
+      enabled: true,
+      taxPercent: "250",
+      minOrder: "-5",
+      tables: "9999",
+      fees: [
+        { label: "Kemasan", amount: "2000" },
+        { label: "", amount: "500" },
+        { label: "Nol", amount: "0" },
+      ],
+    });
+    expect(s.enabled).toBe(true);
+    expect(s.tax_percent).toBe(100);
+    expect(s.min_order).toBe(0);
+    expect(s.tables).toBe(200);
+    expect(s.fees).toEqual([{ label: "Kemasan", amount: 2000 }]);
+  });
+
+  it("handles disabled and empty", () => {
+    const s = parseOrderSettings({
+      enabled: false,
+      taxPercent: "",
+      minOrder: "",
+      tables: "",
+      fees: [],
+    });
+    expect(s.enabled).toBe(false);
+    expect(s.tax_percent).toBe(0);
+    expect(s.fees).toEqual([]);
   });
 });
 

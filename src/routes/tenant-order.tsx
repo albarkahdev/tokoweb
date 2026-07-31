@@ -120,7 +120,11 @@ function orderDataJson(site: PublicSite, categories: OrderMenuCategory[]): strin
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
-function renderOrderPage(site: PublicSite, siteKey: string | undefined, error?: string): string {
+function renderOrderPage(
+  site: PublicSite,
+  siteKey: string | undefined,
+  opts: { error?: string; prefillTable?: string } = {},
+): string {
   const info = site.content.info ?? {};
   const settings = site.content.order_settings ?? {};
   const businessName = info.name ?? site.name;
@@ -152,13 +156,14 @@ function renderOrderPage(site: PublicSite, siteKey: string | undefined, error?: 
         logoSrc={info.logo_key ? `/img/${info.logo_key}` : null}
       />
       <div class="ord-wrap">
-        {error ? <div class="ord-flash">{error}</div> : null}
+        {opts.error ? <div class="ord-flash">{opts.error}</div> : null}
         <p class="ord-lede">Pilih menu, tentukan jumlah, lalu kirim pesananmu.</p>
         <OrderMenuGrid categories={categories} />
       </div>
       <OrderCartSheet
         action="/pesan"
         tables={settings.tables ?? 0}
+        prefillTable={opts.prefillTable}
         minOrder={settings.min_order ?? 0}
         siteKey={siteKey}
       />
@@ -250,7 +255,11 @@ export const tenantOrder = new Hono<AppEnv>()
     const url = new URL(c.req.url);
     const site = await findPublicSite(c.env.DB, url.hostname, c.env.BASE_DOMAIN);
     if (!site || !orderingEnabled(site)) return c.html(notFoundHtml("/"), 404);
-    return c.html(renderOrderPage(site, c.env.TURNSTILE_SITE_KEY), 200, {
+    const tables = site.content.order_settings?.tables ?? 0;
+    const mejaRaw = Number(url.searchParams.get("meja"));
+    const prefillTable =
+      Number.isInteger(mejaRaw) && mejaRaw >= 1 && mejaRaw <= tables ? String(mejaRaw) : undefined;
+    return c.html(renderOrderPage(site, c.env.TURNSTILE_SITE_KEY, { prefillTable }), 200, {
       "cache-control": "no-store",
     });
   })
@@ -259,7 +268,10 @@ export const tenantOrder = new Hono<AppEnv>()
     const site = await findPublicSite(c.env.DB, url.hostname, c.env.BASE_DOMAIN);
     if (!site || !orderingEnabled(site)) return c.html(notFoundHtml("/"), 404);
     if (site.content.info?.temp_closed?.active === true) {
-      return c.html(renderOrderPage(site, c.env.TURNSTILE_SITE_KEY, "Pesanan sedang tutup."), 400);
+      return c.html(
+        renderOrderPage(site, c.env.TURNSTILE_SITE_KEY, { error: "Pesanan sedang tutup." }),
+        400,
+      );
     }
 
     const ip = c.req.header("cf-connecting-ip") ?? "0.0.0.0";
@@ -271,17 +283,17 @@ export const tenantOrder = new Hono<AppEnv>()
     );
     if (!humanOk) {
       return c.html(
-        renderOrderPage(site, c.env.TURNSTILE_SITE_KEY, "Verifikasi anti-robot gagal. Coba lagi."),
+        renderOrderPage(site, c.env.TURNSTILE_SITE_KEY, {
+          error: "Verifikasi anti-robot gagal. Coba lagi.",
+        }),
         400,
       );
     }
     if (!checkoutLimiter.allow(ip, Date.now())) {
       return c.html(
-        renderOrderPage(
-          site,
-          c.env.TURNSTILE_SITE_KEY,
-          "Terlalu banyak percobaan. Tunggu sebentar.",
-        ),
+        renderOrderPage(site, c.env.TURNSTILE_SITE_KEY, {
+          error: "Terlalu banyak percobaan. Tunggu sebentar.",
+        }),
         429,
       );
     }
@@ -307,13 +319,11 @@ export const tenantOrder = new Hono<AppEnv>()
     const { lines, hadUnavailable } = resolveLines(site, cart);
     if (lines.length === 0) {
       return c.html(
-        renderOrderPage(
-          site,
-          c.env.TURNSTILE_SITE_KEY,
-          hadUnavailable
+        renderOrderPage(site, c.env.TURNSTILE_SITE_KEY, {
+          error: hadUnavailable
             ? "Ada menu yang sudah habis. Perbarui keranjangmu."
             : "Keranjang masih kosong.",
-        ),
+        }),
         400,
       );
     }
@@ -340,7 +350,10 @@ export const tenantOrder = new Hono<AppEnv>()
       min_order: settings.min_order ?? 0,
     });
     if (!validation.ok) {
-      return c.html(renderOrderPage(site, c.env.TURNSTILE_SITE_KEY, validation.error), 400);
+      return c.html(
+        renderOrderPage(site, c.env.TURNSTILE_SITE_KEY, { error: validation.error }),
+        400,
+      );
     }
 
     let code = generateOrderCode();

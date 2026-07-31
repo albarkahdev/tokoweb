@@ -43,6 +43,117 @@ td.amt,th.amt{text-align:right;white-space:nowrap}
 @media print{body{background:#fff}.sheet{box-shadow:none;border:none;margin:0;max-width:none}.actions{display:none}}
 `;
 
+export type OrderInvoiceData = {
+  code: string;
+  dateLabel: string;
+  business: string;
+  address?: string;
+  customerName: string;
+  fulfillmentLabel: string;
+  statusLabel: string;
+  paid: boolean;
+  items: { name: string; qty: number; unit_price: number; item_note?: string | null }[];
+  subtotal: number;
+  taxAmount: number;
+  feeAmount: number;
+  total: number;
+  note?: string;
+  method?: string;
+};
+
+export function renderOrderInvoiceHtml(data: OrderInvoiceData, backHref: string): string {
+  const page = (
+    <html lang="id">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="noindex" />
+        <title>{`Struk ${data.code} — ${data.business}`}</title>
+        <style dangerouslySetInnerHTML={{ __html: INVOICE_CSS }} />
+      </head>
+      <body>
+        <div class="sheet">
+          <div class="top">
+            <div class="brand">
+              {data.business}
+              {data.address ? <span>{data.address}</span> : null}
+            </div>
+            <div class="inv-meta">
+              <div class="num">#{data.code}</div>
+              <div>{data.dateLabel}</div>
+            </div>
+          </div>
+          <div class="body">
+            <div class="parties">
+              <div>
+                <h3>Pesanan untuk</h3>
+                <strong>{data.customerName}</strong>
+                <p>{data.fulfillmentLabel}</p>
+              </div>
+              <div>
+                <span class={`status ${data.paid ? "paid" : "due"}`}>{data.statusLabel}</span>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th class="amt">Jumlah</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.items.map((item) => (
+                  <tr>
+                    <td>
+                      {item.qty}× {item.name}
+                      {item.item_note ? <div class="muted">{item.item_note}</div> : null}
+                    </td>
+                    <td class="amt">{formatRupiah(item.unit_price * item.qty)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div class="total">
+              <span class="lbl">Subtotal</span>
+              <span>{formatRupiah(data.subtotal)}</span>
+            </div>
+            {data.taxAmount > 0 ? (
+              <div class="total">
+                <span class="lbl">Pajak</span>
+                <span>{formatRupiah(data.taxAmount)}</span>
+              </div>
+            ) : null}
+            {data.feeAmount > 0 ? (
+              <div class="total">
+                <span class="lbl">Biaya</span>
+                <span>{formatRupiah(data.feeAmount)}</span>
+              </div>
+            ) : null}
+            <div class="total">
+              <span class="lbl">Total</span>
+              <span>{formatRupiah(data.total)}</span>
+            </div>
+            <p class="note">
+              {data.method ? `Metode pembayaran: ${data.method}. ` : ""}
+              {data.note ? `Catatan: ${data.note}. ` : ""}
+              Dibuat dengan tokoweb.id
+            </p>
+          </div>
+        </div>
+        <div class="actions">
+          <a class="btn back" href={backHref}>
+            ← Kembali
+          </a>
+          <button type="button" class="btn print" onclick="window.print()">
+            🖨️ Cetak / Simpan PDF
+          </button>
+        </div>
+      </body>
+    </html>
+  );
+  return `<!doctype html>${String(page)}`;
+}
+
 export function renderInvoiceHtml(data: InvoiceData, backHref: string): string {
   const page = (
     <html lang="id">

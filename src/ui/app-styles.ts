@@ -377,6 +377,8 @@ a { color: var(--primary); }
   background: #FFFFFF; max-width: 100%; height: auto;
 }
 .qr-figure figcaption { margin-top: 0.4rem; font-weight: 600; }
+.qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; margin-top: 0.9rem; }
+@media print { .app-header, .app-nav { display: none; } }
 .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; margin-top: 0.75rem; }
 @media (min-width: 34rem) { .quick-grid { grid-template-columns: repeat(3, 1fr); } }
 .quick-link {
