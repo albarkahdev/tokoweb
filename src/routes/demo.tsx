@@ -215,7 +215,7 @@ export const demo = new Hono<AppEnv>()
       renderOrderPage(demoSite(theme), undefined, {
         homeHref: `/kuliner?tema=${theme}`,
         demoNotice: DEMO_NOTICE,
-        formAction: "/pesan",
+        formAction: `/pesan?tema=${theme}`,
       }),
       200,
       { "cache-control": "no-store" },
@@ -225,12 +225,14 @@ export const demo = new Hono<AppEnv>()
     const theme = demoTheme(c);
     const site = demoSite(theme);
     const form = await c.req.formData();
-    const cart = parseCart(String(form.get("cart") ?? "[]"));
+    const cartRaw = String(form.get("cart") ?? "[]");
+    const cart = parseCart(cartRaw);
     const { lines } = resolveLines(site, cart);
     if (lines.length === 0) return c.redirect(`/pesan?tema=${theme}`);
     const fRaw = String(form.get("fulfillment") ?? "");
     const fulfillment: Fulfillment = isFulfillment(fRaw) ? fRaw : "pickup";
     const cash = String(form.get("payment_mode") ?? "") === "cash";
+    const tableNo = String(form.get("table_no") ?? "").trim();
     const totals = calculateOrderTotal(
       lines,
       DEMO_ORDER_SETTINGS.tax_percent,
@@ -239,11 +241,12 @@ export const demo = new Hono<AppEnv>()
     return c.html(
       demoStatusPage(site, theme, {
         fulfillment,
-        tableNo: String(form.get("table_no") ?? "").trim(),
+        tableNo,
         cash,
         status: cash ? "diproses" : "menunggu_bayar",
         lines,
         totals,
+        cartRaw,
       }),
       200,
       { "cache-control": "no-store" },
@@ -251,14 +254,24 @@ export const demo = new Hono<AppEnv>()
   })
   .post("/pesan/bayar", (c) => {
     const theme = demoTheme(c);
+    const site = demoSite(theme);
+    const fRaw = c.req.query("f") ?? "";
+    const fulfillment: Fulfillment = isFulfillment(fRaw) ? fRaw : "pickup";
+    const cart = parseCart(c.req.query("cart") ?? "[]");
+    const { lines } = resolveLines(site, cart);
+    const totals = calculateOrderTotal(
+      lines,
+      DEMO_ORDER_SETTINGS.tax_percent,
+      DEMO_ORDER_SETTINGS.fees,
+    );
     return c.html(
-      demoStatusPage(demoSite(theme), theme, {
-        fulfillment: "pickup",
-        tableNo: "",
+      demoStatusPage(site, theme, {
+        fulfillment,
+        tableNo: c.req.query("meja") ?? "",
         cash: false,
         status: "diproses",
-        lines: [],
-        totals: { subtotal: 0, tax_amount: 0, fee_amount: 0, total: 0 },
+        lines,
+        totals,
         paid: true,
       }),
       200,
@@ -381,9 +394,13 @@ function demoStatusPage(
     lines: { name: string; qty: number; unit_price: number; item_note: string | null }[];
     totals: { subtotal: number; tax_amount: number; fee_amount: number; total: number };
     paid?: boolean;
+    cartRaw?: string;
   },
 ): string {
   const homeHref = `/kuliner?tema=${theme}`;
+  const payAction = `/pesan/bayar?tema=${theme}&f=${o.fulfillment}&meja=${encodeURIComponent(
+    o.tableNo,
+  )}&cart=${encodeURIComponent(o.cartRaw ?? "[]")}`;
   const body = (
     <>
       <OrderTopNav brand={DEMO_BUSINESS_NAME} homeHref={homeHref} />
@@ -408,7 +425,7 @@ function demoStatusPage(
       >
         <OrderStatusHint status={o.status} cash={o.cash} fulfillment={o.fulfillment} />
         {o.status === "menunggu_bayar" ? (
-          <PaymentPanel action="/pesan/bayar" methods={DEMO_METHODS} />
+          <PaymentPanel action={payAction} methods={DEMO_METHODS} />
         ) : null}
       </OrderStatusView>
     </>
