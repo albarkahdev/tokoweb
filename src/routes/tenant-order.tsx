@@ -41,6 +41,7 @@ import { siteCss } from "@/themes/engine/site-css";
 import { themeConfigFor } from "@/themes/kuliner/configs";
 import { notFoundHtml } from "@/ui/error-page";
 import {
+  MyOrdersView,
   OrderCartSheet,
   OrderClosedNotice,
   type OrderMenuCategory,
@@ -50,7 +51,7 @@ import {
   OrderTopNav,
   PaymentPanel,
 } from "@/ui/order";
-import { ORDER_SCRIPT } from "@/ui/order-script";
+import { MY_ORDERS_LIST_SCRIPT, ORDER_SCRIPT, saveOrderScript } from "@/ui/order-script";
 import { ORDER_CSS } from "@/ui/order-style";
 import { SiteDocument, SiteFooter } from "@/ui/site";
 import { UPLOAD_SCRIPT } from "@/ui/upload-script";
@@ -62,7 +63,7 @@ const MAX_LINE_QTY = 99;
 const checkoutLimiter = createFixedWindowLimiter(8, 60_000);
 const payLimiter = createFixedWindowLimiter(12, 60_000);
 
-function themeCss(site: PublicSite): string {
+export function orderThemeCss(site: PublicSite): string {
   return siteCss(themeConfigFor(site.themeSlug)) + ORDER_CSS;
 }
 
@@ -74,7 +75,7 @@ function orderingEnabled(site: PublicSite): boolean {
   return site.status === "active" && site.content.order_settings?.enabled === true;
 }
 
-function menuCategories(site: PublicSite): OrderMenuCategory[] {
+export function menuCategories(site: PublicSite): OrderMenuCategory[] {
   return (site.content.menu ?? [])
     .map((category, c) => ({
       label: category.category ?? "Menu",
@@ -121,19 +122,25 @@ function orderDataJson(site: PublicSite, categories: OrderMenuCategory[]): strin
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
-function renderOrderPage(
+export function renderOrderPage(
   site: PublicSite,
   siteKey: string | undefined,
-  opts: { error?: string; prefillTable?: string } = {},
+  opts: {
+    error?: string;
+    prefillTable?: string;
+    homeHref?: string;
+    demoNotice?: string;
+    formAction?: string;
+  } = {},
 ): string {
   const info = site.content.info ?? {};
   const settings = site.content.order_settings ?? {};
   const businessName = info.name ?? site.name;
-  const homeHref = "/";
+  const homeHref = opts.homeHref ?? "/";
   const tempClosed = info.temp_closed?.active === true;
 
   if (tempClosed) {
-    return document(
+    return orderDocument(
       site,
       businessName,
       <>
@@ -157,12 +164,13 @@ function renderOrderPage(
         logoSrc={info.logo_key ? `/img/${info.logo_key}` : null}
       />
       <div class="ord-wrap">
+        {opts.demoNotice ? <div class="ord-demo-note">{opts.demoNotice}</div> : null}
         {opts.error ? <div class="ord-flash">{opts.error}</div> : null}
         <p class="ord-lede">Pilih menu, tentukan jumlah, lalu kirim pesananmu.</p>
         <OrderMenuGrid categories={categories} />
       </div>
       <OrderCartSheet
-        action="/pesan"
+        action={opts.formAction ?? "/pesan"}
         tables={settings.tables ?? 0}
         prefillTable={opts.prefillTable}
         minOrder={settings.min_order ?? 0}
@@ -172,10 +180,10 @@ function renderOrderPage(
     </>
   );
   const dataScript = `window.__ORDER__=${orderDataJson(site, categories)};`;
-  return document(site, businessName, body, [dataScript, ORDER_SCRIPT]);
+  return orderDocument(site, businessName, body, [dataScript, ORDER_SCRIPT]);
 }
 
-function document(
+export function orderDocument(
   site: PublicSite,
   businessName: string,
   body: unknown,
@@ -187,7 +195,7 @@ function document(
       description={`Pesan online dari ${businessName}.`}
       canonical={""}
       noindex
-      css={themeCss(site)}
+      css={orderThemeCss(site)}
       jsonLd="{}"
       scripts={scripts}
     >
@@ -200,7 +208,7 @@ function document(
 
 type CartEntry = { c: number; i: number; qty: number; note: string };
 
-function parseCart(raw: string): CartEntry[] {
+export function parseCart(raw: string): CartEntry[] {
   try {
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
@@ -225,7 +233,7 @@ function parseCart(raw: string): CartEntry[] {
   }
 }
 
-function resolveLines(
+export function resolveLines(
   site: PublicSite,
   cart: CartEntry[],
 ): { lines: OrderItemInput[]; hadUnavailable: boolean } {
@@ -387,6 +395,26 @@ export const tenantOrder = new Hono<AppEnv>()
 
     return c.redirect(`/o/${code}?baru=1`);
   })
+  .get("/pesanan-saya", async (c) => {
+    const url = new URL(c.req.url);
+    const site = await findPublicSite(c.env.DB, url.hostname, c.env.BASE_DOMAIN);
+    if (!site) return c.html(notFoundHtml("/"), 404);
+    const info = site.content.info ?? {};
+    const businessName = info.name ?? site.name;
+    const body = (
+      <>
+        <OrderTopNav
+          brand={businessName}
+          homeHref="/"
+          logoSrc={info.logo_key ? `/img/${info.logo_key}` : null}
+        />
+        <MyOrdersView homeHref="/" />
+      </>
+    );
+    return c.html(orderDocument(site, businessName, body, [MY_ORDERS_LIST_SCRIPT]), 200, {
+      "cache-control": "no-store",
+    });
+  })
   .get("/o/:code", async (c) => {
     const url = new URL(c.req.url);
     const site = await findPublicSite(c.env.DB, url.hostname, c.env.BASE_DOMAIN);
@@ -455,6 +483,7 @@ export const tenantOrder = new Hono<AppEnv>()
           brand={businessName}
           homeHref="/"
           logoSrc={info.logo_key ? `/img/${info.logo_key}` : null}
+          myOrdersHref="/pesanan-saya"
         />
         <OrderStatusView
           code={order.code}
@@ -483,9 +512,10 @@ export const tenantOrder = new Hono<AppEnv>()
     );
 
     const pending = ["baru", "menunggu_bayar", "cek_bayar", "diproses"].includes(order.status);
-    const scripts = pending ? [POLL_SCRIPT] : [];
+    const scripts = [saveOrderScript(order.code)];
+    if (pending) scripts.push(POLL_SCRIPT);
     if (order.status === "menunggu_bayar") scripts.push(UPLOAD_SCRIPT);
-    return c.html(document(site, businessName, body, scripts), 200, {
+    return c.html(orderDocument(site, businessName, body, scripts), 200, {
       "cache-control": "no-store",
     });
   })

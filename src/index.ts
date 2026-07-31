@@ -37,7 +37,7 @@ app.all("*", (c) => {
     case "tenant-public":
     case "custom-domain": {
       const path = new URL(c.req.url).pathname;
-      if (path === "/pesan" || path.startsWith("/o/")) {
+      if (path === "/pesan" || path === "/pesanan-saya" || path.startsWith("/o/")) {
         return tenantOrder.fetch(c.req.raw, c.env, c.executionCtx);
       }
       return servePublicSite(c);

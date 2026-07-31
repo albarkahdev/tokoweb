@@ -111,6 +111,14 @@ describe("landing tokoweb.id", () => {
     expect(html).not.toContain('class="mitra-form"');
   });
 
+  it("serves a printable mitra brochure with QR", async () => {
+    const html = await (await get("/r/K7M3XR/brosur")).text();
+    expect(html).toContain("K7M3XR");
+    expect(html).toContain("api.qrserver.com");
+    expect(html).toContain("ref%3DK7M3XR");
+    expect(html).toContain("window.print()");
+  });
+
   it("register page has the self-register form and is noindex", async () => {
     const html = await (await get("/mitra/daftar")).text();
     expect(html).toContain('class="mitra-form"');

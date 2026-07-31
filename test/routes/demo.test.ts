@@ -33,6 +33,50 @@ describe("halaman demo kuliner", () => {
     expect(html).toContain('content="noindex"');
   });
 
+  it("shows the dummy order page with menu and demo notice", async () => {
+    const html = await (await send(new Request(`${DEMO}/pesan`))).text();
+    expect(html).toContain("window.__ORDER__");
+    expect(html).toContain("Ini demo");
+    expect(html).toContain("Nasi Ayam Bakar");
+  });
+
+  it("dummy checkout renders a fake status + payment panel", async () => {
+    const res = await send(
+      new Request(`${DEMO}/pesan`, {
+        method: "POST",
+        body: new URLSearchParams({
+          customer_name: "Coba",
+          fulfillment: "pickup",
+          cart: JSON.stringify([{ c: 0, i: 0, qty: 1 }]),
+        }),
+        headers: { origin: DEMO },
+      }),
+    );
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    expect(html).toContain("DEMO1234");
+    expect(html).toContain("Pilih metode pembayaran");
+    expect(html).toContain("Ini demo");
+  });
+
+  it("dummy cash checkout skips payment (diproses)", async () => {
+    const res = await send(
+      new Request(`${DEMO}/pesan`, {
+        method: "POST",
+        body: new URLSearchParams({
+          customer_name: "Tunai",
+          fulfillment: "pickup",
+          payment_mode: "cash",
+          cart: JSON.stringify([{ c: 0, i: 0, qty: 2 }]),
+        }),
+        headers: { origin: DEMO },
+      }),
+    );
+    const html = await res.text();
+    expect(html).toContain("Sedang dibuat");
+    expect(html).not.toContain("Pilih metode pembayaran");
+  });
+
   it("daftar page is a separate prefilled form with email + turnstile slot", async () => {
     const response = await send(
       new Request(`${DEMO}/daftar`, {

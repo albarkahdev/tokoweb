@@ -4,6 +4,9 @@ export const ORDER_CSS = `
 .ord-logo{width:30px;height:30px;object-fit:contain;border-radius:6px}
 .ord-back{font-size:0.85rem;color:var(--muted);text-decoration:none}
 .ord-back:hover{color:var(--primary)}
+.ord-nav-links{display:flex;gap:0.9rem;align-items:center}
+.ord-my-list{display:flex;flex-direction:column;gap:0.6rem;margin:0.9rem 0}
+.ord-my-item{display:block;background:var(--surface);border:1px solid rgba(0,0,0,0.08);border-radius:var(--r-card);padding:0.8rem 1rem;text-decoration:none;color:var(--text);font-weight:700;box-shadow:var(--shadow-card)}
 .ord-wrap{max-width:760px;margin:0 auto;padding:1.1rem 1.1rem 7rem}
 .ord-lede{color:var(--muted);font-size:0.95rem;margin:0 0 1.1rem}
 .ord-filter{position:sticky;top:60px;z-index:10;padding:0.4rem 0 0.8rem;background:var(--bg)}
@@ -45,6 +48,7 @@ export const ORDER_CSS = `
 .ord-cart-line-ctl button{width:30px;height:30px;border-radius:50%;border:1px solid var(--primary);background:var(--primary);color:var(--primary-contrast);font-weight:800;cursor:pointer}
 .ord-cart-line-ctl .rm{border-color:transparent;background:transparent;color:var(--muted);margin-left:auto;font-size:0.82rem;width:auto}
 .ord-cart-note{margin-top:0.5rem;width:100%;box-sizing:border-box;padding:0.5rem 0.7rem;border:1px solid rgba(0,0,0,0.14);border-radius:var(--r-btn);font:inherit;font-size:0.85rem;background:var(--bg);color:var(--text)}
+.ord-split{margin-top:0.4rem;background:none;border:none;color:var(--primary);font:inherit;font-size:0.8rem;font-weight:600;cursor:pointer;padding:0.1rem 0}
 .ord-cart-empty{color:var(--muted);text-align:center;padding:1.2rem 0}
 .ord-totals{margin:0.8rem 0;padding:0.8rem 0;border-top:1px dashed rgba(0,0,0,0.15);border-bottom:1px dashed rgba(0,0,0,0.15);display:flex;flex-direction:column;gap:0.35rem}
 .ord-total-row{display:flex;justify-content:space-between;font-size:0.92rem;color:var(--muted)}
@@ -69,6 +73,7 @@ export const ORDER_CSS = `
 .ord-closed-card p{color:var(--muted);margin:0 0 1.2rem}
 .ord-status{max-width:560px;margin:0 auto;padding:1.2rem 1.1rem 3rem}
 .ord-flash{background:#ecfdf3;color:#027a48;border:1px solid #a6f4c5;border-radius:var(--r-card);padding:0.8rem 1rem;margin-bottom:1rem;font-size:0.9rem}
+.ord-demo-note{background:#fffaeb;color:#b54708;border:1px solid #fedf89;border-radius:var(--r-card);padding:0.75rem 1rem;margin-bottom:0.9rem;font-size:0.88rem;font-weight:600}
 .ord-status-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
 .ord-code{font-family:var(--f-heading);font-weight:800;font-size:1.3rem;color:var(--text)}
 .ord-badge{font-size:0.8rem;font-weight:700;padding:0.3rem 0.7rem;border-radius:99px;background:var(--surface);color:var(--text);border:1px solid rgba(0,0,0,0.1)}

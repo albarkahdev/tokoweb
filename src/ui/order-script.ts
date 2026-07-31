@@ -1,27 +1,72 @@
+export function saveOrderScript(code: string): string {
+  return `(function(){try{var k="tw_orders";var a=JSON.parse(localStorage.getItem(k)||"[]");var code=${JSON.stringify(code)};a=a.filter(function(x){return x!==code});a.unshift(code);localStorage.setItem(k,JSON.stringify(a.slice(0,20)));}catch(e){}})();`;
+}
+
+export const MY_ORDERS_LIST_SCRIPT = `
+(function(){
+  var box=document.querySelector("[data-my-orders]");
+  var empty=document.querySelector("[data-my-empty]");
+  if(!box) return;
+  var codes=[];
+  try{ codes=JSON.parse(localStorage.getItem("tw_orders")||"[]"); }catch(e){}
+  if(!Array.isArray(codes) || !codes.length){ if(empty) empty.hidden=false; return; }
+  codes.forEach(function(code){
+    if(typeof code!=="string" || !/^[0-9A-Z]{4,12}$/.test(code)) return;
+    var a=document.createElement("a");
+    a.className="ord-my-item"; a.href="/o/"+encodeURIComponent(code);
+    a.textContent="Pesanan #"+code;
+    box.appendChild(a);
+  });
+})();
+`;
+
 export const ORDER_SCRIPT = `
 (function(){
   var DATA = window.__ORDER__ || { items:{}, tax:0, fees:[], min:0 };
-  var cart = {};
+  var lines = [];
+  var seq = 1;
   function fmt(n){ return "Rp " + Math.round(n).toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, "."); }
   function feeSum(){ var f=0; (DATA.fees||[]).forEach(function(x){ f += Number(x.amount)||0; }); return f; }
+  function qtyOfKey(key){ var q=0; lines.forEach(function(l){ if(l.key===key) q+=l.qty; }); return q; }
+  function firstLine(key){ for(var i=0;i<lines.length;i++){ if(lines[i].key===key) return lines[i]; } return null; }
   function totals(){
     var sub=0, count=0;
-    Object.keys(cart).forEach(function(k){ var it=DATA.items[k]; if(it){ sub += it.price*cart[k].qty; count += cart[k].qty; } });
+    lines.forEach(function(l){ var it=DATA.items[l.key]; if(it){ sub += it.price*l.qty; count += l.qty; } });
     var tax = Math.round(sub * (Number(DATA.tax)||0) / 100);
     var fee = count>0 ? feeSum() : 0;
     return { sub:sub, tax:tax, fee:fee, total:sub+tax+fee, count:count };
   }
-  function qtyOf(k){ return cart[k] ? cart[k].qty : 0; }
-  function setQty(k, q){
-    if(!DATA.items[k]) return;
-    if(q<=0){ delete cart[k]; }
-    else { cart[k] = cart[k] || { qty:0, note:"" }; cart[k].qty = q; }
-    renderCards(); renderBar(); renderSheet(); syncHidden();
+  function addKey(key){
+    if(!DATA.items[key]) return;
+    var l = firstLine(key);
+    if(l){ l.qty++; } else { lines.push({ id:seq++, key:key, qty:1, note:"" }); }
+    renderAll();
+  }
+  function subKey(key){
+    var l = firstLine(key);
+    if(!l) return;
+    l.qty--;
+    if(l.qty<=0) lines = lines.filter(function(x){ return x!==l; });
+    renderAll();
+  }
+  function setLineQty(id, delta){
+    var l = null; lines.forEach(function(x){ if(x.id===id) l=x; });
+    if(!l) return;
+    l.qty += delta;
+    if(l.qty<=0) lines = lines.filter(function(x){ return x!==l; });
+    renderAll();
+  }
+  function removeLine(id){ lines = lines.filter(function(x){ return x.id!==id; }); renderAll(); }
+  function splitLine(id){
+    var src=null; lines.forEach(function(x){ if(x.id===id) src=x; });
+    if(!src) return;
+    lines.push({ id:seq++, key:src.key, qty:1, note:"" });
+    renderAll();
   }
   function renderCards(){
     document.querySelectorAll(".ord-actions").forEach(function(el){
-      var k = el.getAttribute("data-key");
-      var q = qtyOf(k);
+      var key = el.getAttribute("data-key");
+      var q = qtyOfKey(key);
       var add = el.querySelector(".ord-add");
       var step = el.querySelector(".ord-step");
       var count = el.querySelector(".ord-count");
@@ -42,27 +87,27 @@ export const ORDER_SCRIPT = `
     var box = document.querySelector("[data-cart-lines]");
     var empty = document.querySelector("[data-cart-empty]");
     if(!box) return;
-    var keys = Object.keys(cart);
-    if(empty) empty.hidden = keys.length>0;
+    if(empty) empty.hidden = lines.length>0;
     box.innerHTML = "";
-    keys.forEach(function(k){
-      var it = DATA.items[k]; if(!it) return;
+    lines.forEach(function(l){
+      var it = DATA.items[l.key]; if(!it) return;
       var line = document.createElement("div");
       line.className = "ord-cart-line";
       var top = document.createElement("div");
       top.className = "ord-cart-line-top";
       var name = document.createElement("strong"); name.textContent = it.name;
-      var price = document.createElement("span"); price.className="ord-cart-line-price"; price.textContent = fmt(it.price*cart[k].qty);
+      var price = document.createElement("span"); price.className="ord-cart-line-price"; price.textContent = fmt(it.price*l.qty);
       top.appendChild(name); top.appendChild(price);
       var ctl = document.createElement("div"); ctl.className="ord-cart-line-ctl";
-      var sub = document.createElement("button"); sub.type="button"; sub.textContent="−"; sub.setAttribute("data-cart-sub", k);
-      var cnt = document.createElement("span"); cnt.className="ord-count"; cnt.textContent = String(cart[k].qty);
-      var plus = document.createElement("button"); plus.type="button"; plus.textContent="+"; plus.setAttribute("data-cart-plus", k);
-      var rm = document.createElement("button"); rm.type="button"; rm.className="rm"; rm.textContent="Hapus"; rm.setAttribute("data-cart-rm", k);
+      var sub = document.createElement("button"); sub.type="button"; sub.textContent="−"; sub.setAttribute("data-line-sub", String(l.id));
+      var cnt = document.createElement("span"); cnt.className="ord-count"; cnt.textContent = String(l.qty);
+      var plus = document.createElement("button"); plus.type="button"; plus.textContent="+"; plus.setAttribute("data-line-plus", String(l.id));
+      var rm = document.createElement("button"); rm.type="button"; rm.className="rm"; rm.textContent="Hapus"; rm.setAttribute("data-line-rm", String(l.id));
       ctl.appendChild(sub); ctl.appendChild(cnt); ctl.appendChild(plus); ctl.appendChild(rm);
-      var note = document.createElement("input"); note.className="ord-cart-note"; note.placeholder="Catatan (opsional)"; note.maxLength=140; note.value = cart[k].note||"";
-      note.setAttribute("data-cart-note", k);
-      line.appendChild(top); line.appendChild(ctl); line.appendChild(note);
+      var note = document.createElement("input"); note.className="ord-cart-note"; note.placeholder="Catatan (mis. pedas, tanpa bawang)"; note.maxLength=140; note.value = l.note||"";
+      note.setAttribute("data-line-note", String(l.id));
+      var split = document.createElement("button"); split.type="button"; split.className="ord-split"; split.textContent="+ tambah dengan catatan lain"; split.setAttribute("data-line-split", String(l.id));
+      line.appendChild(top); line.appendChild(ctl); line.appendChild(note); line.appendChild(split);
       box.appendChild(line);
     });
     var t = totals();
@@ -76,39 +121,42 @@ export const ORDER_SCRIPT = `
   function syncHidden(){
     var hid = document.querySelector("[data-cart-json]");
     if(!hid) return;
-    var arr = Object.keys(cart).map(function(k){
-      var p = k.split(":");
-      return { c:Number(p[0]), i:Number(p[1]), qty:cart[k].qty, note:cart[k].note||"" };
-    });
-    hid.value = JSON.stringify(arr);
+    hid.value = JSON.stringify(lines.map(function(l){
+      var p = l.key.split(":");
+      return { c:Number(p[0]), i:Number(p[1]), qty:l.qty, note:l.note||"" };
+    }));
   }
+  function renderAll(){ renderCards(); renderBar(); renderSheet(); syncHidden(); }
   function openSheet(v){
     var sheet = document.querySelector("[data-cart-sheet]");
     if(sheet) sheet.hidden = !v;
     document.body.style.overflow = v ? "hidden" : "";
   }
+  function num(el, attr){ return Number(el.getAttribute(attr)); }
   document.addEventListener("click", function(e){
     var t = e.target;
     if(!(t instanceof Element)) return;
     var actions = t.closest(".ord-actions");
     if(actions){
-      var k = actions.getAttribute("data-key");
-      if(t.classList.contains("ord-add") || t.classList.contains("ord-plus")) setQty(k, qtyOf(k)+1);
-      else if(t.classList.contains("ord-sub")) setQty(k, qtyOf(k)-1);
+      var key = actions.getAttribute("data-key");
+      if(t.classList.contains("ord-add") || t.classList.contains("ord-plus")) addKey(key);
+      else if(t.classList.contains("ord-sub")) subKey(key);
       return;
     }
-    if(t.hasAttribute("data-cart-plus")) return setQty(t.getAttribute("data-cart-plus"), qtyOf(t.getAttribute("data-cart-plus"))+1);
-    if(t.hasAttribute("data-cart-sub")) return setQty(t.getAttribute("data-cart-sub"), qtyOf(t.getAttribute("data-cart-sub"))-1);
-    if(t.hasAttribute("data-cart-rm")) return setQty(t.getAttribute("data-cart-rm"), 0);
+    if(t.hasAttribute("data-line-plus")) return setLineQty(num(t,"data-line-plus"), 1);
+    if(t.hasAttribute("data-line-sub")) return setLineQty(num(t,"data-line-sub"), -1);
+    if(t.hasAttribute("data-line-rm")) return removeLine(num(t,"data-line-rm"));
+    if(t.hasAttribute("data-line-split")) return splitLine(num(t,"data-line-split"));
     if(t.hasAttribute("data-open-cart") || t.closest("[data-open-cart]")) return openSheet(true);
     if(t.hasAttribute("data-close-cart")) return openSheet(false);
   });
   document.addEventListener("input", function(e){
     var t = e.target;
     if(!(t instanceof Element)) return;
-    if(t.hasAttribute("data-cart-note")){
-      var k = t.getAttribute("data-cart-note");
-      if(cart[k]){ cart[k].note = t.value; syncHidden(); }
+    if(t.hasAttribute("data-line-note")){
+      var id = num(t, "data-line-note");
+      lines.forEach(function(l){ if(l.id===id) l.note = t.value; });
+      syncHidden();
       return;
     }
     if(t.hasAttribute("data-menu-filter")){
@@ -136,10 +184,9 @@ export const ORDER_SCRIPT = `
   if(form){
     form.addEventListener("submit", function(e){
       syncHidden();
-      var t = totals();
-      if(t.count<=0){ e.preventDefault(); return; }
+      if(totals().count<=0){ e.preventDefault(); }
     });
   }
-  renderCards(); renderBar(); renderSheet(); syncHidden();
+  renderAll();
 })();
 `;

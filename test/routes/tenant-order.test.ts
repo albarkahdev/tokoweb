@@ -197,4 +197,22 @@ describe("public ordering", () => {
   it("404s an unknown order code", async () => {
     expect((await get("https://warung.tokoweb.id/o/ZZZZZZZZ")).status).toBe(404);
   });
+
+  it("order status page saves the code to local history", async () => {
+    const create = await post("https://warung.tokoweb.id/pesan", {
+      customer_name: "Riwayat",
+      fulfillment: "pickup",
+      cart: JSON.stringify([{ c: 0, i: 0, qty: 1 }]),
+    });
+    const code = (create.headers.get("location") ?? "").slice(3, 11);
+    const html = await (await get(`https://warung.tokoweb.id/o/${code}`)).text();
+    expect(html).toContain("tw_orders");
+    expect(html).toContain(code);
+  });
+
+  it("shows a 'Pesanan Saya' page", async () => {
+    const html = await (await get("https://warung.tokoweb.id/pesanan-saya")).text();
+    expect(html).toContain("Pesanan Saya");
+    expect(html).toContain("data-my-orders");
+  });
 });

@@ -17,7 +17,12 @@ export type OrderMenuCategory = {
   items: OrderMenuItem[];
 };
 
-export function OrderTopNav(props: { brand: string; homeHref: string; logoSrc?: string | null }) {
+export function OrderTopNav(props: {
+  brand: string;
+  homeHref: string;
+  logoSrc?: string | null;
+  myOrdersHref?: string;
+}) {
   return (
     <nav class="ord-nav">
       <a class="ord-brand" href={props.homeHref}>
@@ -26,10 +31,35 @@ export function OrderTopNav(props: { brand: string; homeHref: string; logoSrc?: 
         ) : null}
         {props.brand}
       </a>
-      <a class="ord-back" href={props.homeHref}>
+      <span class="ord-nav-links">
+        {props.myOrdersHref ? (
+          <a class="ord-back" href={props.myOrdersHref}>
+            Pesanan saya
+          </a>
+        ) : null}
+        <a class="ord-back" href={props.homeHref}>
+          ← Website
+        </a>
+      </span>
+    </nav>
+  );
+}
+
+export function MyOrdersView(props: { homeHref: string }) {
+  return (
+    <div class="ord-status">
+      <div class="ord-status-head">
+        <span class="ord-code">Pesanan Saya</span>
+      </div>
+      <p class="ord-lede">Daftar pesanan dari perangkat ini.</p>
+      <div class="ord-my-list" data-my-orders />
+      <p class="ord-cart-empty" data-my-empty hidden>
+        Belum ada pesanan dari perangkat ini.
+      </p>
+      <a class="ord-btn secondary block" href={props.homeHref}>
         ← Kembali ke website
       </a>
-    </nav>
+    </div>
   );
 }
 
