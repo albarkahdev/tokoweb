@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { type ClosingSummary, countScans, listClosingsWithPayouts } from "@/db/referrals";
 import { findReferrerByCode } from "@/db/referrers";
 import { formDataToValues } from "@/domain/cms";
+import { GUIDE_MITRA } from "@/domain/guides";
 import { formatRupiah } from "@/domain/money";
 import { hashOneTimeToken } from "@/domain/one-time-token";
 import { createFixedWindowLimiter } from "@/domain/rate-limit";
@@ -21,6 +22,7 @@ import {
   Text,
 } from "@/ui/display";
 import { Button, Field, Form } from "@/ui/form";
+import { GuideView } from "@/ui/guide";
 import { TurnstileWidget } from "@/ui/turnstile-widget";
 
 const pinAttempts = createFixedWindowLimiter(5, 60_000);
@@ -164,6 +166,7 @@ export const referralPage = new Hono<AppEnv>()
               </Text>
             </Card>
           ) : null}
+          <GuideView guide={GUIDE_MITRA} />
         </AppLayout>,
       )}`,
     );

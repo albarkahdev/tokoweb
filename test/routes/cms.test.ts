@@ -80,6 +80,15 @@ describe("CMS klien", () => {
     expect(body).toContain("2026-12-01");
   });
 
+  it("shows owner help page, blocks anonymous", async () => {
+    const body = await (await get("/bantuan")).text();
+    expect(body).toContain("Panduan Pemilik Usaha");
+    expect(body).toContain("Edit Menu");
+    const anon = await send(new Request(`${APP}/bantuan`));
+    expect(anon.status).toBe(302);
+    expect(anon.headers.get("location")).toBe("/masuk");
+  });
+
   it("shows quick actions on beranda", async () => {
     const body = await (await get("/")).text();
     expect(body).toContain('class="quick-grid"');

@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { AppEnv } from "@/env";
 import { admin } from "@/routes/admin";
 import { auth } from "@/routes/auth";
+import { cmsBantuan } from "@/routes/cms/bantuan";
 import { cmsGaleri } from "@/routes/cms/galeri";
 import { cmsHome } from "@/routes/cms/home";
 import { cmsInfo } from "@/routes/cms/info";
@@ -37,4 +38,5 @@ export const appHost = new Hono<AppEnv>()
   .route("/", cmsPesan)
   .route("/", cmsStatistik)
   .route("/", cmsTema)
+  .route("/", cmsBantuan)
   .route("/", cmsPratinjau);

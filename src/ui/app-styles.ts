@@ -393,4 +393,13 @@ a { color: var(--primary); }
 .auth-brand { text-align: center; margin: 0 0 1.5rem; }
 .auth-brand .brand-mark { font-size: 1.6rem; justify-content: center; }
 .auth-brand p { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.88rem; }
+.guide-intro { color: var(--muted); font-size: 0.92rem; line-height: 1.6; margin: 0 0 1rem; }
+.guide-p { margin: 0 0 0.7rem; font-size: 0.92rem; line-height: 1.65; color: var(--text); }
+.guide-list, .guide-steps { margin: 0 0 0.8rem; padding-left: 1.3rem; }
+.guide-list li, .guide-steps li { margin: 0 0 0.4rem; font-size: 0.92rem; line-height: 1.55; }
+.guide-steps { list-style: decimal; }
+.guide-list { list-style: disc; }
+.guide-toc { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.5rem; }
+.guide-toc a { font-size: 0.8rem; font-weight: 650; text-decoration: none; color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent); border-radius: 9999px; padding: 0.3rem 0.75rem; }
+.guide-toc a:hover { background: color-mix(in srgb, var(--primary) 16%, transparent); }
 `;

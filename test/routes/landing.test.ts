@@ -154,6 +154,9 @@ describe("landing tokoweb.id", () => {
       }),
     );
     expect(opened.status).toBe(200);
+    const openedBody = await opened.text();
+    expect(openedBody).toContain("Panduan Mitra");
+    expect(openedBody).toContain("Kapan komisi cair");
   });
 
   it("serves robots and sitemap", async () => {

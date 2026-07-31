@@ -51,6 +51,14 @@ describe("admin panel — alur referral end-to-end", () => {
     expect(dashboard.status).toBe(200);
   });
 
+  it("shows admin help page, blocks non-admin", async () => {
+    const body = await (await get("/admin/bantuan")).text();
+    expect(body).toContain("Panduan Admin");
+    expect(body).toContain("Verifikasi pembayaran");
+    const anon = await send(new Request(`${APP}/admin/bantuan`));
+    expect(anon.status).toBe(302);
+  });
+
   it("registers referrer with code and pin", async () => {
     const response = await post("/admin/referrer", {
       name: "Pak Ojol",
