@@ -58,11 +58,12 @@ Hanya ini. Permintaan di luar daftar = tolak atau tunda ke Fase 2 (butuh konfirm
 Penomoran "Fase 4/5" di sini = jalur fitur milik founder, **bukan** fase skala
 Fase 1/2/3 di atas. Dikerjakan setelah Fase 1 DoD lengkap.
 
-### Fase 5 — Pemesanan (Ordering)
+### Fase 5 — Pemesanan (Ordering) ✅ terimplementasi (2026-07-31)
 Tenant kuliner menerima pesanan online. Tamu (tanpa login) → pilih menu →
 checkout → bayar-dulu (manual, verifikasi mitra) → mitra proses. Dine-in (QR meja)
-& Pick-up. Invoice HTML printable.
-Spec lengkap: `docs/ordering-spec.md`. Keputusan: `docs/adr/0010-pemesanan-online.md`.
+& Pick-up. Invoice HTML printable. State machine murni + test; harga di-hitung server;
+Turnstile; notif badge+suara (Web Push ditahan).
+Spec + status: `docs/ordering-spec.md`. Keputusan: `docs/adr/0010-pemesanan-online.md`.
 
 ### Fase 4 — Polish & fondasi pertumbuhan
 Paket 14 item sebelum modul Pemesanan: tombol dummy demo, section pengumuman,

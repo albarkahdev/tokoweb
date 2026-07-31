@@ -137,7 +137,7 @@ const BLOG_DESC =
 export const landing = new Hono<AppEnv>()
   .get("/", async (c) => {
     const url = new URL(c.req.url);
-    const cached = await matchCachedPage(url.hostname, "/landing-v8");
+    const cached = await matchCachedPage(url.hostname, "/landing-v10");
     if (cached) return cached;
 
     const demoUrl = `https://demo.${c.env.BASE_DOMAIN}/kuliner`;
@@ -160,6 +160,7 @@ export const landing = new Hono<AppEnv>()
             { href: "#fitur", label: "Fitur" },
             { href: "#tema", label: "Tema" },
             { href: "#harga", label: "Harga" },
+            { href: "/blog", label: "Blog" },
             { href: "/mitra", label: "Jadi Mitra" },
             { href: `https://app.${c.env.BASE_DOMAIN}/masuk`, label: "Masuk" },
           ]}
@@ -331,6 +332,22 @@ export const landing = new Hono<AppEnv>()
             />
           </PricingGrid>
         </LandingSection>
+        <LandingSection id="blog">
+          <SectionHeader
+            kicker="Blog"
+            title="Tips jualan & bikin website warung"
+            sub="Panduan singkat dan praktis biar usahamu makin ramai — online maupun offline."
+          />
+          <BlogGrid
+            items={BLOG_ARTICLES.slice(0, 3).map((article) => ({
+              href: `/blog/${article.slug}`,
+              title: article.title,
+              description: article.description,
+              meta: `${article.readMinutes} menit baca`,
+            }))}
+          />
+          <CtaRow links={[{ href: "/blog", label: "Baca semua artikel →", fill: true }]} />
+        </LandingSection>
         <LandingSection id="faq">
           <SectionHeader kicker="FAQ" title="Pertanyaan yang sering muncul" />
           <FaqList
@@ -368,6 +385,8 @@ export const landing = new Hono<AppEnv>()
         <LandingFooter
           links={[
             { href: demoUrl, label: "Demo" },
+            { href: "/blog", label: "Blog" },
+            { href: "/toko", label: "Toko Bergabung" },
             { href: "/mitra", label: "Jadi Mitra" },
             { href: `https://app.${c.env.BASE_DOMAIN}/masuk`, label: "Masuk CMS" },
           ]}
@@ -381,18 +400,17 @@ export const landing = new Hono<AppEnv>()
         "cache-control": "public, max-age=300, s-maxage=86400",
       },
     });
-    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/landing-v8", response.clone()));
+    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/landing-v10", response.clone()));
     return response;
   })
   .get("/mitra", async (c) => {
     const url = new URL(c.req.url);
-    const cached = await matchCachedPage(url.hostname, "/mitra-v3");
+    const cached = await matchCachedPage(url.hostname, "/mitra-v5");
     if (cached) return cached;
 
     const wa = c.env.CONTACT_WA_NUMBER
       ? waLink(c.env.CONTACT_WA_NUMBER, "Halo tokoweb, saya mau daftar jadi mitra.")
       : `https://demo.${c.env.BASE_DOMAIN}/kuliner`;
-    const ctaLabel = c.env.CONTACT_WA_NUMBER ? "Daftar via WhatsApp" : "Lihat Demo Dulu";
 
     const html = `<!doctype html>${String(
       <LandingShell
@@ -402,8 +420,8 @@ export const landing = new Hono<AppEnv>()
         jsonLd={landingJsonLd(c.env.BASE_DOMAIN)}
       >
         <TopBar
-          ctaHref={wa}
-          ctaLabel={ctaLabel}
+          ctaHref="/mitra/daftar"
+          ctaLabel="Daftar Jadi Mitra"
           links={[
             { href: "/", label: "Beranda" },
             { href: `https://app.${c.env.BASE_DOMAIN}/masuk`, label: "Masuk" },
@@ -414,6 +432,9 @@ export const landing = new Hono<AppEnv>()
             kicker="Program Mitra"
             title="Kenal pemilik warung? Itu komisi."
             sub="Siapa pun bisa jadi mitra — ojol, sales, mahasiswa, pemilik warung yang punya kenalan. Rekomendasikan website tokoweb, klien bayar, kamu terima komisi. Tanpa modal, bukan MLM."
+          />
+          <CtaRow
+            links={[{ href: "/mitra/daftar", label: "Daftar Jadi Mitra — gratis →", fill: true }]}
           />
         </LandingSection>
         <MetricBand
@@ -443,14 +464,6 @@ export const landing = new Hono<AppEnv>()
             ]}
           />
         </LandingSection>
-        <LandingSection id="daftar">
-          <SectionHeader
-            kicker="Daftar"
-            title="Daftar sendiri, 1 menit selesai"
-            sub="Isi form ini — kami verifikasi dulu (anti-spam), lalu hubungi kamu via WA ≤ 1 hari dengan kode unik + brosur QR siap pakai."
-          />
-          <MitraForm action="/mitra/daftar" siteKey={c.env.TURNSTILE_SITE_KEY} />
-        </LandingSection>
         <LandingSection id="faq">
           <SectionHeader kicker="FAQ" title="Yang sering ditanya mitra" />
           <FaqList
@@ -477,8 +490,11 @@ export const landing = new Hono<AppEnv>()
         <LandingSection>
           <CtaBand
             title="Mulai hari ini, modal nol."
-            sub="Chat kami — kode unik + brosur QR-mu jadi dalam hitungan menit."
-            primary={{ href: wa, label: ctaLabel }}
+            sub="Daftar sendiri 1 menit — kode unik + brosur QR-mu jadi dalam hitungan menit."
+            primary={{ href: "/mitra/daftar", label: "Daftar Jadi Mitra" }}
+            secondary={
+              c.env.CONTACT_WA_NUMBER ? { href: wa, label: "Tanya via WhatsApp" } : undefined
+            }
           />
         </LandingSection>
         <LandingFooter links={[{ href: "/", label: "Beranda" }]} />
@@ -491,8 +507,38 @@ export const landing = new Hono<AppEnv>()
         "cache-control": "public, max-age=300, s-maxage=86400",
       },
     });
-    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/mitra-v3", response.clone()));
+    c.executionCtx.waitUntil(putCachedPage(url.hostname, "/mitra-v5", response.clone()));
     return response;
+  })
+  .get("/mitra/daftar", (c) => {
+    const html = `<!doctype html>${String(
+      <LandingShell
+        title="Daftar Jadi Mitra tokoweb.id"
+        description="Daftar jadi mitra tokoweb.id: isi nama, nomor WhatsApp, dan PIN. Kami verifikasi lalu kirim kode unik + brosur QR via WhatsApp."
+        canonical={`https://${c.env.BASE_DOMAIN}/mitra/daftar`}
+        jsonLd={landingJsonLd(c.env.BASE_DOMAIN)}
+        noindex
+      >
+        <TopBar
+          ctaHref="/mitra"
+          ctaLabel="← Program Mitra"
+          links={[
+            { href: "/mitra", label: "Program Mitra" },
+            { href: "/", label: "Beranda" },
+          ]}
+        />
+        <LandingSection>
+          <SectionHeader
+            kicker="Daftar"
+            title="Daftar sendiri, 1 menit selesai"
+            sub="Isi form ini — kami verifikasi dulu (anti-spam), lalu hubungi kamu via WA ≤ 1 hari dengan kode unik + brosur QR siap pakai."
+          />
+          <MitraForm action="/mitra/daftar" siteKey={c.env.TURNSTILE_SITE_KEY} />
+        </LandingSection>
+        <LandingFooter links={[{ href: "/mitra", label: "← Kembali ke Program Mitra" }]} />
+      </LandingShell>,
+    )}`;
+    return c.html(html, 200, { "cache-control": "public, max-age=300, s-maxage=1800" });
   })
   .post("/mitra/daftar", async (c) => {
     const ip = c.req.header("cf-connecting-ip") ?? "0.0.0.0";
@@ -505,6 +551,7 @@ export const landing = new Hono<AppEnv>()
       c.env.TURNSTILE_SECRET,
       values["cf-turnstile-response"] ?? "",
       c.req.header("cf-connecting-ip"),
+      c.env.ENVIRONMENT,
     );
     if (!humanOk) {
       return c.html(mitraResultPage({ error: "Verifikasi anti-robot gagal. Coba lagi." }), 400);

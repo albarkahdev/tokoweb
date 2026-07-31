@@ -150,6 +150,9 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
   const gallery = galleryPhotos(data);
   const specials = items.filter((item) => item.special);
   const trustList = trustBadges(data.site.content.trust);
+  const orderHref = data.site.content.order_settings?.enabled
+    ? `${data.basePath ?? ""}/pesan`
+    : null;
 
   return (
     <>
@@ -161,6 +164,7 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
         hoursJson={JSON.stringify(data.site.content.hours ?? {})}
         forcedClosed={info.temp_closed?.active ? { reason: info.temp_closed.reason } : null}
         waHref={waLink(waNumber, `Halo ${businessName}, saya mau pesan.`)}
+        orderHref={orderHref}
         menuAnchor="#menu"
       />
       {trustList.length > 0 ? <TrustStrip badges={trustList} /> : null}
@@ -399,6 +403,9 @@ export function renderKulinerPage(data: RenderData): string {
         homeHref={pageHref(data, "/")}
         links={navLinks(data)}
         waHref={waLink(waNumber, `Halo ${businessName}, saya mau pesan.`)}
+        orderHref={
+          data.site.content.order_settings?.enabled ? `${data.basePath ?? ""}/pesan` : null
+        }
         withTicker={isHome}
         logoSrc={info.logo_key ? `/img/${info.logo_key}` : null}
       />

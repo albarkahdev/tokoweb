@@ -36,7 +36,8 @@ body {
 h1, h2, h3 { font-family: var(--f-heading); font-weight: var(--w-heading); line-height: 1.12; letter-spacing: -0.01em; }
 img { max-width: 100%; display: block; }
 a { color: inherit; }
-section { padding: clamp(3.2rem, 8vw, 5.5rem) 1.4rem; max-width: 66rem; margin: 0 auto; }
+section { padding: clamp(2.25rem, 5vw, 3.5rem) 1.4rem; max-width: 66rem; margin: 0 auto; }
+[id] { scroll-margin-top: calc(var(--nav-h) + 0.75rem); }
 .kicker {
   display: inline-block; color: var(--primary); font-weight: 800; font-size: 0.78rem;
   letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 0.5rem;

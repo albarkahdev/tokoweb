@@ -124,6 +124,7 @@ export const auth = new Hono<AppEnv>()
       c.env.TURNSTILE_SECRET,
       captcha,
       c.req.header("cf-connecting-ip"),
+      c.env.ENVIRONMENT,
     );
     if (!humanOk) {
       return c.html(
@@ -152,7 +153,7 @@ export const auth = new Hono<AppEnv>()
     const ip = c.req.header("cf-connecting-ip") ?? "0.0.0.0";
     const form = await c.req.formData();
     const captcha = String(form.get("cf-turnstile-response") ?? "");
-    const humanOk = await verifyTurnstile(c.env.TURNSTILE_SECRET, captcha, ip);
+    const humanOk = await verifyTurnstile(c.env.TURNSTILE_SECRET, captcha, ip, c.env.ENVIRONMENT);
     if (!humanOk) {
       return c.html(
         String(

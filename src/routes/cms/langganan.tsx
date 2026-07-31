@@ -1,11 +1,25 @@
 import { Hono } from "hono";
+import { findPendingSubmission } from "@/db/billing";
 import { getSiteContent } from "@/db/contents";
 import { findPayment, listPayments } from "@/db/payments";
+import { formatPeriodLabel } from "@/domain/billing";
 import { invoiceLineLabel, invoiceNumber } from "@/domain/invoice";
 import { formatRupiah } from "@/domain/money";
 import type { AppEnv } from "@/env";
 import { CmsPage, html, loadCms } from "@/routes/cms/shared";
-import { Card, CardTitle, Cell, EmptyState, ListTable, Row, Text, TextLink } from "@/ui/display";
+import {
+  Actions,
+  Alert,
+  Card,
+  CardTitle,
+  Cell,
+  EmptyState,
+  ListTable,
+  Row,
+  Text,
+  TextLink,
+} from "@/ui/display";
+import { LinkButton } from "@/ui/form";
 import { renderInvoiceHtml } from "@/ui/invoice";
 
 function dateLabel(value: string | null): string {
@@ -25,9 +39,27 @@ export const cmsLangganan = new Hono<AppEnv>()
     const cms = await loadCms(c);
     if (!cms) return c.redirect("/masuk");
     const payments = await listPayments(c.env.DB, cms.tenant.id);
+    const pending = await findPendingSubmission(c.env.DB, cms.tenant.id);
     return c.html(
       html(
         <CmsPage title="Langganan & Invoice" currentPath="/langganan" cms={cms}>
+          <Card>
+            <CardTitle>Bayar Langganan</CardTitle>
+            {pending ? (
+              <Alert tone="warning">
+                Bukti untuk {formatPeriodLabel(pending.period)} sedang menunggu verifikasi admin.
+              </Alert>
+            ) : (
+              <Text muted>
+                Transfer ke rekening TokoWeb lalu upload bukti — kami cek dan tandai lunas.
+              </Text>
+            )}
+            <Actions>
+              <LinkButton href="/bayar">
+                {pending ? "Lihat / Upload Ulang" : "Bayar Sekarang"}
+              </LinkButton>
+            </Actions>
+          </Card>
           <Card>
             <CardTitle>Riwayat Pembayaran</CardTitle>
             {payments.length === 0 ? (

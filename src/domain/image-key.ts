@@ -1,4 +1,4 @@
-export type ImageSection = "menu" | "gallery" | "promo" | "logo";
+export type ImageSection = "menu" | "gallery" | "promo" | "logo" | "proof" | "payment";
 
 const SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
 const FILENAME_PATTERN = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.webp$/;
@@ -21,7 +21,12 @@ export function isValidImageKey(key: string): boolean {
     prefix === "t" &&
     slug !== undefined &&
     SLUG_PATTERN.test(slug) &&
-    (section === "menu" || section === "gallery" || section === "promo" || section === "logo") &&
+    (section === "menu" ||
+      section === "gallery" ||
+      section === "promo" ||
+      section === "logo" ||
+      section === "proof" ||
+      section === "payment") &&
     filename !== undefined &&
     FILENAME_PATTERN.test(filename)
   );

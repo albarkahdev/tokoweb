@@ -14,7 +14,8 @@ Subdomain = default. Custom domain = upsell (Cloudflare for SaaS).
 
 ## Pembayaran
 
-- **QRIS statis** milik kami. Verifikasi manual (cek mutasi), tandai lunas di admin panel.
+- **Transfer bank** ke rekening kami (env `BILLING_*`). Verifikasi manual (cek mutasi), tandai lunas di admin panel.
+- Owner bayar mandiri via CMS `/bayar`: lihat nominal + rekening, upload bukti transfer (WebP, maks 512 KB). Bukti masuk antrean admin (`billing_submissions`). Lihat ADR-0013.
 - Payment gateway = ditunda (ADR-0005). Evaluasi ulang saat > 30 tenant aktif.
 - Siklus tagihan: bulanan, jatuh tempo di tanggal yang sama dengan tanggal live.
 

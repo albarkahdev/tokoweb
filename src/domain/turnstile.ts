@@ -4,8 +4,9 @@ export async function verifyTurnstile(
   secret: string | undefined,
   token: string,
   remoteIp: string | undefined,
+  environment?: string,
 ): Promise<boolean> {
-  if (!secret) return true;
+  if (!secret) return environment !== "production";
   if (!token) return false;
   const body = new FormData();
   body.append("secret", secret);

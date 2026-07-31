@@ -10,6 +10,7 @@ import { isValidPin, isValidReferralCode } from "@/domain/referral-code";
 import { verifyTurnstile } from "@/domain/turnstile";
 import type { AppEnv } from "@/env";
 import { AppLayout } from "@/ui/app-layout";
+import { renderBrochureHtml } from "@/ui/brochure";
 import {
   Alert,
   Badge,
@@ -20,6 +21,7 @@ import {
   StatTile,
   Strong,
   Text,
+  TextLink,
 } from "@/ui/display";
 import { Button, Field, Form } from "@/ui/form";
 import { GuideView } from "@/ui/guide";
@@ -74,6 +76,18 @@ export const referralPage = new Hono<AppEnv>()
       `<!doctype html>${String(<PinPage code={code} siteKey={c.env.TURNSTILE_SITE_KEY} />)}`,
     );
   })
+  .get("/r/:code/brosur", async (c) => {
+    const code = c.req.param("code").toUpperCase();
+    if (!isValidReferralCode(code)) return c.notFound();
+    const referrer = await findReferrerByCode(c.env.DB, code);
+    return c.html(
+      renderBrochureHtml({
+        code,
+        demoUrl: `https://demo.${c.env.BASE_DOMAIN}/kuliner?ref=${code}`,
+        referrerName: referrer?.status === "active" ? referrer.name : undefined,
+      }),
+    );
+  })
   .post("/r/:code", async (c) => {
     const code = c.req.param("code").toUpperCase();
     if (!isValidReferralCode(code)) return c.notFound();
@@ -98,6 +112,7 @@ export const referralPage = new Hono<AppEnv>()
       c.env.TURNSTILE_SECRET,
       values["cf-turnstile-response"] ?? "",
       c.req.header("cf-connecting-ip"),
+      c.env.ENVIRONMENT,
     );
     if (!humanOk) {
       return c.html(
@@ -144,6 +159,18 @@ export const referralPage = new Hono<AppEnv>()
             <StatTile value={String(closings.size)} label="klien closing" />
             <StatTile value={formatRupiah(totalPaid)} label="total diterima" />
           </StatRow>
+          <Card>
+            <CardTitle>Brosurmu</CardTitle>
+            <Text>
+              Cetak brosur ber-QR atas namamu, lalu bagikan ke pemilik warung. Mereka scan →
+              langsung lihat contoh website + kamu dapat komisinya.
+            </Text>
+            <Text last>
+              <TextLink href={`/r/${code}/brosur`} external>
+                🖨️ Buka & cetak brosur →
+              </TextLink>
+            </Text>
+          </Card>
           {[...closings.values()].map((payouts) => (
             <Card>
               <CardTitle>{payouts[0]?.tenant_name}</CardTitle>

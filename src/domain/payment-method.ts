@@ -1,0 +1,111 @@
+export const PAYMENT_TYPES = ["qris", "transfer", "ewallet"] as const;
+export type PaymentType = (typeof PAYMENT_TYPES)[number];
+
+export function isPaymentType(value: string): value is PaymentType {
+  return (PAYMENT_TYPES as readonly string[]).includes(value);
+}
+
+export const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
+  qris: "QRIS",
+  transfer: "Transfer Bank",
+  ewallet: "E-Wallet",
+};
+
+export function parsePaymentDetail(json: string): Record<string, string> {
+  try {
+    const parsed = JSON.parse(json);
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return {};
+    const out: Record<string, string> = {};
+    for (const [key, value] of Object.entries(parsed)) {
+      if (typeof value === "string") out[key] = value;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+export type PaymentLine = { label: string; value: string; copy?: boolean };
+
+export function paymentMethodLines(
+  type: PaymentType,
+  detail: Record<string, string>,
+): PaymentLine[] {
+  if (type === "transfer") {
+    const lines: PaymentLine[] = [];
+    if (detail.bank) lines.push({ label: "Bank", value: detail.bank });
+    if (detail.account_no)
+      lines.push({ label: "No. Rekening", value: detail.account_no, copy: true });
+    if (detail.account_name) lines.push({ label: "Atas Nama", value: detail.account_name });
+    return lines;
+  }
+  if (type === "ewallet") {
+    const lines: PaymentLine[] = [];
+    if (detail.provider) lines.push({ label: "Aplikasi", value: detail.provider });
+    if (detail.phone) lines.push({ label: "Nomor", value: detail.phone, copy: true });
+    return lines;
+  }
+  return [];
+}
+
+export type PaymentSnapshot = {
+  type: PaymentType;
+  label: string;
+  detail: Record<string, string>;
+  image_key: string | null;
+};
+
+export function buildPaymentSnapshot(method: {
+  type: string;
+  label: string;
+  detail: string;
+  image_key: string | null;
+}): PaymentSnapshot {
+  const type = isPaymentType(method.type) ? method.type : "qris";
+  return {
+    type,
+    label: method.label,
+    detail: parsePaymentDetail(method.detail),
+    image_key: method.image_key,
+  };
+}
+
+export function parsePaymentSnapshot(json: string | null): PaymentSnapshot | null {
+  if (!json) return null;
+  try {
+    const parsed = JSON.parse(json);
+    if (typeof parsed !== "object" || parsed === null) return null;
+    const type = isPaymentType(parsed.type) ? parsed.type : "qris";
+    return {
+      type,
+      label: typeof parsed.label === "string" ? parsed.label : "",
+      detail:
+        typeof parsed.detail === "object" && parsed.detail !== null
+          ? (parsed.detail as Record<string, string>)
+          : {},
+      image_key: typeof parsed.image_key === "string" ? parsed.image_key : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function buildPaymentDetail(
+  type: PaymentType,
+  values: Record<string, string>,
+): Record<string, string> {
+  if (type === "transfer") {
+    return {
+      bank: (values.bank ?? "").trim(),
+      account_no: (values.account_no ?? "").trim(),
+      account_name: (values.account_name ?? "").trim(),
+    };
+  }
+  if (type === "ewallet") {
+    return {
+      provider: (values.provider ?? "").trim(),
+      phone: (values.phone ?? "").trim(),
+    };
+  }
+  return {};
+}

@@ -21,6 +21,7 @@ import type { MenuItem, SiteContent } from "@/domain/content";
 import { buildImageKey } from "@/domain/image-key";
 import { formatRupiah } from "@/domain/money";
 import { generateOneTimeToken } from "@/domain/one-time-token";
+import { isItemAvailable } from "@/domain/order";
 import type { AppEnv } from "@/env";
 import { type CmsContext, CmsPage, html, loadCms, purgeTenantPages } from "@/routes/cms/shared";
 import {
@@ -46,6 +47,7 @@ function itemBadges(item: MenuItem) {
     <>
       {item.featured ? <Badge tone="success">andalan</Badge> : null}
       {item.special ? <Badge tone="warning">spesial ⭐</Badge> : null}
+      {isItemAvailable(item) ? null : <Badge tone="danger">habis</Badge>}
       {isItemActive(item) ? null : <Badge tone="danger">nonaktif</Badge>}
     </>
   );
@@ -210,6 +212,23 @@ function ItemPage(props: {
           </Row>
           <Row>
             <Cell>
+              Ketersediaan (untuk pesanan online):{" "}
+              {isItemAvailable(item) ? (
+                <Badge tone="success">ready</Badge>
+              ) : (
+                <Badge tone="danger">habis</Badge>
+              )}
+            </Cell>
+            <Cell>
+              <Form action={`/menu/item/stok?${itemQuery}`}>
+                <Button variant={isItemAvailable(item) ? "danger" : "primary"}>
+                  {isItemAvailable(item) ? "Tandai habis" : "Tandai ready"}
+                </Button>
+              </Form>
+            </Cell>
+          </Row>
+          <Row>
+            <Cell>
               Status:{" "}
               {active ? <Badge tone="success">aktif</Badge> : <Badge tone="danger">nonaktif</Badge>}
             </Cell>
@@ -353,6 +372,22 @@ export const cmsMenu = new Hono<AppEnv>()
     await purgeTenantPages(c, loaded.cms.tenant);
     return c.redirect(
       `/menu/item?${itemQuery}&ok=${nextActive ? "Menu diaktifkan." : "Menu disembunyikan dari website."}`,
+    );
+  })
+  .post("/menu/item/stok", async (c) => {
+    const loaded = await loadItem(c);
+    if (!loaded) return c.redirect("/masuk");
+    if (!isRef(loaded)) return c.redirect(loaded.redirect);
+    if (loaded.cms.readOnly) return c.redirect("/menu");
+    const itemQuery = `c=${loaded.categoryIndex}&i=${loaded.itemIndex}`;
+    const nextAvailable = !isItemAvailable(loaded.item);
+    const menu = updateMenuItem(loaded.content.menu, loaded.categoryIndex, loaded.itemIndex, {
+      available: nextAvailable ? undefined : false,
+    });
+    await saveSiteContent(c.env.DB, loaded.cms.tenant.id, { ...loaded.content, menu });
+    await purgeTenantPages(c, loaded.cms.tenant);
+    return c.redirect(
+      `/menu/item?${itemQuery}&ok=${nextAvailable ? "Menu ditandai ready." : "Menu ditandai habis."}`,
     );
   })
   .post("/menu/item/andalan", async (c) => {

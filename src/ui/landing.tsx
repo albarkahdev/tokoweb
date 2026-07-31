@@ -40,8 +40,8 @@ body {
 ::selection { background: var(--gold); color: var(--ink); }
 
 .wrap { max-width: 72rem; margin: 0 auto; padding: 0 1.5rem; }
-.section { padding: clamp(4rem, 10vw, 7rem) 0; }
-.section-tight { padding: clamp(2.5rem, 6vw, 4rem) 0; }
+.section { padding: clamp(2.75rem, 6vw, 4.5rem) 0; }
+.section-tight { padding: clamp(2rem, 4vw, 3rem) 0; }
 
 .topbar {
   position: sticky; top: 0; z-index: 50;
@@ -91,9 +91,9 @@ body {
 
 .cta-row { display: flex; gap: 0.85rem; flex-wrap: wrap; margin-top: 2rem; }
 .btn {
-  display: inline-flex; align-items: center; gap: 0.55rem;
-  font: inherit; font-weight: 700; text-decoration: none; cursor: pointer;
-  border-radius: 9999px; padding: 0.95rem 1.9rem; font-size: 1rem;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; white-space: nowrap;
+  border-radius: 9999px; padding: 0.72rem 1.5rem; font-size: 0.95rem; line-height: 1.2;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 .btn:active { transform: translateY(1px) scale(0.99); }
@@ -391,6 +391,7 @@ export function LandingShell(props: {
   description: string;
   canonical: string;
   jsonLd: string;
+  noindex?: boolean;
   children: Child;
 }) {
   return (
@@ -400,6 +401,7 @@ export function LandingShell(props: {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{props.title}</title>
         <meta name="description" content={props.description} />
+        {props.noindex ? <meta name="robots" content="noindex" /> : null}
         <link rel="canonical" href={props.canonical} />
         <meta property="og:title" content={props.title} />
         <meta property="og:description" content={props.description} />

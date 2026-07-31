@@ -61,6 +61,14 @@ export const cmsHome = new Hono<AppEnv>().get("/", async (c) => {
               { label: "Jatuh tempo", value: subscription?.next_due_date ?? "belum aktif" },
             ]}
           />
+          <Actions>
+            <LinkButton
+              href="/bayar"
+              variant={tenant.status === "active" ? "secondary" : "primary"}
+            >
+              {tenant.status === "active" ? "Bayar Langganan" : "Bayar Sekarang"}
+            </LinkButton>
+          </Actions>
         </Card>
         <Card>
           <CardTitle>Websitemu</CardTitle>

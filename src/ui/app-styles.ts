@@ -377,6 +377,11 @@ a { color: var(--primary); }
   background: #FFFFFF; max-width: 100%; height: auto;
 }
 .qr-figure figcaption { margin-top: 0.4rem; font-weight: 600; }
+.qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; margin-top: 0.9rem; }
+.cms-media-img { max-width: 100%; border-radius: 0.75rem; margin: 0.4rem 0; }
+.cms-media-img.sm { max-width: 200px; }
+.cms-media-img.xs { max-width: 160px; }
+@media print { .app-header, .app-nav { display: none; } .qr-figure { break-inside: avoid; } }
 .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; margin-top: 0.75rem; }
 @media (min-width: 34rem) { .quick-grid { grid-template-columns: repeat(3, 1fr); } }
 .quick-link {

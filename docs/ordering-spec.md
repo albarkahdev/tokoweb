@@ -3,6 +3,46 @@
 Modul pemesanan online untuk tenant kuliner. Referensi keputusan: **ADR-0010**.
 Bukan Fase 1. Dikerjakan setelah Fase 1 DoD lengkap.
 
+## Status implementasi (2026-07-31)
+
+Terimplementasi di branch `feat/fase4` (lanjutan). Catatan:
+
+- **Data:** migrasi `0012_orders` (tabel `orders`, `order_items`, `tenant_payment_methods`).
+  `contents.data.order_settings` untuk enable/pajak/biaya/min/meja; `menu[].items[].available`
+  untuk tandai habis.
+- **Domain (`src/domain/order.ts`):** `canTransition`/`applyTransition` (state machine murni),
+  `calculateOrderTotal`, `validateCheckout`, `generateOrderCode` (Web Crypto),
+  `buildWaMessage`, `parseOrderSettings`, `isItemAvailable`. Plus `src/domain/payment-method.ts`.
+- **Publik (surface tenant, tanpa edge-cache):** `GET/POST /pesan`, `GET /o/{code}`,
+  `POST /o/{code}/bayar` di `src/routes/tenant-order.tsx`. Turnstile + rate limit. Harga
+  di-hitung ulang di server (anti-tamper), item habis/nonaktif ditolak. QR meja → `?meja=n`.
+- **CMS:** `src/routes/cms/pesanan.tsx` (inbox badge+suara+auto-refresh, detail, state machine,
+  invoice cetak) + `pesanan-setelan.tsx` (setelan, metode bayar CRUD, QR meja).
+- **Notif:** badge + suara + polling (auto-refresh 20 dtk). Web Push tetap ditahan (ADR sendiri).
+- Verifikasi visual subdomain tertunda ke deploy (miniflare lokal selalu lihat host `localhost`).
+  Perilaku tercakup unit + route test.
+
+## Iterasi (2026-07-31) — tunai, siap, snapshot, demo, brosur
+
+Perubahan atas spec awal (revisi ADR-0010):
+
+- **Bayar tunai (revisi ADR-0010 #2):** owner bisa aktifkan "bayar di tempat" (`order_settings.cash`).
+  Pembeli pilih di checkout (online vs tunai). Order tunai: `baru → (mitra "Terima") → diproses`,
+  lewati `menunggu_bayar/cek_bayar`. Online tetap bayar-dulu.
+- **Status `siap`:** `diproses → siap → selesai` (opsional, bisa skip). Label ikut jenis:
+  pickup "Siap diambil", dine-in "Siap disajikan".
+- **Snapshot tujuan bayar:** saat pembeli bayar, metode (tipe/label/detail/QR) disalin ke
+  `orders.payment_snapshot`. Ganti/hapus metode tak mengubah order lama. File QR **tidak** dihapus
+  saat metode dihapus (hindari QR order lama rusak).
+- **Demo full-dummy:** surface demo punya `/pesan` (menu+keranjang+checkout) → checkout palsu
+  render status + panel bayar contoh; tanpa DB, banner "Ini demo".
+- **Riwayat pembeli (tanpa login):** `/pesanan-saya` baca kode order dari localStorage perangkat
+  (opsi A; login akun penuh tetap Fase 6). Kode order otomatis tersimpan saat buka `/o/{code}`.
+- **Keranjang berbasis baris:** item sama boleh beberapa baris dengan catatan berbeda.
+- **Auto-cancel:** cron malam batalkan order `menunggu_bayar` yang lewat `STALE_UNPAID_HOURS` (24 jam).
+- **Brosur mitra:** `GET /r/{code}/brosur` — halaman printable ber-QR (→ demo `?ref=`), copy untuk
+  pemilik warung; tautan "Cetak brosur" di dashboard `/r/{code}`.
+
 ## Ringkasan alur
 
 **Pembeli (tamu, tanpa login):**

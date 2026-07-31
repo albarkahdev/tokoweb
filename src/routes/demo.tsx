@@ -1,14 +1,23 @@
 import { type Context, Hono } from "hono";
 import { createLead, findLeadByWa } from "@/db/leads";
+import type { PublicSite } from "@/db/public-site";
 import { recordScan } from "@/db/referrals";
 import { findReferrerByCode } from "@/db/referrers";
 import { formDataToValues } from "@/domain/cms";
+import type { SiteContent } from "@/domain/content";
+import {
+  calculateOrderTotal,
+  type Fulfillment,
+  isFulfillment,
+  type OrderStatus,
+} from "@/domain/order";
 import { createFixedWindowLimiter } from "@/domain/rate-limit";
 import { isValidReferralCode } from "@/domain/referral-code";
 import { addDays } from "@/domain/stats";
 import { wibDateOf } from "@/domain/subscription";
 import { verifyTurnstile } from "@/domain/turnstile";
 import type { AppEnv } from "@/env";
+import { orderDocument, parseCart, renderOrderPage, resolveLines } from "@/routes/tenant-order";
 import { renderKulinerPage } from "@/themes/engine/render";
 import type { PublicPagePath } from "@/themes/engine/types";
 import { FEATURED_DEMO_THEME, isFeaturedTheme, KULINER_THEMES } from "@/themes/kuliner/configs";
@@ -17,7 +26,44 @@ import { AppLayout } from "@/ui/app-layout";
 import { demoChromeHtml } from "@/ui/demo-chrome";
 import { Card, PageTitle, Text, TextLink } from "@/ui/display";
 import { Button, Field, Form, HiddenInput } from "@/ui/form";
+import {
+  OrderDemoNote,
+  OrderStatusHint,
+  OrderStatusView,
+  OrderTopNav,
+  PaymentPanel,
+} from "@/ui/order";
 import { TurnstileWidget } from "@/ui/turnstile-widget";
+
+const DEMO_ORDER_SETTINGS = {
+  enabled: true,
+  cash: true,
+  tax_percent: 0,
+  fees: [{ label: "Kemasan", amount: 2000 }],
+  min_order: 0,
+  tables: 6,
+};
+
+const DEMO_NOTICE =
+  "Ini demo — pesanan tidak benar-benar terkirim. Di websitemu, pesanan asli langsung masuk ke dashboard penjual & pembeli dapat link status.";
+
+function demoSite(themeSlug: string): PublicSite {
+  const content: SiteContent = { ...DEMO_CONTENT, order_settings: DEMO_ORDER_SETTINGS };
+  return {
+    tenantId: 0,
+    slug: "demo",
+    name: DEMO_BUSINESS_NAME,
+    status: "active",
+    themeSlug,
+    tokens: {},
+    content,
+  };
+}
+
+function demoTheme(c: Context<AppEnv>): string {
+  const requested = c.req.query("tema") ?? FEATURED_DEMO_THEME;
+  return isFeaturedTheme(requested) ? requested : FEATURED_DEMO_THEME;
+}
 
 const leadLimiter = createFixedWindowLimiter(5, 60_000);
 const scanLimiter = createFixedWindowLimiter(10, 60_000);
@@ -36,7 +82,7 @@ function renderDemoPage(
       status: "active",
       themeSlug,
       tokens: {},
-      content: DEMO_CONTENT,
+      content: { ...DEMO_CONTENT, order_settings: DEMO_ORDER_SETTINGS },
     },
     promos: [
       {
@@ -137,7 +183,7 @@ async function serveDemo(c: Context<AppEnv>, pagePath: PublicPagePath): Promise<
   const requested = c.req.query("tema") ?? FEATURED_DEMO_THEME;
   const themeSlug = isFeaturedTheme(requested) ? requested : FEATURED_DEMO_THEME;
 
-  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=19`;
+  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=21`;
   const cached = await caches.default.match(cacheKey);
   if (cached) return cached;
 
@@ -162,6 +208,62 @@ export const demo = new Hono<AppEnv>()
   .get("/galeri", (c) => serveDemo(c, "/galeri"))
   .get("/promo", (c) => serveDemo(c, "/promo"))
   .get("/testimoni", (c) => serveDemo(c, "/testimoni"))
+  .get("/pesan", (c) => {
+    const theme = demoTheme(c);
+    return c.html(
+      renderOrderPage(demoSite(theme), undefined, {
+        homeHref: `/kuliner?tema=${theme}`,
+        demoNotice: DEMO_NOTICE,
+        formAction: "/pesan",
+      }),
+      200,
+      { "cache-control": "no-store" },
+    );
+  })
+  .post("/pesan", async (c) => {
+    const theme = demoTheme(c);
+    const site = demoSite(theme);
+    const form = await c.req.formData();
+    const cart = parseCart(String(form.get("cart") ?? "[]"));
+    const { lines } = resolveLines(site, cart);
+    if (lines.length === 0) return c.redirect(`/pesan?tema=${theme}`);
+    const fRaw = String(form.get("fulfillment") ?? "");
+    const fulfillment: Fulfillment = isFulfillment(fRaw) ? fRaw : "pickup";
+    const cash = String(form.get("payment_mode") ?? "") === "cash";
+    const totals = calculateOrderTotal(
+      lines,
+      DEMO_ORDER_SETTINGS.tax_percent,
+      DEMO_ORDER_SETTINGS.fees,
+    );
+    return c.html(
+      demoStatusPage(site, theme, {
+        fulfillment,
+        tableNo: String(form.get("table_no") ?? "").trim(),
+        cash,
+        status: cash ? "diproses" : "menunggu_bayar",
+        lines,
+        totals,
+      }),
+      200,
+      { "cache-control": "no-store" },
+    );
+  })
+  .post("/pesan/bayar", (c) => {
+    const theme = demoTheme(c);
+    return c.html(
+      demoStatusPage(demoSite(theme), theme, {
+        fulfillment: "pickup",
+        tableNo: "",
+        cash: false,
+        status: "diproses",
+        lines: [],
+        totals: { subtotal: 0, tax_amount: 0, fee_amount: 0, total: 0 },
+        paid: true,
+      }),
+      200,
+      { "cache-control": "no-store" },
+    );
+  })
   .post("/scan", async (c) => {
     const ip = c.req.header("cf-connecting-ip") ?? "0.0.0.0";
     if (!scanLimiter.allow(ip, Date.now())) return c.body(null, 204);
@@ -200,6 +302,7 @@ export const demo = new Hono<AppEnv>()
       c.env.TURNSTILE_SECRET,
       values["cf-turnstile-response"] ?? "",
       c.req.header("cf-connecting-ip"),
+      c.env.ENVIRONMENT,
     );
     if (!humanOk) {
       return c.html(thanksPage("Verifikasi anti-robot gagal. Coba lagi ya!"), 400);
@@ -242,6 +345,75 @@ export const demo = new Hono<AppEnv>()
     }
     return c.html(thanksPage());
   });
+
+const DEMO_METHODS = [
+  {
+    id: 1,
+    type: "transfer" as const,
+    typeLabel: "Transfer Bank",
+    label: "BCA (contoh)",
+    imageSrc: null,
+    lines: [
+      { label: "Bank", value: "BCA" },
+      { label: "No. Rekening", value: "1234567890" },
+      { label: "Atas Nama", value: DEMO_BUSINESS_NAME },
+    ],
+  },
+  {
+    id: 2,
+    type: "ewallet" as const,
+    typeLabel: "E-Wallet",
+    label: "GoPay (contoh)",
+    imageSrc: null,
+    lines: [{ label: "Nomor", value: "0812-3456-7890" }],
+  },
+];
+
+function demoStatusPage(
+  site: PublicSite,
+  theme: string,
+  o: {
+    fulfillment: Fulfillment;
+    tableNo: string;
+    cash: boolean;
+    status: OrderStatus;
+    lines: { name: string; qty: number; unit_price: number; item_note: string | null }[];
+    totals: { subtotal: number; tax_amount: number; fee_amount: number; total: number };
+    paid?: boolean;
+  },
+): string {
+  const homeHref = `/kuliner?tema=${theme}`;
+  const body = (
+    <>
+      <OrderTopNav brand={DEMO_BUSINESS_NAME} homeHref={homeHref} />
+      <div class="ord-status ord-status-flush">
+        <OrderDemoNote>{DEMO_NOTICE}</OrderDemoNote>
+      </div>
+      <OrderStatusView
+        code="DEMO1234"
+        status={o.status}
+        cash={o.cash}
+        customerName="Kamu (demo)"
+        fulfillment={o.fulfillment}
+        tableNo={o.tableNo || null}
+        items={o.lines}
+        subtotal={o.totals.subtotal}
+        taxAmount={o.totals.tax_amount}
+        feeAmount={o.totals.fee_amount}
+        total={o.totals.total}
+        createdLabel="baru saja (demo)"
+        waReceiptHref="#"
+        justCreated={!o.paid}
+      >
+        <OrderStatusHint status={o.status} cash={o.cash} fulfillment={o.fulfillment} />
+        {o.status === "menunggu_bayar" ? (
+          <PaymentPanel action="/pesan/bayar" methods={DEMO_METHODS} />
+        ) : null}
+      </OrderStatusView>
+    </>
+  );
+  return orderDocument(site, DEMO_BUSINESS_NAME, body, []);
+}
 
 function daftarPage(
   siteKey: string | undefined,

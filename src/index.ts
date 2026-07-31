@@ -10,6 +10,7 @@ import { img } from "@/routes/img";
 import { landing } from "@/routes/landing";
 import { servePublicSite } from "@/routes/public-site";
 import { referralPage } from "@/routes/referral-page";
+import { tenantOrder } from "@/routes/tenant-order";
 import { tracker } from "@/routes/tracker";
 import { serverErrorHtml } from "@/ui/error-page";
 
@@ -34,8 +35,13 @@ app.all("*", (c) => {
     case "demo":
       return demo.fetch(c.req.raw, c.env, c.executionCtx);
     case "tenant-public":
-    case "custom-domain":
+    case "custom-domain": {
+      const path = new URL(c.req.url).pathname;
+      if (path === "/pesan" || path === "/pesanan-saya" || path.startsWith("/o/")) {
+        return tenantOrder.fetch(c.req.raw, c.env, c.executionCtx);
+      }
       return servePublicSite(c);
+    }
     case "unknown":
       if (new URL(c.req.url).pathname.startsWith("/r/")) {
         return referralPage.fetch(c.req.raw, c.env, c.executionCtx);
