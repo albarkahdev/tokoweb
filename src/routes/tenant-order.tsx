@@ -5,6 +5,7 @@ import {
   getOrderById,
   listOrderItems,
   type OrderItemInput,
+  orderCodeExists,
   saveOrderTransition,
   setOrderPayment,
 } from "@/db/orders";
@@ -44,6 +45,7 @@ import {
   MyOrdersView,
   OrderCartSheet,
   OrderClosedNotice,
+  OrderEmptyMenu,
   type OrderMenuCategory,
   OrderMenuGrid,
   OrderStatusHint,
@@ -131,6 +133,7 @@ export function renderOrderPage(
     homeHref?: string;
     demoNotice?: string;
     formAction?: string;
+    myOrdersHref?: string;
   } = {},
 ): string {
   const info = site.content.info ?? {};
@@ -162,12 +165,19 @@ export function renderOrderPage(
         brand={businessName}
         homeHref={homeHref}
         logoSrc={info.logo_key ? `/img/${info.logo_key}` : null}
+        myOrdersHref={opts.myOrdersHref}
       />
       <div class="ord-wrap">
         {opts.demoNotice ? <div class="ord-demo-note">{opts.demoNotice}</div> : null}
         {opts.error ? <div class="ord-flash">{opts.error}</div> : null}
-        <p class="ord-lede">Pilih menu, tentukan jumlah, lalu kirim pesananmu.</p>
-        <OrderMenuGrid categories={categories} />
+        {categories.length === 0 ? (
+          <OrderEmptyMenu />
+        ) : (
+          <>
+            <p class="ord-lede">Lapar? Pilih menunya, kami siapkan.</p>
+            <OrderMenuGrid categories={categories} />
+          </>
+        )}
       </div>
       <OrderCartSheet
         action={opts.formAction ?? "/pesan"}
@@ -269,9 +279,14 @@ export const tenantOrder = new Hono<AppEnv>()
     const mejaRaw = Number(url.searchParams.get("meja"));
     const prefillTable =
       Number.isInteger(mejaRaw) && mejaRaw >= 1 && mejaRaw <= tables ? String(mejaRaw) : undefined;
-    return c.html(renderOrderPage(site, c.env.TURNSTILE_SITE_KEY, { prefillTable }), 200, {
-      "cache-control": "no-store",
-    });
+    return c.html(
+      renderOrderPage(site, c.env.TURNSTILE_SITE_KEY, {
+        prefillTable,
+        myOrdersHref: "/pesanan-saya",
+      }),
+      200,
+      { "cache-control": "no-store" },
+    );
   })
   .post("/pesan", async (c) => {
     const url = new URL(c.req.url);
@@ -368,11 +383,7 @@ export const tenantOrder = new Hono<AppEnv>()
     }
 
     let code = generateOrderCode();
-    for (
-      let attempt = 0;
-      attempt < 5 && (await findOrderByCode(c.env.DB, site.tenantId, code));
-      attempt++
-    ) {
+    for (let attempt = 0; attempt < 5 && (await orderCodeExists(c.env.DB, code)); attempt++) {
       code = generateOrderCode();
     }
 
@@ -452,7 +463,7 @@ export const tenantOrder = new Hono<AppEnv>()
             `${url.origin}/o/${order.code}`,
           ),
         )
-      : "#";
+      : null;
 
     const methods =
       order.status === "menunggu_bayar"
@@ -511,9 +522,9 @@ export const tenantOrder = new Hono<AppEnv>()
       </>
     );
 
-    const pending = ["baru", "menunggu_bayar", "cek_bayar", "diproses"].includes(order.status);
+    const autoRefresh = ["baru", "cek_bayar", "diproses"].includes(order.status);
     const scripts = [saveOrderScript(order.code)];
-    if (pending) scripts.push(POLL_SCRIPT);
+    if (autoRefresh) scripts.push(POLL_SCRIPT);
     if (order.status === "menunggu_bayar") scripts.push(UPLOAD_SCRIPT);
     return c.html(orderDocument(site, businessName, body, scripts), 200, {
       "cache-control": "no-store",

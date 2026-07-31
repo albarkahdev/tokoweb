@@ -105,6 +105,18 @@ describe("orders db", () => {
     expect((await getOrderById(env.DB, fresh.id, 1))?.status).toBe("menunggu_bayar");
   });
 
+  it("does not auto-cancel a freshly-confirmed order created long ago", async () => {
+    const o = await createOrder(env.DB, orderInput("LATECNF1"));
+    await env.DB.prepare(
+      "UPDATE orders SET status='menunggu_bayar', created_at='2020-01-01 00:00:00', confirmed_at='2099-01-01 00:00:00' WHERE id=?1",
+    )
+      .bind(o.id)
+      .run();
+    const n = await cancelStaleUnpaidOrders(env.DB, "2021-01-01 00:00:00");
+    expect(n).toBe(0);
+    expect((await getOrderById(env.DB, o.id, 1))?.status).toBe("menunggu_bayar");
+  });
+
   it("records buyer payment method and proof", async () => {
     const methodId = await createPaymentMethod(env.DB, {
       tenantId: 1,

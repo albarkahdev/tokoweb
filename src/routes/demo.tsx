@@ -379,7 +379,7 @@ function demoStatusPage(
   const body = (
     <>
       <OrderTopNav brand={DEMO_BUSINESS_NAME} homeHref={homeHref} />
-      <div class="ord-status" style="padding-bottom:0">
+      <div class="ord-status ord-status-flush">
         <div class="ord-demo-note">{DEMO_NOTICE}</div>
       </div>
       <OrderStatusView

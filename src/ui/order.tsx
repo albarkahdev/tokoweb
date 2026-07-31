@@ -1,5 +1,5 @@
 import { formatRupiah } from "@/domain/money";
-import { ORDER_STATUS_LABELS, type OrderStatus, statusLabelFor } from "@/domain/order";
+import { type OrderStatus, statusLabelFor } from "@/domain/order";
 import type { PaymentLine } from "@/domain/payment-method";
 import { TurnstileWidget } from "@/ui/turnstile-widget";
 
@@ -116,6 +116,18 @@ function MenuCard(props: { item: OrderMenuItem }) {
   );
 }
 
+export function OrderEmptyMenu() {
+  return (
+    <div class="ord-empty-menu">
+      <span class="ord-empty-emoji" aria-hidden="true">
+        🍽️
+      </span>
+      <h2>Menunya lagi disiapkan</h2>
+      <p>Belum ada menu yang bisa dipesan sekarang. Coba lagi sebentar lagi, ya.</p>
+    </div>
+  );
+}
+
 export function OrderMenuGrid(props: { categories: OrderMenuCategory[] }) {
   return (
     <div class="ord-menu">
@@ -181,7 +193,7 @@ export function OrderCartSheet(props: {
           Rp 0
         </span>
       </button>
-      <div class="ord-sheet" data-cart-sheet hidden>
+      <div class="ord-sheet" data-cart-sheet>
         <div class="ord-sheet-backdrop" data-close-cart />
         <div class="ord-sheet-panel">
           <div class="ord-sheet-head">
@@ -280,7 +292,7 @@ export function OrderCartSheet(props: {
             <button type="submit" class="ord-btn block" data-checkout-submit disabled>
               Kirim Pesanan
             </button>
-            <p class="ord-checkout-hint">
+            <p class="ord-checkout-hint" data-checkout-hint>
               Penjual konfirmasi dulu, lalu kamu bayar. Kamu dapat link untuk memantau status.
             </p>
           </form>
@@ -303,7 +315,7 @@ export function OrderStatusView(props: {
   feeAmount: number;
   total: number;
   createdLabel: string;
-  waReceiptHref: string;
+  waReceiptHref: string | null;
   justCreated?: boolean;
   children?: unknown;
 }) {
@@ -393,9 +405,16 @@ export function OrderStatusView(props: {
         <p class="ord-meta">Dibuat {props.createdLabel}</p>
       </div>
       {props.children as never}
-      <a class="ord-btn secondary block" href={props.waReceiptHref} target="_blank" rel="noopener">
-        💬 Kirim struk ke WhatsApp
-      </a>
+      {props.waReceiptHref && props.waReceiptHref !== "#" ? (
+        <a
+          class="ord-btn secondary block"
+          href={props.waReceiptHref}
+          target="_blank"
+          rel="noopener"
+        >
+          💬 Kirim struk ke WhatsApp
+        </a>
+      ) : null}
     </div>
   );
 }
@@ -412,7 +431,7 @@ export function OrderStatusHint(props: {
     : "";
   const map: Partial<Record<OrderStatus, string>> = {
     baru: `Menunggu penjual menerima pesananmu.${cashPay} Halaman ini diperbarui otomatis.`,
-    cek_bayar: "Bukti bayar terkirim. Penjual sedang memverifikasi pembayaranmu.",
+    cek_bayar: "Pembayaranmu sedang diverifikasi penjual. Ditunggu ya.",
     diproses: `Pesananmu sedang disiapkan 🍳${cashPay}`,
     siap:
       props.fulfillment === "dine_in"

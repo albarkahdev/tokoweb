@@ -172,6 +172,34 @@ describe("CMS pesanan", () => {
     expect(afterSiap?.ready_at).not.toBeNull();
   });
 
+  it("tolak clears proof, snapshot, and paid_at", async () => {
+    await env.DB.prepare(
+      "INSERT INTO orders (id, tenant_id, code, customer_name, fulfillment, status, cash, subtotal, total, proof_key, payment_snapshot, paid_at) VALUES (3, 1, 'REJ00001', 'X', 'pickup', 'cek_bayar', 0, 10000, 10000, 't/warung/proof/a.webp', '{\"type\":\"qris\",\"label\":\"Q\"}', '2026-07-31T10:00:00')",
+    ).run();
+    await post("/pesanan/REJ00001/tolak", {});
+    const row = await env.DB.prepare(
+      "SELECT status, proof_key, payment_snapshot, paid_at FROM orders WHERE id = 3",
+    ).first<{
+      status: string;
+      proof_key: string | null;
+      payment_snapshot: string | null;
+      paid_at: string | null;
+    }>();
+    expect(row?.status).toBe("menunggu_bayar");
+    expect(row?.proof_key).toBeNull();
+    expect(row?.payment_snapshot).toBeNull();
+    expect(row?.paid_at).toBeNull();
+  });
+
+  it("invoice does not style an unpaid cash order as paid", async () => {
+    await env.DB.prepare(
+      "INSERT INTO orders (id, tenant_id, code, customer_name, fulfillment, status, cash, subtotal, total) VALUES (4, 1, 'CASHINV1', 'Y', 'pickup', 'diproses', 1, 10000, 10000)",
+    ).run();
+    const html = await (await get("/pesanan/CASHINV1/invoice")).text();
+    expect(html).toContain('class="status due"');
+    expect(html).not.toContain('class="status paid"');
+  });
+
   it("shows table QR codes", async () => {
     const html = await (await get("/pesanan/meja")).text();
     expect(html).toContain("Meja 1");

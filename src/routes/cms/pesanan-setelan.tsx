@@ -126,11 +126,7 @@ function SetelanPage(props: {
                 </Badge>
               </Text>
               {method.image_key ? (
-                <img
-                  src={`/img/${method.image_key}`}
-                  alt={method.label}
-                  style="max-width:160px;border-radius:10px;margin:0.4rem 0"
-                />
+                <img src={`/img/${method.image_key}`} alt={method.label} class="cms-media-img xs" />
               ) : (
                 <Text small muted>
                   {methodSummary(method)}

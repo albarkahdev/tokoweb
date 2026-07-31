@@ -6,6 +6,7 @@ import {
   listOrders,
   type OrderRow,
   saveOrderTransition,
+  setOrderPayment,
 } from "@/db/orders";
 import { formatRupiah } from "@/domain/money";
 import { applyTransition, ORDER_STATUS_LABELS, type OrderStatus } from "@/domain/order";
@@ -318,11 +319,7 @@ function DetailPage(props: {
               {PAYMENT_TYPE_LABELS[snap.type]} · {snap.label}
             </Text>
             {snap.image_key ? (
-              <img
-                src={`/img/${snap.image_key}`}
-                alt="QR pembayaran"
-                style="max-width:200px;border-radius:12px;margin-top:0.5rem"
-              />
+              <img src={`/img/${snap.image_key}`} alt="QR pembayaran" class="cms-media-img sm" />
             ) : null}
             {lines.length > 0 ? (
               <DataList rows={lines.map((line) => ({ label: line.label, value: line.value }))} />
@@ -333,11 +330,7 @@ function DetailPage(props: {
       {order.proof_key ? (
         <Card>
           <CardTitle>Bukti bayar</CardTitle>
-          <img
-            src={`/img/${order.proof_key}`}
-            alt="Bukti pembayaran"
-            style="max-width:100%;border-radius:12px"
-          />
+          <img src={`/img/${order.proof_key}`} alt="Bukti pembayaran" class="cms-media-img" />
         </Card>
       ) : null}
       <OrderActions order={order} readOnly={props.cms.readOnly} />
@@ -407,7 +400,7 @@ export const cmsPesanan = new Hono<AppEnv>()
               ? `Makan di tempat · Meja ${order.table_no ?? "-"}`
               : "Ambil sendiri",
           statusLabel: ORDER_STATUS_LABELS[order.status].toUpperCase(),
-          paid: order.status === "diproses" || order.status === "selesai",
+          paid: order.status === "selesai" || (order.status === "diproses" && order.cash !== 1),
           items,
           subtotal: order.subtotal,
           taxAmount: order.tax_amount,
@@ -431,6 +424,10 @@ export const cmsPesanan = new Hono<AppEnv>()
     if (!order) return c.redirect("/pesanan?err=Pesanan tidak ditemukan.");
     try {
       const next = applyTransition(order, target, sqlUtcDateTime(Date.now()));
+      if (c.req.param("action") === "tolak") {
+        next.paid_at = null;
+        await setOrderPayment(c.env.DB, order.id, cms.tenant.id, null, null, null);
+      }
       await saveOrderTransition(c.env.DB, order.id, cms.tenant.id, next);
     } catch {
       return c.redirect(`/pesanan/${code}?err=Tindakan tidak valid untuk status saat ini.`);

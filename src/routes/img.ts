@@ -20,6 +20,7 @@ export const img = new Hono<AppEnv>().get("/img/*", async (c) => {
     headers: {
       "content-type": "image/webp",
       "cache-control": IMG_CACHE_CONTROL,
+      "x-content-type-options": "nosniff",
     },
   });
   c.executionCtx.waitUntil(caches.default.put(cacheKey, response.clone()));

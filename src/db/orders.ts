@@ -128,6 +128,14 @@ export async function findOrderByCode(
     .first<OrderRow>();
 }
 
+export async function orderCodeExists(db: D1Database, code: string): Promise<boolean> {
+  const row = await db
+    .prepare("SELECT 1 FROM orders WHERE code = ?1 LIMIT 1")
+    .bind(code)
+    .first<{ 1: number }>();
+  return row !== null;
+}
+
 export async function listOrderItems(db: D1Database, orderId: number): Promise<OrderItemRow[]> {
   const { results } = await db
     .prepare(
@@ -146,19 +154,20 @@ export async function listOrders(
   const limit = opts.limit ?? 100;
   if (opts.statuses && opts.statuses.length > 0) {
     const placeholders = opts.statuses.map((_, index) => `?${index + 2}`).join(", ");
+    const limitParam = `?${opts.statuses.length + 2}`;
     const { results } = await db
       .prepare(
-        `SELECT ${ORDER_COLUMNS} FROM orders WHERE tenant_id = ?1 AND status IN (${placeholders}) ORDER BY created_at DESC, id DESC LIMIT ${limit}`,
+        `SELECT ${ORDER_COLUMNS} FROM orders WHERE tenant_id = ?1 AND status IN (${placeholders}) ORDER BY created_at DESC, id DESC LIMIT ${limitParam}`,
       )
-      .bind(tenantId, ...opts.statuses)
+      .bind(tenantId, ...opts.statuses, limit)
       .all<OrderRow>();
     return results ?? [];
   }
   const { results } = await db
     .prepare(
-      `SELECT ${ORDER_COLUMNS} FROM orders WHERE tenant_id = ?1 ORDER BY created_at DESC, id DESC LIMIT ${limit}`,
+      `SELECT ${ORDER_COLUMNS} FROM orders WHERE tenant_id = ?1 ORDER BY created_at DESC, id DESC LIMIT ?2`,
     )
-    .bind(tenantId)
+    .bind(tenantId, limit)
     .all<OrderRow>();
   return results ?? [];
 }
@@ -223,7 +232,7 @@ export async function setOrderPayment(
 export async function cancelStaleUnpaidOrders(db: D1Database, cutoffIso: string): Promise<number> {
   const result = await db
     .prepare(
-      "UPDATE orders SET status = 'dibatalkan', cancelled_at = datetime('now') WHERE status = 'menunggu_bayar' AND created_at < ?1",
+      "UPDATE orders SET status = 'dibatalkan', cancelled_at = datetime('now') WHERE status = 'menunggu_bayar' AND COALESCE(confirmed_at, created_at) < ?1",
     )
     .bind(cutoffIso)
     .run();

@@ -1,5 +1,5 @@
 export function saveOrderScript(code: string): string {
-  return `(function(){try{var k="tw_orders";var a=JSON.parse(localStorage.getItem(k)||"[]");var code=${JSON.stringify(code)};a=a.filter(function(x){return x!==code});a.unshift(code);localStorage.setItem(k,JSON.stringify(a.slice(0,20)));}catch(e){}})();`;
+  return `(function(){try{var k="tw_orders";var a=JSON.parse(localStorage.getItem(k)||"[]");var code=${JSON.stringify(code)};a=a.filter(function(x){return x!==code});a.unshift(code);localStorage.setItem(k,JSON.stringify(a.slice(0,20)));localStorage.removeItem("tw_cart");localStorage.removeItem("tw_checkout");}catch(e){}})();`;
 }
 
 export const MY_ORDERS_LIST_SCRIPT = `
@@ -25,6 +25,22 @@ export const ORDER_SCRIPT = `
   var DATA = window.__ORDER__ || { items:{}, tax:0, fees:[], min:0 };
   var lines = [];
   var seq = 1;
+  var CART_KEY = "tw_cart", FORM_KEY = "tw_checkout", MAX_QTY = 99;
+  function persist(){
+    try{ localStorage.setItem(CART_KEY, JSON.stringify(lines.map(function(l){ return {key:l.key,qty:l.qty,note:l.note}; }))); }catch(e){}
+  }
+  function rehydrate(){
+    try{
+      var saved = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+      if(Array.isArray(saved)){
+        saved.forEach(function(s){
+          if(s && DATA.items[s.key] && s.qty>0){
+            lines.push({ id:seq++, key:s.key, qty:Math.min(MAX_QTY, s.qty|0), note:typeof s.note==="string"?s.note:"" });
+          }
+        });
+      }
+    }catch(e){}
+  }
   function fmt(n){ return "Rp " + Math.round(n).toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, "."); }
   function feeSum(){ var f=0; (DATA.fees||[]).forEach(function(x){ f += Number(x.amount)||0; }); return f; }
   function qtyOfKey(key){ var q=0; lines.forEach(function(l){ if(l.key===key) q+=l.qty; }); return q; }
@@ -39,7 +55,7 @@ export const ORDER_SCRIPT = `
   function addKey(key){
     if(!DATA.items[key]) return;
     var l = firstLine(key);
-    if(l){ l.qty++; } else { lines.push({ id:seq++, key:key, qty:1, note:"" }); }
+    if(l){ if(l.qty < MAX_QTY) l.qty++; } else { lines.push({ id:seq++, key:key, qty:1, note:"" }); }
     renderAll();
   }
   function subKey(key){
@@ -52,7 +68,7 @@ export const ORDER_SCRIPT = `
   function setLineQty(id, delta){
     var l = null; lines.forEach(function(x){ if(x.id===id) l=x; });
     if(!l) return;
-    l.qty += delta;
+    l.qty = Math.min(MAX_QTY, l.qty + delta);
     if(l.qty<=0) lines = lines.filter(function(x){ return x!==l; });
     renderAll();
   }
@@ -99,10 +115,10 @@ export const ORDER_SCRIPT = `
       var price = document.createElement("span"); price.className="ord-cart-line-price"; price.textContent = fmt(it.price*l.qty);
       top.appendChild(name); top.appendChild(price);
       var ctl = document.createElement("div"); ctl.className="ord-cart-line-ctl";
-      var sub = document.createElement("button"); sub.type="button"; sub.textContent="−"; sub.setAttribute("data-line-sub", String(l.id));
+      var sub = document.createElement("button"); sub.type="button"; sub.textContent="−"; sub.setAttribute("aria-label","Kurangi "+it.name); sub.setAttribute("data-line-sub", String(l.id));
       var cnt = document.createElement("span"); cnt.className="ord-count"; cnt.textContent = String(l.qty);
-      var plus = document.createElement("button"); plus.type="button"; plus.textContent="+"; plus.setAttribute("data-line-plus", String(l.id));
-      var rm = document.createElement("button"); rm.type="button"; rm.className="rm"; rm.textContent="Hapus"; rm.setAttribute("data-line-rm", String(l.id));
+      var plus = document.createElement("button"); plus.type="button"; plus.textContent="+"; plus.setAttribute("aria-label","Tambah "+it.name); plus.setAttribute("data-line-plus", String(l.id));
+      var rm = document.createElement("button"); rm.type="button"; rm.className="rm"; rm.textContent="Hapus"; rm.setAttribute("aria-label","Hapus "+it.name); rm.setAttribute("data-line-rm", String(l.id));
       ctl.appendChild(sub); ctl.appendChild(cnt); ctl.appendChild(plus); ctl.appendChild(rm);
       var note = document.createElement("input"); note.className="ord-cart-note"; note.placeholder="Catatan (mis. pedas, tanpa bawang)"; note.maxLength=140; note.value = l.note||"";
       note.setAttribute("data-line-note", String(l.id));
@@ -126,10 +142,10 @@ export const ORDER_SCRIPT = `
       return { c:Number(p[0]), i:Number(p[1]), qty:l.qty, note:l.note||"" };
     }));
   }
-  function renderAll(){ renderCards(); renderBar(); renderSheet(); syncHidden(); }
+  function renderAll(){ renderCards(); renderBar(); renderSheet(); syncHidden(); persist(); }
   function openSheet(v){
     var sheet = document.querySelector("[data-cart-sheet]");
-    if(sheet) sheet.hidden = !v;
+    if(sheet) sheet.classList.toggle("open", v);
     document.body.style.overflow = v ? "hidden" : "";
   }
   function num(el, attr){ return Number(el.getAttribute(attr)); }
@@ -174,19 +190,54 @@ export const ORDER_SCRIPT = `
       var emptyMsg = document.querySelector(".ord-empty-filter"); if(emptyMsg) emptyMsg.hidden = any;
     }
   });
+  function saveForm(){
+    try{
+      var f={};
+      ["customer_name","customer_phone","note","table_no"].forEach(function(n){var el=document.querySelector('[name="'+n+'"]'); if(el) f[n]=el.value;});
+      var ff=document.querySelector('[name="fulfillment"]:checked'); if(ff) f.fulfillment=ff.value;
+      var pm=document.querySelector('[name="payment_mode"]:checked'); if(pm) f.payment_mode=pm.value;
+      localStorage.setItem(FORM_KEY, JSON.stringify(f));
+    }catch(e){}
+  }
+  function syncFulfillment(){
+    var ff=document.querySelector('[name="fulfillment"]:checked');
+    var field=document.querySelector("[data-table-field]");
+    if(field && ff) field.hidden = ff.value!=="dine_in";
+    var pm=document.querySelector('[name="payment_mode"]:checked');
+    var hint=document.querySelector("[data-checkout-hint]");
+    if(hint) hint.textContent = (pm && pm.value==="cash")
+      ? "Penjual konfirmasi dulu, lalu bayar tunai saat ambil/di tempat. Kamu dapat link pantau status."
+      : "Penjual konfirmasi dulu, lalu kamu bayar. Kamu dapat link untuk memantau status.";
+  }
+  function restoreForm(){
+    try{
+      var f=JSON.parse(localStorage.getItem(FORM_KEY)||"{}");
+      ["customer_name","customer_phone","note","table_no"].forEach(function(n){var el=document.querySelector('[name="'+n+'"]'); if(el && typeof f[n]==="string") el.value=f[n];});
+      if(f.fulfillment){var r=document.querySelector('[name="fulfillment"][value="'+f.fulfillment+'"]'); if(r) r.checked=true;}
+      if(f.payment_mode){var p=document.querySelector('[name="payment_mode"][value="'+f.payment_mode+'"]'); if(p) p.checked=true;}
+    }catch(e){}
+  }
   document.addEventListener("change", function(e){
     var t = e.target;
-    if(!(t instanceof Element) || !t.hasAttribute("data-fulfill")) return;
-    var field = document.querySelector("[data-table-field]");
-    if(field) field.hidden = t.value !== "dine_in";
+    if(!(t instanceof Element)) return;
+    if(t.hasAttribute("data-fulfill") || t.getAttribute("name")==="payment_mode"){ syncFulfillment(); saveForm(); }
+  });
+  document.addEventListener("input", function(e){
+    var t = e.target;
+    if(t instanceof Element && ["customer_name","customer_phone","note","table_no"].indexOf(t.getAttribute("name")||"")>=0) saveForm();
   });
   var form = document.querySelector("[data-checkout]");
   if(form){
     form.addEventListener("submit", function(e){
       syncHidden();
-      if(totals().count<=0){ e.preventDefault(); }
+      if(totals().count<=0){ e.preventDefault(); return; }
+      var submit = form.querySelector("[data-checkout-submit]");
+      if(submit){ submit.disabled = true; submit.textContent = "Mengirim…"; }
     });
   }
+  rehydrate();
+  restoreForm();
+  syncFulfillment();
   renderAll();
 })();
 `;

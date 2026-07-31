@@ -23,30 +23,35 @@ export const ORDER_CSS = `
 .ord-item-foot{margin-top:auto;padding-top:0.5rem;display:flex;align-items:center;justify-content:space-between;gap:0.5rem}
 .ord-item-price{font-weight:800;color:var(--text)}
 .ord-sold-badge{font-size:0.78rem;font-weight:700;color:#b42318;background:#fee4e2;padding:0.2rem 0.5rem;border-radius:99px}
-.ord-actions .ord-add{border:1px solid var(--primary);color:var(--primary);background:transparent;font-weight:700;padding:0.42rem 1rem;border-radius:var(--r-btn);cursor:pointer;font:inherit}
+.ord-actions .ord-add{border:1px solid var(--primary);color:var(--primary);background:transparent;font-weight:700;padding:0.55rem 1.1rem;min-height:40px;border-radius:var(--r-btn);cursor:pointer;font:inherit}
 .ord-actions .ord-add:hover{background:var(--primary);color:var(--primary-contrast)}
 .ord-step{display:flex;align-items:center;gap:0.7rem}
-.ord-step button{width:32px;height:32px;border-radius:50%;border:1px solid var(--primary);background:var(--primary);color:var(--primary-contrast);font-size:1.1rem;font-weight:800;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
+.ord-step button{width:40px;height:40px;border-radius:50%;border:1px solid var(--primary);background:var(--primary);color:var(--primary-contrast);font-size:1.15rem;font-weight:800;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
 .ord-count{min-width:1.2rem;text-align:center;font-weight:800;color:var(--text)}
 .ord-empty-filter{text-align:center;color:var(--muted);padding:2rem 0}
 .ord-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:1rem;z-index:30;display:flex;align-items:center;gap:0.7rem;width:min(92%,600px);border:none;cursor:pointer;padding:0.9rem 1.1rem;border-radius:99px;background:var(--primary);color:var(--primary-contrast);font:inherit;font-weight:700;box-shadow:var(--shadow-pop,0 10px 30px rgba(0,0,0,0.2))}
 .ord-bar-count{background:var(--primary-contrast);color:var(--primary);min-width:1.5rem;height:1.5rem;border-radius:99px;display:flex;align-items:center;justify-content:center;font-weight:800}
 .ord-bar-total{margin-left:auto}
-.ord-sheet{position:fixed;inset:0;z-index:40}
-.ord-sheet[hidden]{display:none}
-.ord-sheet-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.45)}
-.ord-sheet-panel{position:absolute;left:0;right:0;bottom:0;max-height:92vh;overflow-y:auto;background:var(--bg);border-radius:1.2rem 1.2rem 0 0;padding:1.1rem 1.1rem 2rem;max-width:600px;margin:0 auto}
+.ord-sheet{position:fixed;inset:0;z-index:40;visibility:hidden}
+.ord-sheet.open{visibility:visible}
+.ord-sheet-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.45);opacity:0;transition:opacity 0.2s ease}
+.ord-sheet.open .ord-sheet-backdrop{opacity:1}
+.ord-sheet-panel{position:absolute;left:0;right:0;bottom:0;max-height:92vh;overflow-y:auto;background:var(--bg);border-radius:1.2rem 1.2rem 0 0;padding:1.1rem 1.1rem 2rem;max-width:600px;margin:0 auto;transform:translateY(100%);transition:transform 0.25s ease}
+.ord-sheet.open .ord-sheet-panel{transform:translateY(0)}
 .ord-sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem}
 .ord-sheet-head h2{margin:0;font-family:var(--f-heading);font-size:1.2rem;color:var(--text)}
-.ord-close{border:none;background:transparent;font-size:1.2rem;cursor:pointer;color:var(--muted)}
+.ord-close{border:none;background:transparent;font-size:1.2rem;cursor:pointer;color:var(--muted);min-width:40px;min-height:40px}
+.ord-empty-menu{text-align:center;padding:3rem 1rem;color:var(--muted)}
+.ord-empty-emoji{font-size:2.6rem}
+.ord-empty-menu h2{font-family:var(--f-heading);color:var(--text);margin:0.6rem 0 0.3rem}
 .ord-cart-lines{display:flex;flex-direction:column;gap:0.7rem;margin-bottom:0.5rem}
 .ord-cart-line{background:var(--surface);border:1px solid rgba(0,0,0,0.07);border-radius:var(--r-card);padding:0.7rem}
 .ord-cart-line-top{display:flex;justify-content:space-between;gap:0.6rem;align-items:flex-start}
 .ord-cart-line-top strong{font-size:0.95rem;color:var(--text)}
 .ord-cart-line-price{font-weight:800;white-space:nowrap;color:var(--text)}
 .ord-cart-line-ctl{display:flex;align-items:center;gap:0.6rem;margin-top:0.5rem}
-.ord-cart-line-ctl button{width:30px;height:30px;border-radius:50%;border:1px solid var(--primary);background:var(--primary);color:var(--primary-contrast);font-weight:800;cursor:pointer}
-.ord-cart-line-ctl .rm{border-color:transparent;background:transparent;color:var(--muted);margin-left:auto;font-size:0.82rem;width:auto}
+.ord-cart-line-ctl button{width:40px;height:40px;border-radius:50%;border:1px solid var(--primary);background:var(--primary);color:var(--primary-contrast);font-weight:800;cursor:pointer}
+.ord-cart-line-ctl .rm{border-color:transparent;background:transparent;color:var(--muted);margin-left:auto;font-size:0.82rem;width:auto;min-height:40px;padding:0 0.4rem}
 .ord-cart-note{margin-top:0.5rem;width:100%;box-sizing:border-box;padding:0.5rem 0.7rem;border:1px solid rgba(0,0,0,0.14);border-radius:var(--r-btn);font:inherit;font-size:0.85rem;background:var(--bg);color:var(--text)}
 .ord-split{margin-top:0.4rem;background:none;border:none;color:var(--primary);font:inherit;font-size:0.8rem;font-weight:600;cursor:pointer;padding:0.1rem 0}
 .ord-cart-empty{color:var(--muted);text-align:center;padding:1.2rem 0}
@@ -72,6 +77,7 @@ export const ORDER_CSS = `
 .ord-closed-card h1{font-family:var(--f-heading);font-size:1.4rem;margin:0.6rem 0 0.4rem;color:var(--text)}
 .ord-closed-card p{color:var(--muted);margin:0 0 1.2rem}
 .ord-status{max-width:560px;margin:0 auto;padding:1.2rem 1.1rem 3rem}
+.ord-status-flush{padding-bottom:0}
 .ord-flash{background:#ecfdf3;color:#027a48;border:1px solid #a6f4c5;border-radius:var(--r-card);padding:0.8rem 1rem;margin-bottom:1rem;font-size:0.9rem}
 .ord-demo-note{background:#fffaeb;color:#b54708;border:1px solid #fedf89;border-radius:var(--r-card);padding:0.75rem 1rem;margin-bottom:0.9rem;font-size:0.88rem;font-weight:600}
 .ord-status-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
