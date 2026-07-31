@@ -1,4 +1,13 @@
 import type { Child } from "hono/jsx";
+import { formatRupiah } from "@/domain/money";
+
+export function DiscountPrice(props: { original: number; now: number }) {
+  return (
+    <>
+      <s>{formatRupiah(props.original)}</s> <strong>{formatRupiah(props.now)}</strong>
+    </>
+  );
+}
 
 export function Card(props: { children: Child; filterText?: string }) {
   return (

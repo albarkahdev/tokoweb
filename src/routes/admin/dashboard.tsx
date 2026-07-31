@@ -40,8 +40,9 @@ export const adminDashboard = new Hono<AppEnv>().get("/", async (c) => {
         <Card>
           <CardTitle>Pesanan platform (30 hari)</CardTitle>
           <StatRow>
-            <StatTile value={String(orders.masuk)} label="pesanan masuk" />
+            <StatTile value={String(orders.masuk)} label="total pesanan" />
             <StatTile value={String(orders.selesai)} label="selesai" />
+            <StatTile value={String(orders.diproses)} label="berjalan" />
             <StatTile value={String(orders.dibatalkan)} label="dibatalkan" />
           </StatRow>
           <Text small muted last>

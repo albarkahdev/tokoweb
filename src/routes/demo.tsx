@@ -5,7 +5,6 @@ import { recordScan } from "@/db/referrals";
 import { findReferrerByCode } from "@/db/referrers";
 import { formDataToValues } from "@/domain/cms";
 import type { SiteContent } from "@/domain/content";
-import { formatRupiah } from "@/domain/money";
 import {
   calculateOrderTotal,
   type Fulfillment,
@@ -26,7 +25,7 @@ import { FEATURED_DEMO_THEME, isFeaturedTheme, KULINER_THEMES } from "@/themes/k
 import { DEMO_BUSINESS_NAME, DEMO_CONTENT } from "@/themes/kuliner/demo-content";
 import { AppLayout } from "@/ui/app-layout";
 import { demoChromeHtml } from "@/ui/demo-chrome";
-import { Alert, Card, PageTitle, Text, TextLink } from "@/ui/display";
+import { Alert, Card, DiscountPrice, PageTitle, Text, TextLink } from "@/ui/display";
 import { Button, Field, Form, HiddenInput } from "@/ui/form";
 import {
   OrderDemoNote,
@@ -428,8 +427,7 @@ function daftarPage(
         {values.ref ? (
           <Alert tone="success">
             Kamu daftar lewat mitra — hemat 30% biaya setup: Basic{" "}
-            <s>{formatRupiah(PLAN_PRICES.basic.setup)}</s>{" "}
-            <strong>{formatRupiah(setupFee("basic", true))}</strong>.
+            <DiscountPrice original={PLAN_PRICES.basic.setup} now={setupFee("basic", true)} />.
           </Alert>
         ) : null}
         <Text muted>

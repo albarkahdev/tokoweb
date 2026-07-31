@@ -45,6 +45,7 @@ import {
   CellStack,
   CopyArea,
   DataList,
+  DiscountPrice,
   ListTable,
   MediaRow,
   Row,
@@ -271,9 +272,8 @@ export const adminTenants = new Hono<AppEnv>()
                 Rekomendasi: setup{" "}
                 {closing ? (
                   <>
-                    <s>{formatRupiah(PLAN_PRICES[plan].setup)}</s>{" "}
-                    <strong>{formatRupiah(setupFee(plan, true))}</strong> (diskon referral −30%,
-                    komisi mitra tetap penuh)
+                    <DiscountPrice original={PLAN_PRICES[plan].setup} now={setupFee(plan, true)} />{" "}
+                    (hemat 30% lewat mitra, komisi mitra tetap penuh)
                   </>
                 ) : (
                   formatRupiah(setupFee(plan, false))
@@ -337,8 +337,9 @@ export const adminTenants = new Hono<AppEnv>()
           <Card>
             <CardTitle>Statistik Toko (pesanan, 30 hari)</CardTitle>
             <StatRow>
-              <StatTile value={String(tenantOrders.masuk)} label="masuk" />
+              <StatTile value={String(tenantOrders.masuk)} label="total" />
               <StatTile value={String(tenantOrders.selesai)} label="selesai" />
+              <StatTile value={String(tenantOrders.diproses)} label="berjalan" />
               <StatTile value={String(tenantOrders.dibatalkan)} label="batal" />
             </StatRow>
             {tenantTopItems.length > 0 ? (

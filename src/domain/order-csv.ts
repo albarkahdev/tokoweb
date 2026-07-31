@@ -1,3 +1,5 @@
+import { ORDER_STATUS_LABELS, type OrderStatus } from "@/domain/order";
+
 export type OrderCsvRow = {
   code: string;
   created_at: string;
@@ -38,7 +40,9 @@ const FULFILLMENT_LABEL: Record<string, string> = {
 };
 
 function csvCell(value: string | number | null): string {
-  const text = value === null ? "" : String(value);
+  if (typeof value === "number") return String(value);
+  let text = value ?? "";
+  if (/^[=+\-@\t\r]/.test(text)) text = `'${text}`;
   if (/[",\n\r]/.test(text)) {
     return `"${text.replace(/"/g, '""')}"`;
   }
@@ -53,7 +57,7 @@ function rowCells(row: OrderCsvRow): (string | number)[] {
     row.customer_phone ?? "",
     FULFILLMENT_LABEL[row.fulfillment] ?? row.fulfillment,
     row.table_no ?? "",
-    row.status,
+    ORDER_STATUS_LABELS[row.status as OrderStatus] ?? row.status,
     row.cash === 1 ? "Tunai" : "Online",
     row.subtotal,
     row.fee_amount,

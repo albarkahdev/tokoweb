@@ -1,5 +1,5 @@
-import { formatRupiah } from "@/domain/money";
 import { PLAN_PRICES, setupFee } from "@/domain/plan";
+import { DiscountPrice } from "@/ui/display";
 
 const BROCHURE_CSS = `
 *{box-sizing:border-box;margin:0}
@@ -90,8 +90,8 @@ export function renderBrochureHtml(props: {
             </div>
           </div>
           <div class="price">
-            Setup <s>{formatRupiah(PLAN_PRICES.basic.setup)}</s>{" "}
-            <b>{formatRupiah(setupFee("basic", true))}</b> lewat brosur ini (hemat 30%).
+            Setup <DiscountPrice original={PLAN_PRICES.basic.setup} now={setupFee("basic", true)} />{" "}
+            lewat brosur ini (hemat 30%).
             <br />
             Mulai <b>Rp 75.000/bulan</b> — jadi kurang dari sehari, bisa berhenti kapan saja.
             <br />7 hari nggak cocok? Uang balik 100%.

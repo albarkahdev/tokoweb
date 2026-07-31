@@ -17,6 +17,7 @@ import {
   Badge,
   Card,
   CardTitle,
+  DiscountPrice,
   PageTitle,
   StatRow,
   StatTile,
@@ -163,12 +164,10 @@ export const referralPage = new Hono<AppEnv>()
           <Card>
             <CardTitle>Penawaranmu ke calon klien</CardTitle>
             <Text last>
-              Klien yang daftar lewat kamu dapat diskon setup <b>30%</b>: setup Basic{" "}
-              <s>{formatRupiah(PLAN_PRICES.basic.setup)}</s>{" "}
-              <b>{formatRupiah(setupFee("basic", true))}</b> · Pro{" "}
-              <s>{formatRupiah(PLAN_PRICES.pro.setup)}</s>{" "}
-              <b>{formatRupiah(setupFee("pro", true))}</b>. Pakai ini buat closing saat mereka masih
-              tertarik!
+              Klien lewat kamu hemat 30% biaya setup: Basic{" "}
+              <DiscountPrice original={PLAN_PRICES.basic.setup} now={setupFee("basic", true)} /> ·
+              Pro <DiscountPrice original={PLAN_PRICES.pro.setup} now={setupFee("pro", true)} />.
+              Pakai ini buat closing saat mereka masih tertarik!
             </Text>
           </Card>
           <Card>

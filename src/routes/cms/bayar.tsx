@@ -24,6 +24,7 @@ import {
   CardTitle,
   CopyArea,
   DataList,
+  DiscountPrice,
   MediaRow,
   Text,
   TextLink,
@@ -88,9 +89,8 @@ function BayarPage(view: BillingView) {
         />
         {view.referred && isPlan(plan) ? (
           <Text small muted last>
-            Kamu klien referral — biaya setup hemat 30%:{" "}
-            <s>{formatRupiah(PLAN_PRICES[plan].setup)}</s>{" "}
-            <strong>{formatRupiah(setupFee(plan, true))}</strong>.
+            Kamu daftar lewat mitra — biaya setup hemat 30%:{" "}
+            <DiscountPrice original={PLAN_PRICES[plan].setup} now={setupFee(plan, true)} />.
           </Text>
         ) : null}
       </Card>

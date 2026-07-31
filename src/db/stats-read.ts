@@ -73,7 +73,7 @@ export async function orderCountsBetween(
 ): Promise<OrderStatCounts> {
   const { results } = await db
     .prepare(
-      "SELECT status, COUNT(*) AS total FROM orders WHERE tenant_id = ?1 AND created_at >= ?2 || ' 00:00:00' AND created_at <= ?3 || ' 23:59:59' GROUP BY status",
+      "SELECT status, COUNT(*) AS total FROM orders WHERE tenant_id = ?1 AND created_at >= datetime(?2 || ' 00:00:00', '-7 hours') AND created_at <= datetime(?3 || ' 23:59:59', '-7 hours') GROUP BY status",
     )
     .bind(tenantId, fromDate, toDate)
     .all<{ status: string; total: number }>();
@@ -87,7 +87,7 @@ export async function platformOrderCountsBetween(
 ): Promise<OrderStatCounts> {
   const { results } = await db
     .prepare(
-      "SELECT status, COUNT(*) AS total FROM orders WHERE created_at >= ?1 || ' 00:00:00' AND created_at <= ?2 || ' 23:59:59' GROUP BY status",
+      "SELECT status, COUNT(*) AS total FROM orders WHERE created_at >= datetime(?1 || ' 00:00:00', '-7 hours') AND created_at <= datetime(?2 || ' 23:59:59', '-7 hours') GROUP BY status",
     )
     .bind(fromDate, toDate)
     .all<{ status: string; total: number }>();
@@ -106,7 +106,7 @@ export async function topOrderItemsBetween(
       `SELECT oi.name AS name, SUM(oi.qty) AS qty
        FROM order_items oi JOIN orders o ON o.id = oi.order_id
        WHERE o.tenant_id = ?1 AND o.status != 'dibatalkan'
-         AND o.created_at >= ?2 || ' 00:00:00' AND o.created_at <= ?3 || ' 23:59:59'
+         AND o.created_at >= datetime(?2 || ' 00:00:00', '-7 hours') AND o.created_at <= datetime(?3 || ' 23:59:59', '-7 hours')
        GROUP BY oi.name ORDER BY qty DESC, oi.name ASC LIMIT ?4`,
     )
     .bind(tenantId, fromDate, toDate, limit)
@@ -125,7 +125,7 @@ export async function peakOrderHourBetween(
       `SELECT CAST(strftime('%H', datetime(created_at, '+7 hours')) AS INTEGER) AS hour, COUNT(*) AS count
        FROM orders
        WHERE tenant_id = ?1 AND status != 'dibatalkan'
-         AND created_at >= ?2 || ' 00:00:00' AND created_at <= ?3 || ' 23:59:59'
+         AND created_at >= datetime(?2 || ' 00:00:00', '-7 hours') AND created_at <= datetime(?3 || ' 23:59:59', '-7 hours')
        GROUP BY hour ORDER BY count DESC, hour ASC LIMIT 1`,
     )
     .bind(tenantId, fromDate, toDate)

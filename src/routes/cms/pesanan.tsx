@@ -122,10 +122,13 @@ function InboxPage(props: {
         </Text>
         <Text small>
           <TextLink href="/pesanan/setelan">⚙️ Setelan & metode bayar</TextLink> ·{" "}
-          <TextLink href="/pesanan/meja">🍽️ QR meja</TextLink> ·{" "}
+          <TextLink href="/pesanan/meja">🍽️ QR meja</TextLink>
+        </Text>
+        <Text small last>
           <TextLink href="/pesanan/export.csv" external>
-            ⬇️ Export CSV
-          </TextLink>
+            ⬇️ Unduh data pesanan (CSV)
+          </TextLink>{" "}
+          — maks 5.000 pesanan terbaru, bisa dibuka di Excel/Sheets.
         </Text>
         <span data-actionable={String(actionable.length)} hidden />
         {actionable.length === 0 ? (

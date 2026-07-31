@@ -136,8 +136,9 @@ export const cmsStatistik = new Hono<AppEnv>().get("/statistik", async (c) => {
               ))}
             </Card>
             <StatRow>
-              <StatTile value={String(orderCounts.masuk)} label="pesanan masuk" />
+              <StatTile value={String(orderCounts.masuk)} label="total pesanan" />
               <StatTile value={String(orderCounts.selesai)} label="selesai" />
+              <StatTile value={String(orderCounts.diproses)} label="berjalan" />
               <StatTile value={String(orderCounts.dibatalkan)} label="dibatalkan" />
             </StatRow>
             {topItems.length > 0 ? (

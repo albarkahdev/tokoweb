@@ -31,7 +31,14 @@ describe("buildOrdersCsv", () => {
     expect(first).toContain("ABC123");
     expect(first).toContain("Makan di tempat");
     expect(first).toContain("Tunai");
+    expect(first).toContain("Selesai");
     expect(first).toContain("Bakmi x2");
+  });
+
+  it("neutralizes CSV formula-injection in text cells", () => {
+    const csv = buildOrdersCsv([row({ customer_name: "=cmd|'/c calc'!A1", note: "@SUM(1)" })]);
+    expect(csv).toContain("'=cmd|");
+    expect(csv).toContain("'@SUM(1)");
   });
 
   it("marks non-cash orders as Online", () => {

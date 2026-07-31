@@ -65,6 +65,13 @@ describe("order stats queries", () => {
     expect(counts).toEqual({ masuk: 3, selesai: 1, dibatalkan: 1, diproses: 1 });
   });
 
+  it("respects WIB day boundaries (created_at stored UTC)", async () => {
+    await seedOrder({ code: "WB000001", status: "selesai", createdAt: "2026-07-31 20:00:00" });
+    await seedOrder({ code: "WB000002", status: "selesai", createdAt: "2026-07-31 16:00:00" });
+    const counts = await orderCountsBetween(env.DB, 1, "2026-08-01", "2026-08-31");
+    expect(counts.masuk).toBe(1);
+  });
+
   it("top items exclude cancelled orders and sum quantity", async () => {
     await seedOrder({
       code: "BB000001",

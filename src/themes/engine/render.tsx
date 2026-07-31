@@ -380,12 +380,13 @@ export function renderKulinerPage(data: RenderData): string {
       ? info.announcement.text.trim()
       : null;
   const hasPromos = data.promos.length > 0;
+  const orderingOn = data.site.content.order_settings?.enabled ?? false;
+  const defaultTicker = `Selamat datang di ${businessName}${info.tagline ? ` — ${info.tagline}` : ""} · ${
+    orderingOn ? "Pesan online langsung dari sini 💬" : "Pesan gampang via WhatsApp 💬"
+  }`;
   const tickerLine = hasPromos
     ? data.promos.map((promo) => `🔥 ${promo.title}`).join("   ✦   ")
-    : `✨ ${
-        info.ticker_text ??
-        `Selamat datang di ${businessName}${info.tagline ? ` — ${info.tagline}` : ""} · Pesan gampang via WhatsApp 💬`
-      }`;
+    : `✨ ${info.ticker_text ?? defaultTicker}`;
 
   const page = (
     <SiteDocument
