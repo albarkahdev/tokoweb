@@ -172,6 +172,24 @@ export async function listOrders(
   return results ?? [];
 }
 
+export async function listOrdersForCsv(
+  db: D1Database,
+  tenantId: number,
+  limit: number,
+): Promise<import("@/domain/order-csv").OrderCsvRow[]> {
+  const { results } = await db
+    .prepare(
+      `SELECT o.code, strftime('%Y-%m-%d %H:%M', datetime(o.created_at, '+7 hours')) AS created_at,
+              o.customer_name, o.customer_phone, o.fulfillment, o.table_no,
+              o.status, o.cash, o.subtotal, o.fee_amount, o.tax_amount, o.total, o.note,
+              (SELECT GROUP_CONCAT(oi.name || ' x' || oi.qty, '; ') FROM order_items oi WHERE oi.order_id = o.id) AS items
+       FROM orders o WHERE o.tenant_id = ?1 ORDER BY o.created_at DESC, o.id DESC LIMIT ?2`,
+    )
+    .bind(tenantId, limit)
+    .all<import("@/domain/order-csv").OrderCsvRow>();
+  return results ?? [];
+}
+
 export async function countOrdersByStatus(
   db: D1Database,
   tenantId: number,

@@ -7,7 +7,12 @@ import { invalidateTenantCache } from "@/db/edge-cache";
 import { verifyPayment } from "@/db/payments";
 import { listPayoutsForReferral, voidInstallment, voidUnpaidPayouts } from "@/db/payouts";
 import { findClosingByTenant } from "@/db/referrals";
-import { statTotalsBetween, topPromoBetween } from "@/db/stats-read";
+import {
+  orderCountsBetween,
+  statTotalsBetween,
+  topOrderItemsBetween,
+  topPromoBetween,
+} from "@/db/stats-read";
 import { getSubscription, setSubscriptionCycle, upsertSubscription } from "@/db/subscriptions";
 import {
   createTenant,
@@ -22,10 +27,10 @@ import { formDataToValues } from "@/domain/cms";
 import { formatRupiah } from "@/domain/money";
 import { generateOneTimeToken, INTAKE_TTL_MS, SET_PASSWORD_TTL_MS } from "@/domain/one-time-token";
 import { hashPassword } from "@/domain/password";
-import { isPlan, PLAN_PRICES } from "@/domain/plan";
+import { isPlan, PLAN_PRICES, setupFee } from "@/domain/plan";
 import { buildMonthlyReportText, previousMonthRange } from "@/domain/report";
 import { isSlugReserved, SLUG_PATTERN, slugStatus, suggestSlug } from "@/domain/slug";
-import { sqlUtcDateTime } from "@/domain/stats";
+import { addDays, sqlUtcDateTime } from "@/domain/stats";
 import { nextDueDateAfterPayment, wibDateOf } from "@/domain/subscription";
 import type { AppEnv } from "@/env";
 import { AdminPage, adminHtml } from "@/routes/admin/shared";
@@ -40,9 +45,12 @@ import {
   CellStack,
   CopyArea,
   DataList,
+  DiscountPrice,
   ListTable,
   MediaRow,
   Row,
+  StatRow,
+  StatTile,
   Text,
   TextLink,
 } from "@/ui/display";
@@ -135,6 +143,21 @@ export const adminTenants = new Hono<AppEnv>()
     const content = await getSiteContent(c.env.DB, tenant.id);
     const hasContent = Boolean(content.info?.name);
     const pendingBilling = await findPendingSubmission(c.env.DB, tenant.id);
+    const plan = subscription?.plan;
+    const statToday = wibDateOf(Date.now());
+    const tenantOrders = await orderCountsBetween(
+      c.env.DB,
+      tenant.id,
+      addDays(statToday, -30),
+      addDays(statToday, -1),
+    );
+    const tenantTopItems = await topOrderItemsBetween(
+      c.env.DB,
+      tenant.id,
+      addDays(statToday, -30),
+      addDays(statToday, -1),
+      3,
+    );
 
     const month = previousMonthRange(wibDateOf(Date.now()));
     const monthBefore = previousMonthRange(month.from);
@@ -241,7 +264,23 @@ export const adminTenants = new Hono<AppEnv>()
             </Card>
           ) : null}
           <Card>
-            <CardTitle>Verifikasi Pembayaran</CardTitle>
+            <CardTitle>
+              Verifikasi Pembayaran {closing ? <Badge tone="success">klien referral</Badge> : null}
+            </CardTitle>
+            {isPlan(plan) ? (
+              <Text small muted>
+                Rekomendasi: setup{" "}
+                {closing ? (
+                  <>
+                    <DiscountPrice original={PLAN_PRICES[plan].setup} now={setupFee(plan, true)} />{" "}
+                    (hemat 30% lewat mitra, komisi mitra tetap penuh)
+                  </>
+                ) : (
+                  formatRupiah(setupFee(plan, false))
+                )}{" "}
+                · bulanan {formatRupiah(PLAN_PRICES[plan].monthly)}
+              </Text>
+            ) : null}
             <Form
               action={`/admin/tenant/${tenant.id}/bayar`}
               confirm="Pastikan pembayaran benar-benar sudah masuk. Catat sekali saja per periode — dobel pencatatan bisa membuka komisi mitra tanpa pembayaran nyata. Lanjut?"
@@ -294,6 +333,24 @@ export const adminTenants = new Hono<AppEnv>()
               Salin, kirim via WA ke klien tiap tanggal 1.
             </Text>
             <CopyArea text={reportText} />
+          </Card>
+          <Card>
+            <CardTitle>Statistik Toko (pesanan, 30 hari)</CardTitle>
+            <StatRow>
+              <StatTile value={String(tenantOrders.masuk)} label="total" />
+              <StatTile value={String(tenantOrders.selesai)} label="selesai" />
+              <StatTile value={String(tenantOrders.diproses)} label="berjalan" />
+              <StatTile value={String(tenantOrders.dibatalkan)} label="batal" />
+            </StatRow>
+            {tenantTopItems.length > 0 ? (
+              <Text small last>
+                Terlaris: {tenantTopItems.map((item) => `${item.name} (${item.qty})`).join(", ")}
+              </Text>
+            ) : (
+              <Text small muted last>
+                Belum ada pesanan 30 hari terakhir.
+              </Text>
+            )}
           </Card>
           {closing ? (
             <Card>

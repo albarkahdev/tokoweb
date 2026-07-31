@@ -1,9 +1,18 @@
 import { Hono } from "hono";
+import { platformOrderCountsBetween } from "@/db/stats-read";
+import { addDays } from "@/domain/stats";
+import { wibDateOf } from "@/domain/subscription";
 import type { AppEnv } from "@/env";
 import { AdminPage, adminHtml } from "@/routes/admin/shared";
 import { Card, CardTitle, StatRow, StatTile, Text, TextLink } from "@/ui/display";
 
 export const adminDashboard = new Hono<AppEnv>().get("/", async (c) => {
+  const today = wibDateOf(Date.now());
+  const orders = await platformOrderCountsBetween(
+    c.env.DB,
+    addDays(today, -30),
+    addDays(today, -1),
+  );
   const [tenants, leads, intakes, payouts] = await Promise.all([
     c.env.DB.prepare("SELECT COUNT(*) AS n FROM tenants WHERE status = 'active'").first<{
       n: number;
@@ -28,6 +37,18 @@ export const adminDashboard = new Hono<AppEnv>().get("/", async (c) => {
           <StatTile value={String(intakes?.n ?? 0)} label="intake belum diproses" />
           <StatTile value={String(payouts?.n ?? 0)} label="payout siap cair" />
         </StatRow>
+        <Card>
+          <CardTitle>Pesanan platform (30 hari)</CardTitle>
+          <StatRow>
+            <StatTile value={String(orders.masuk)} label="total pesanan" />
+            <StatTile value={String(orders.selesai)} label="selesai" />
+            <StatTile value={String(orders.diproses)} label="berjalan" />
+            <StatTile value={String(orders.dibatalkan)} label="dibatalkan" />
+          </StatRow>
+          <Text small muted last>
+            Total lintas semua tenant. Tanpa nominal — hanya volume.
+          </Text>
+        </Card>
         <Card>
           <CardTitle>Alur kerja harian</CardTitle>
           <Text small last>

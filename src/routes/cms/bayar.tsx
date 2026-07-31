@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { getSubmissionForPeriod, upsertBillingSubmission } from "@/db/billing";
+import { findClosingByTenant } from "@/db/referrals";
 import { storageFromEnv } from "@/db/storage-env";
 import {
   amountDue,
@@ -12,6 +13,7 @@ import {
 import { buildImageKey } from "@/domain/image-key";
 import { formatRupiah } from "@/domain/money";
 import { generateOneTimeToken } from "@/domain/one-time-token";
+import { isPlan, PLAN_PRICES, setupFee } from "@/domain/plan";
 import { sqlUtcDateTime } from "@/domain/stats";
 import type { AppEnv } from "@/env";
 import { type CmsContext, CmsPage, html, loadCms } from "@/routes/cms/shared";
@@ -22,6 +24,7 @@ import {
   CardTitle,
   CopyArea,
   DataList,
+  DiscountPrice,
   MediaRow,
   Text,
   TextLink,
@@ -37,6 +40,7 @@ type BillingView = {
   bankConfigured: boolean;
   bank: { name: string; accountNo: string; accountName: string };
   adminNumber: string;
+  referred: boolean;
   submission: Awaited<ReturnType<typeof getSubmissionForPeriod>>;
   ok?: string;
   error?: string;
@@ -50,6 +54,7 @@ function statusBadge(status: string) {
 
 function BayarPage(view: BillingView) {
   const { cms, submission } = view;
+  const plan = cms.subscription?.plan;
   const waLink = billingWaLink(
     view.adminNumber,
     buildBillingWaMessage({
@@ -82,6 +87,12 @@ function BayarPage(view: BillingView) {
             { label: "Total bayar", value: <strong>{formatRupiah(view.amount)}</strong> },
           ]}
         />
+        {view.referred && isPlan(plan) ? (
+          <Text small muted last>
+            Kamu daftar lewat mitra — biaya setup hemat 30%:{" "}
+            <DiscountPrice original={PLAN_PRICES[plan].setup} now={setupFee(plan, true)} />.
+          </Text>
+        ) : null}
       </Card>
 
       {view.bankConfigured ? (
@@ -185,6 +196,7 @@ function buildView(
   env: AppEnv["Bindings"],
   nowMs: number,
   submission: Awaited<ReturnType<typeof getSubmissionForPeriod>>,
+  referred: boolean,
   extra?: { ok?: string; error?: string },
 ): BillingView {
   return {
@@ -198,6 +210,7 @@ function buildView(
       accountName: env.BILLING_ACCOUNT_NAME,
     },
     adminNumber: env.PHONE_NUMBER_ADMIN,
+    referred,
     submission,
     ok: extra?.ok,
     error: extra?.error,
@@ -211,10 +224,11 @@ export const cmsBayar = new Hono<AppEnv>()
     const nowMs = Date.now();
     const period = currentBillingPeriod(cms.subscription?.next_due_date ?? null, nowMs);
     const submission = await getSubmissionForPeriod(c.env.DB, cms.tenant.id, period);
+    const referred = (await findClosingByTenant(c.env.DB, cms.tenant.id)) !== null;
     return c.html(
       html(
         <BayarPage
-          {...buildView(cms, c.env, nowMs, submission, {
+          {...buildView(cms, c.env, nowMs, submission, referred, {
             ok: c.req.query("ok"),
             error: c.req.query("err"),
           })}
@@ -234,10 +248,11 @@ export const cmsBayar = new Hono<AppEnv>()
 
     if (!(proof instanceof File) || !isBillingProofValid(proof.type, proof.size)) {
       const submission = await getSubmissionForPeriod(c.env.DB, cms.tenant.id, period);
+      const referred = (await findClosingByTenant(c.env.DB, cms.tenant.id)) !== null;
       return c.html(
         html(
           <BayarPage
-            {...buildView(cms, c.env, nowMs, submission, {
+            {...buildView(cms, c.env, nowMs, submission, referred, {
               error: "Bukti wajib gambar (WebP) maksimal 512 KB.",
             })}
           />,

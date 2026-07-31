@@ -5,6 +5,7 @@ import { formDataToValues } from "@/domain/cms";
 import { GUIDE_MITRA } from "@/domain/guides";
 import { formatRupiah } from "@/domain/money";
 import { hashOneTimeToken } from "@/domain/one-time-token";
+import { PLAN_PRICES, setupFee } from "@/domain/plan";
 import { createFixedWindowLimiter } from "@/domain/rate-limit";
 import { isValidPin, isValidReferralCode } from "@/domain/referral-code";
 import { verifyTurnstile } from "@/domain/turnstile";
@@ -16,6 +17,7 @@ import {
   Badge,
   Card,
   CardTitle,
+  DiscountPrice,
   PageTitle,
   StatRow,
   StatTile,
@@ -159,6 +161,15 @@ export const referralPage = new Hono<AppEnv>()
             <StatTile value={String(closings.size)} label="klien closing" />
             <StatTile value={formatRupiah(totalPaid)} label="total diterima" />
           </StatRow>
+          <Card>
+            <CardTitle>Penawaranmu ke calon klien</CardTitle>
+            <Text last>
+              Klien lewat kamu hemat 30% biaya setup: Basic{" "}
+              <DiscountPrice original={PLAN_PRICES.basic.setup} now={setupFee("basic", true)} /> ·
+              Pro <DiscountPrice original={PLAN_PRICES.pro.setup} now={setupFee("pro", true)} />.
+              Pakai ini buat closing saat mereka masih tertarik!
+            </Text>
+          </Card>
           <Card>
             <CardTitle>Brosurmu</CardTitle>
             <Text>

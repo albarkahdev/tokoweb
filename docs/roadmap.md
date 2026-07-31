@@ -75,6 +75,20 @@ slug wajib + direktori "Toko Bergabung", upload logo
 toko, fix pill buka/tutup, tutup manual override jadwal.
 Spec: `docs/fase4-spec.md`. Keputusan: `docs/adr/0011-fase4-keputusan.md`.
 
-### Fase 6 — Akun pembeli, riwayat, reorder
+### Fase 6 — Statistik pesanan, diskon setup referral, panduan
+Dikerjakan setelah Fase 5. Keputusan: `docs/adr/0014-fase6-keputusan.md`.
+
+- **Statistik — TANPA angka rupiah/omzet (privasi).** Fokus hitungan & tren.
+  - Owner `/statistik`: tambah data pesanan — order masuk, selesai, dibatalkan,
+    konversi (selesai/masuk), menu terlaris (by qty), jam/hari ramai. Ber-narasi.
+  - Admin dashboard: agregat platform — tenant per status, total order lintas tenant
+    (jumlah, bukan omzet), lead & konversi, komisi siap cair.
+  - Admin: drilldown per-toko (mirror ringkas view owner) dari detail tenant.
+- **Diskon setup 30% untuk klien referral.** Tenant yang punya closing/mitra → setup
+  jadi 70% (Basic 210rb, Pro 700rb), auto-prefill di form verifikasi admin. Owner
+  menanggung selisih; **komisi mitra tetap penuh** (Rp50rb/Rp100rb cicilan-1).
+- **Update panduan** owner/mitra/admin: cakup Pesanan (Fase 5) & Bayar langganan mandiri.
+
+### Fase 7 — Akun pembeli, riwayat, reorder
 Login ringan (HP/email OTP), riwayat pesanan, reorder/tambahan. Membutuhkan Fase 5
 sudah jalan. Ditahan sampai ada permintaan nyata.
