@@ -8,6 +8,9 @@ export type SiteInfo = {
   wa_number?: string;
   phone?: string;
   instagram?: string;
+  logo_key?: string;
+  announcement?: { text?: string; active?: boolean };
+  temp_closed?: { active?: boolean; reason?: string };
 };
 
 export type MenuItem = {
@@ -26,11 +29,19 @@ export type MenuCategory = {
   items?: MenuItem[];
 };
 
+export type SiteTrust = {
+  google_rating?: string;
+  google_url?: string;
+  halal?: boolean;
+  certs?: string;
+};
+
 export type SiteContent = {
   info?: SiteInfo;
   hours?: Record<string, [string, string] | null>;
   menu?: MenuCategory[];
   gallery?: { image_key?: string; alt?: string }[];
+  trust?: SiteTrust;
 };
 
 export function parseSiteContent(json: string | null): SiteContent {

@@ -7,6 +7,7 @@ export type ThemeConfig = {
   name: string;
   character: string;
   tags?: string[];
+  featured?: boolean;
   colors: {
     bg: string;
     surface: string;

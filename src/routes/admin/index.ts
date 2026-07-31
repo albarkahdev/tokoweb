@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import type { AppEnv } from "@/env";
+import { adminBantuan } from "@/routes/admin/bantuan";
 import { adminDashboard } from "@/routes/admin/dashboard";
 import { adminIntake } from "@/routes/admin/intake";
 import { adminLeads } from "@/routes/admin/leads";
@@ -15,4 +16,5 @@ export const admin = new Hono<AppEnv>()
   .route("/", adminLeads)
   .route("/", adminReferrers)
   .route("/", adminPayouts)
-  .route("/", adminIntake);
+  .route("/", adminIntake)
+  .route("/", adminBantuan);

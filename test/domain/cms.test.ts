@@ -21,8 +21,41 @@ describe("parseInfoForm", () => {
     const result = parseInfoForm({ name: "Warung Bu Sari", wa_number: "6281234567890" });
     expect(result).toEqual({
       ok: true,
-      value: { name: "Warung Bu Sari", wa_number: "6281234567890" },
+      value: {
+        name: "Warung Bu Sari",
+        wa_number: "6281234567890",
+        announcement: { text: "", active: false },
+        temp_closed: { active: false, reason: "" },
+      },
     });
+  });
+
+  it("parses announcement and temp_closed toggles", () => {
+    const result = parseInfoForm({
+      name: "Warung",
+      wa_number: "6281234567890",
+      announcement_text: "Libur Idul Fitri 3 hari",
+      announcement_active: "on",
+      temp_closed_active: "on",
+      temp_closed_reason: "Sampai Senin",
+    });
+    expect(result.ok && result.value.announcement).toEqual({
+      text: "Libur Idul Fitri 3 hari",
+      active: true,
+    });
+    expect(result.ok && result.value.temp_closed).toEqual({
+      active: true,
+      reason: "Sampai Senin",
+    });
+  });
+
+  it("announcement inactive when text empty even if checked", () => {
+    const result = parseInfoForm({
+      name: "Warung",
+      wa_number: "6281234567890",
+      announcement_active: "on",
+    });
+    expect(result.ok && result.value.announcement).toEqual({ text: "", active: false });
   });
 
   it("normalizes wa number and keeps optional fields", () => {
@@ -45,6 +78,28 @@ describe("parseInfoForm", () => {
     expect(
       parseInfoForm({ name: "Warung", wa_number: "6281234567890", maps_url: "http://x.com" }).ok,
     ).toBe(false);
+  });
+});
+
+describe("parseTrustForm & trustBadges", () => {
+  it("parses rating, halal, certs; validates rating range", async () => {
+    const { parseTrustForm, trustBadges } = await import("@/domain/cms");
+    const result = parseTrustForm({
+      google_rating: "4,8",
+      google_url: "https://maps.google.com/x",
+      halal: "on",
+      certs: "Higienis\nPIRT",
+    });
+    expect(result.ok && result.value.google_rating).toBe("4.8");
+    expect(result.ok && result.value.halal).toBe(true);
+    const badges = result.ok ? trustBadges(result.value) : [];
+    expect(badges.map((b) => b.label)).toEqual(["4.8 di Google", "Halal", "Higienis", "PIRT"]);
+  });
+
+  it("rejects rating di luar 0-5 dan url non-https", async () => {
+    const { parseTrustForm } = await import("@/domain/cms");
+    expect(parseTrustForm({ google_rating: "9" }).ok).toBe(false);
+    expect(parseTrustForm({ google_url: "http://x.com" }).ok).toBe(false);
   });
 });
 

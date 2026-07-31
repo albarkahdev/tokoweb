@@ -16,13 +16,14 @@ import {
   setTenantStatus,
   tenantHostnames,
 } from "@/db/tenants";
-import { createUser, findUserByEmail } from "@/db/users";
+import { createUser, findUserByEmail, setUserPhone } from "@/db/users";
 import { formDataToValues } from "@/domain/cms";
 import { formatRupiah } from "@/domain/money";
 import { generateOneTimeToken, INTAKE_TTL_MS, SET_PASSWORD_TTL_MS } from "@/domain/one-time-token";
 import { hashPassword } from "@/domain/password";
 import { isPlan, PLAN_PRICES } from "@/domain/plan";
 import { buildMonthlyReportText, previousMonthRange } from "@/domain/report";
+import { isSlugReserved, SLUG_PATTERN, slugStatus, suggestSlug } from "@/domain/slug";
 import { nextDueDateAfterPayment, wibDateOf } from "@/domain/subscription";
 import type { AppEnv } from "@/env";
 import { AdminPage, adminHtml } from "@/routes/admin/shared";
@@ -43,8 +44,6 @@ import {
   TextLink,
 } from "@/ui/display";
 import { Button, Field, Form, SelectField } from "@/ui/form";
-
-const SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{1,40}[a-z0-9])?$/;
 
 function statusBadge(status: string) {
   if (status === "active") return <Badge tone="success">aktif</Badge>;
@@ -77,7 +76,12 @@ export const adminTenants = new Hono<AppEnv>()
             <CardTitle>Buat Tenant Baru</CardTitle>
             <Form action="/admin/tenant">
               <Field label="Nama usaha" name="name" required />
-              <Field label="Subdomain" name="slug" required hint="cth: warungbusari" />
+              <Field
+                label="Subdomain"
+                name="slug"
+                required
+                hint="Huruf kecil/angka/strip, 3–32 karakter. Hindari kata sistem (app, api, blog, dst)."
+              />
               <SelectField
                 label="Paket"
                 name="plan"
@@ -101,12 +105,23 @@ export const adminTenants = new Hono<AppEnv>()
     if (!name || !SLUG_PATTERN.test(slug) || !isPlan(plan)) {
       return c.redirect("/admin/tenant?ok=Data tidak valid — cek nama dan subdomain.");
     }
+    if (isSlugReserved(slug)) {
+      return c.redirect("/admin/tenant?ok=Subdomain dipakai sistem — pilih yang lain.");
+    }
     if (await findTenantBySlug(c.env.DB, slug)) {
       return c.redirect("/admin/tenant?ok=Subdomain sudah dipakai.");
     }
     const tenantId = await createTenant(c.env.DB, { slug, name, verticalId: 1, themeId: 1 });
     await upsertSubscription(c.env.DB, tenantId, plan, PLAN_PRICES[plan].monthly);
     return c.redirect(`/admin/tenant/${tenantId}?ok=Tenant dibuat.`);
+  })
+  .get("/slug-check", async (c) => {
+    const slug = (c.req.query("slug") ?? "").trim().toLowerCase();
+    const name = (c.req.query("name") ?? "").trim();
+    let status = slugStatus(slug, []);
+    if (status === "ok" && (await findTenantBySlug(c.env.DB, slug))) status = "taken";
+    const suggestion = name ? suggestSlug(name, []) : undefined;
+    return c.json({ slug, status, available: status === "ok", suggestion });
   })
   .get("/tenant/:id", async (c) => {
     const tenant = await findTenantById(c.env.DB, Number(c.req.param("id")));
@@ -382,16 +397,23 @@ export const adminTenants = new Hono<AppEnv>()
     if (!email.includes("@")) {
       return c.redirect(`/admin/tenant/${tenant.id}?err=Email tidak valid.`);
     }
+    const content = await getSiteContent(c.env.DB, tenant.id);
+    const phone = content.info?.wa_number ?? null;
     const existing = await findUserByEmail(c.env.DB, email);
-    const userId =
-      existing?.id ??
-      (await createUser(
+    let userId: number;
+    if (existing) {
+      userId = existing.id;
+      if (phone && !existing.phone) await setUserPhone(c.env.DB, existing.id, phone);
+    } else {
+      userId = await createUser(
         c.env.DB,
         email,
         await hashPassword(generateOneTimeToken()),
         "owner",
         tenant.id,
-      ));
+        phone,
+      );
+    }
     const token = await issueToken(
       c.env.DB,
       "set_password",

@@ -1,4 +1,4 @@
-import type { MenuCategory, MenuItem, SiteContent, SiteInfo } from "@/domain/content";
+import type { MenuCategory, MenuItem, SiteContent, SiteInfo, SiteTrust } from "@/domain/content";
 
 export const MAX_FEATURED_ITEMS = 7;
 export const DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
@@ -25,6 +25,8 @@ export const MAX_ABOUT = 1000;
 export const MAX_TAGLINE = 160;
 export const MAX_CATEGORY = 40;
 export const MAX_PRICE = 100_000_000;
+export const MAX_ANNOUNCE = 160;
+export const MAX_CLOSED_REASON = 120;
 
 const FIELD_CAPS: Partial<Record<keyof SiteInfo, number>> = {
   tagline: MAX_TAGLINE,
@@ -67,7 +69,72 @@ export function parseInfoForm(form: FormValues): ParseResult<SiteInfo> {
   if (info.maps_url && !info.maps_url.startsWith("https://")) {
     return { ok: false, error: "Link Maps harus diawali https://" };
   }
+  const announceText = (form.announcement_text ?? "").trim();
+  if (announceText.length > MAX_ANNOUNCE) {
+    return { ok: false, error: `Pengumuman terlalu panjang (maks ${MAX_ANNOUNCE} karakter).` };
+  }
+  info.announcement = {
+    text: announceText,
+    active: announceText !== "" && form.announcement_active === "on",
+  };
+  const closedReason = (form.temp_closed_reason ?? "").trim();
+  if (closedReason.length > MAX_CLOSED_REASON) {
+    return {
+      ok: false,
+      error: `Alasan tutup terlalu panjang (maks ${MAX_CLOSED_REASON} karakter).`,
+    };
+  }
+  info.temp_closed = { active: form.temp_closed_active === "on", reason: closedReason };
   return { ok: true, value: info };
+}
+
+export type TrustBadge = { icon: string; label: string; sub?: string; link?: string };
+
+export function parseTrustForm(form: FormValues): ParseResult<SiteTrust> {
+  const trust: SiteTrust = {};
+  const rating = (form.google_rating ?? "").trim().replace(",", ".");
+  if (rating) {
+    const value = Number(rating);
+    if (!Number.isFinite(value) || value < 0 || value > 5) {
+      return { ok: false, error: "Rating Google harus angka 0–5 (contoh: 4.8)." };
+    }
+    trust.google_rating = value.toFixed(1);
+  }
+  const url = (form.google_url ?? "").trim();
+  if (url) {
+    if (!url.startsWith("https://")) {
+      return { ok: false, error: "Link Google harus diawali https://" };
+    }
+    trust.google_url = url;
+  }
+  trust.halal = form.halal === "on";
+  const certs = (form.certs ?? "").trim();
+  if (certs.length > MAX_ABOUT) {
+    return { ok: false, error: `Daftar sertifikat terlalu panjang (maks ${MAX_ABOUT} karakter).` };
+  }
+  if (certs) trust.certs = certs;
+  return { ok: true, value: trust };
+}
+
+export function trustBadges(trust: SiteTrust | undefined): TrustBadge[] {
+  if (!trust) return [];
+  const badges: TrustBadge[] = [];
+  if (trust.google_rating) {
+    badges.push({
+      icon: "⭐",
+      label: `${trust.google_rating} di Google`,
+      sub: "rating pelanggan",
+      link: trust.google_url,
+    });
+  }
+  if (trust.halal) {
+    badges.push({ icon: "🕌", label: "Halal", sub: "bersertifikat" });
+  }
+  for (const line of (trust.certs ?? "").split("\n")) {
+    const text = line.trim();
+    if (text) badges.push({ icon: "✅", label: text });
+  }
+  return badges;
 }
 
 export function parseHoursForm(form: FormValues): ParseResult<SiteContent["hours"]> {

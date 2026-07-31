@@ -10,6 +10,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   hangat: {
     slug: "hangat",
     name: "Hangat",
+    featured: true,
     character: "Earth tone membumi — warung & rumah makan keluarga",
     tags: ["terang", "earth", "klasik", "foto", "keluarga"],
     colors: {
@@ -72,6 +73,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   kopi: {
     slug: "kopi",
     name: "Kopi",
+    featured: true,
     character: "Monokrom krem-espresso — coffee shop minimal",
     tags: ["terang", "minimal", "kopi", "earth", "klasik"],
     colors: {
@@ -92,6 +94,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   senja: {
     slug: "senja",
     name: "Senja",
+    featured: true,
     character: "Gradasi matahari terbenam — cafe rooftop & outdoor",
     tags: ["terang", "gradasi", "romantis", "modern"],
     colors: {
@@ -154,6 +157,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   manis: {
     slug: "manis",
     name: "Manis",
+    featured: true,
     character: "Pastel lembut membulat — bakery, kue & dessert box",
     tags: ["terang", "pastel", "lembut", "manis", "bakery"],
     colors: {
@@ -175,6 +179,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   sambal: {
     slug: "sambal",
     name: "Sambal",
+    featured: true,
     character: "Merah berani tipografi tebal — ayam geprek & pedas-pedasan",
     tags: ["terang", "merah", "berani", "tebal", "pedas"],
     colors: {
@@ -261,6 +266,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   pasar: {
     slug: "pasar",
     name: "Pasar",
+    featured: true,
     character: "Pop berani ala poster pasar — gerobak, jajanan & franchise lokal",
     tags: ["terang", "berani", "pop", "kuning", "brutal", "playful"],
     colors: {
@@ -390,6 +396,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   lampion: {
     slug: "lampion",
     name: "Lampion",
+    featured: true,
     character: "Merah-emas pecinan hangat — chinese food, dimsum & bakmi",
     tags: ["terang", "merah", "emas", "pecinan", "chinese", "tradisional"],
     colors: {
@@ -434,6 +441,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   blueprint: {
     slug: "blueprint",
     name: "Blueprint",
+    featured: true,
     character: "Cetak biru teknis garis cyan — dapur terbuka & konsep industrial",
     tags: ["gelap", "unik", "teknis", "biru", "industrial"],
     colors: {
@@ -737,6 +745,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   bara: {
     slug: "bara",
     name: "Bara",
+    featured: true,
     character: "Arang membara oranye menyala — sate, bakaran & smoked bbq",
     tags: ["gelap", "oranye", "menyala", "bakaran", "berani", "animasi"],
     colors: {
@@ -822,6 +831,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   jeruk: {
     slug: "jeruk",
     name: "Jeruk",
+    featured: true,
     character: "Jeruk pop tebal bergaris hitam — juice bar & rujak modern",
     tags: ["terang", "oranye", "pop", "segar", "berani", "playful"],
     colors: {
@@ -886,6 +896,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   kunang: {
     slug: "kunang",
     name: "Kunang",
+    featured: true,
     character: "Malam hutan dengan kunang-kunang melayang — dinner outdoor & taman",
     tags: ["gelap", "hijau", "malam", "animasi", "romantis"],
     colors: {
@@ -1015,6 +1026,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   loket: {
     slug: "loket",
     name: "Loket",
+    featured: true,
     character: "Marquee bioskop lawas berlampu berlari — snack bar & cinema cafe",
     tags: ["gelap", "retro", "bioskop", "merah", "animasi", "playful"],
     colors: {
@@ -1037,6 +1049,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   sawah: {
     slug: "sawah",
     name: "Sawah",
+    featured: true,
     character: "Terasering hijau bergoyang angin — nasi liwet & masakan desa",
     tags: ["terang", "hijau", "desa", "natural", "animasi"],
     colors: {
@@ -1101,6 +1114,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   lilin: {
     slug: "lilin",
     name: "Lilin",
+    featured: true,
     character: "Cahaya lilin berkedip hangat bernapas — dinner romantis & steak",
     tags: ["gelap", "romantis", "hangat", "lilin", "animasi", "malam"],
     colors: {
@@ -1272,6 +1286,7 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
   karnaval: {
     slug: "karnaval",
     name: "Karnaval",
+    featured: true,
     character: "Bendera pesta berkibar warna-warni — jajanan pasar malam & festival",
     tags: ["terang", "merah", "festival", "bendera", "animasi", "playful"],
     colors: {
@@ -1295,6 +1310,42 @@ export const KULINER_THEMES: Record<string, ThemeConfig> = {
 
 export const DEFAULT_THEME = "hangat";
 
+export const FEATURED_THEME_SLUGS = [
+  "hangat",
+  "senja",
+  "sambal",
+  "kopi",
+  "manis",
+  "lampion",
+  "pasar",
+  "karnaval",
+  "blueprint",
+  "bara",
+  "loket",
+  "lilin",
+  "sawah",
+  "kunang",
+  "jeruk",
+] as const;
+
+export const FEATURED_DEMO_THEME = FEATURED_THEME_SLUGS[0];
+
 export function themeConfigFor(slug: string): ThemeConfig {
   return KULINER_THEMES[slug] ?? (KULINER_THEMES[DEFAULT_THEME] as ThemeConfig);
+}
+
+export function isFeaturedTheme(slug: string): boolean {
+  return KULINER_THEMES[slug]?.featured === true;
+}
+
+export function featuredThemes(): ThemeConfig[] {
+  return FEATURED_THEME_SLUGS.map((slug) => KULINER_THEMES[slug] as ThemeConfig);
+}
+
+export function themeSwatch(config: ThemeConfig): { gradient: string; textColor: string } {
+  const { bg, accent, primary, text } = config.colors;
+  return {
+    gradient: `linear-gradient(135deg, ${bg} 0%, ${accent} 60%, ${primary} 115%)`,
+    textColor: text,
+  };
 }

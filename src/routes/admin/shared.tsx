@@ -9,6 +9,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/intake", label: "Intake", icon: "inbox" },
   { href: "/admin/referrer", label: "Mitra", icon: "bike" },
   { href: "/admin/payout", label: "Payout", icon: "cash" },
+  { href: "/admin/bantuan", label: "Bantuan", icon: "help" },
 ];
 
 export function AdminPage(props: {

@@ -11,7 +11,7 @@ import { verifyTurnstile } from "@/domain/turnstile";
 import type { AppEnv } from "@/env";
 import { renderKulinerPage } from "@/themes/engine/render";
 import type { PublicPagePath } from "@/themes/engine/types";
-import { KULINER_THEMES } from "@/themes/kuliner/configs";
+import { FEATURED_DEMO_THEME, isFeaturedTheme, KULINER_THEMES } from "@/themes/kuliner/configs";
 import { DEMO_BUSINESS_NAME, DEMO_CONTENT } from "@/themes/kuliner/demo-content";
 import { AppLayout } from "@/ui/app-layout";
 import { demoChromeHtml } from "@/ui/demo-chrome";
@@ -21,7 +21,6 @@ import { TurnstileWidget } from "@/ui/turnstile-widget";
 
 const leadLimiter = createFixedWindowLimiter(5, 60_000);
 const scanLimiter = createFixedWindowLimiter(10, 60_000);
-const DEFAULT_THEME = "hangat";
 
 function renderDemoPage(
   themeSlug: string,
@@ -135,10 +134,10 @@ function renderDemoPage(
 }
 
 async function serveDemo(c: Context<AppEnv>, pagePath: PublicPagePath): Promise<Response> {
-  const requested = c.req.query("tema") ?? DEFAULT_THEME;
-  const themeSlug = requested in KULINER_THEMES ? requested : DEFAULT_THEME;
+  const requested = c.req.query("tema") ?? FEATURED_DEMO_THEME;
+  const themeSlug = isFeaturedTheme(requested) ? requested : FEATURED_DEMO_THEME;
 
-  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=18`;
+  const cacheKey = `https://demo.${c.env.BASE_DOMAIN}/kuliner${pagePath}?tema=${themeSlug}&v=19`;
   const cached = await caches.default.match(cacheKey);
   if (cached) return cached;
 

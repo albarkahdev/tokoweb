@@ -75,6 +75,28 @@ section > h2, .sec-title { font-size: clamp(1.7rem, 5vw, 2.5rem); margin-bottom:
 .promo-ticker:hover .tk { animation-play-state: paused; }
 @keyframes tk-run { to { transform: translateX(-50%); } }
 
+.announce-bar {
+  display: flex; align-items: center; gap: 0.6rem; z-index: 61;
+  padding: 0.5rem 1rem; font-size: 0.82rem; font-weight: 600; line-height: 1.35;
+  background: var(--primary); color: var(--primary-contrast);
+}
+.announce-bar .announce-text { flex: 1; min-width: 0; }
+.announce-bar .announce-close {
+  flex-shrink: 0; background: rgb(255 255 255 / 0.16); color: inherit; border: none;
+  width: 1.6rem; height: 1.6rem; border-radius: 9999px; font-size: 1.05rem; line-height: 1;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+}
+.announce-bar .announce-close:hover { background: rgb(255 255 255 / 0.28); }
+
+.trust-strip { display: flex; flex-wrap: wrap; gap: 0.7rem; justify-content: center; max-width: 60rem; margin: 1.4rem auto 0; padding: 0 1.2rem; }
+.trust-badge { display: inline-flex; align-items: center; gap: 0.55rem; text-decoration: none; color: var(--text); background: color-mix(in srgb, var(--surface) 90%, transparent); border: 1px solid color-mix(in srgb, var(--text) 12%, transparent); border-radius: 9999px; padding: 0.5rem 0.95rem; }
+.trust-badge .trust-icon { font-size: 1.1rem; line-height: 1; }
+.trust-badge .trust-text { display: flex; flex-direction: column; line-height: 1.2; }
+.trust-badge .trust-text strong { font-size: 0.86rem; font-weight: 700; }
+.trust-badge .trust-text span { font-size: 0.72rem; color: var(--muted); }
+a.trust-badge { transition: border-color 0.2s ease, transform 0.2s ease; }
+a.trust-badge:hover { border-color: var(--primary); transform: translateY(-2px); }
+
 .site-nav {
   position: sticky; top: 0; z-index: 55;
   height: var(--nav-h); display: flex; align-items: center; gap: 1rem;
@@ -88,8 +110,9 @@ section > h2, .sec-title { font-size: clamp(1.7rem, 5vw, 2.5rem); margin-bottom:
 .nav-brand {
   font-family: var(--f-heading); font-weight: var(--w-heading); font-size: 1.15rem;
   text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.01em; display: inline-flex; align-items: center; gap: 0.5rem;
 }
+.nav-brand .nav-logo { width: 1.9rem; height: 1.9rem; border-radius: 0.45rem; object-fit: cover; flex-shrink: 0; }
 .nav-links { display: none; margin-left: auto; gap: 1.15rem; }
 @media (min-width: 52rem) { .nav-links { display: flex; } }
 .nav-links a {
@@ -142,6 +165,7 @@ section > h2, .sec-title { font-size: clamp(1.7rem, 5vw, 2.5rem); margin-bottom:
 
 .open-badge {
   display: inline-flex; align-items: center; gap: 0.4rem;
+  align-self: flex-start; width: fit-content; max-width: 100%;
   padding: 0.32rem 1rem; border-radius: 9999px; font-size: 0.82rem; font-weight: 700;
   background: color-mix(in srgb, var(--surface) 88%, transparent);
   color: var(--text); backdrop-filter: blur(6px);

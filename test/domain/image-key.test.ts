@@ -22,6 +22,7 @@ describe("buildImageKey", () => {
 describe("isValidImageKey", () => {
   it("accepts keys produced by buildImageKey", () => {
     expect(isValidImageKey("t/warung-bu-sari/gallery/01.webp")).toBe(true);
+    expect(isValidImageKey(buildImageKey("warung", "logo", "abc123.webp"))).toBe(true);
   });
 
   it("rejects malformed keys", () => {

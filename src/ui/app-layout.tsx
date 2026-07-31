@@ -14,7 +14,8 @@ export type NavIcon =
   | "lead"
   | "inbox"
   | "bike"
-  | "cash";
+  | "cash"
+  | "help";
 
 export type NavItem = { href: string; label: string; icon: NavIcon };
 
@@ -32,6 +33,7 @@ const ICON_PATHS: Record<NavIcon, string> = {
   inbox: "M4 4h16v16H4V4Zm0 10h5a3 3 0 0 0 6 0h5",
   bike: "M5 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm14 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-14-3 3-7h4l4 7m-4-7h3m-3 0-2 3",
   cash: "M3 7h18v10H3V7Zm9 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM6 7v0m12 10v0",
+  help: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm-2.2-11.2a2.2 2.2 0 1 1 3.2 2q-1 .8-1 1.7M12 17v.5",
 };
 
 function NavGlyph(props: { icon: NavIcon }) {

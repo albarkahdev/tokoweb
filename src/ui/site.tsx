@@ -53,10 +53,14 @@ export function SiteNav(props: {
   links: { href: string; label: string }[];
   waHref: string;
   withTicker?: boolean;
+  logoSrc?: string | null;
 }) {
   return (
     <nav class={`site-nav${props.withTicker ? " with-ticker" : ""}`}>
       <a class="nav-brand" href={props.homeHref}>
+        {props.logoSrc ? (
+          <img class="nav-logo" src={props.logoSrc} alt={props.brand} width="30" height="30" />
+        ) : null}
         {props.brand}
       </a>
       <span class="nav-links">
@@ -88,7 +92,60 @@ export function PromoTicker(props: { line: string; href?: string }) {
   return <span class="promo-ticker">{inner}</span>;
 }
 
-export function OpenBadge(props: { hoursJson: string }) {
+export function TrustStrip(props: {
+  badges: { icon: string; label: string; sub?: string; link?: string }[];
+}) {
+  return (
+    <div class="trust-strip">
+      {props.badges.map((badge) => {
+        const inner = (
+          <>
+            <span class="trust-icon" aria-hidden="true">
+              {badge.icon}
+            </span>
+            <span class="trust-text">
+              <strong>{badge.label}</strong>
+              {badge.sub ? <span>{badge.sub}</span> : null}
+            </span>
+          </>
+        );
+        return badge.link ? (
+          <a class="trust-badge reveal" href={badge.link} target="_blank" rel="noopener noreferrer">
+            {inner}
+          </a>
+        ) : (
+          <span class="trust-badge reveal">{inner}</span>
+        );
+      })}
+    </div>
+  );
+}
+
+export function AnnouncementBar(props: { text: string; dismissKey: string }) {
+  return (
+    <div class="announce-bar" id="announce-bar" data-key={props.dismissKey}>
+      <span class="announce-text">📢 {props.text}</span>
+      <button
+        type="button"
+        class="announce-close"
+        id="announce-close"
+        aria-label="Tutup pengumuman"
+      >
+        ×
+      </button>
+    </div>
+  );
+}
+
+export function OpenBadge(props: { hoursJson: string; forcedClosed?: { reason?: string } | null }) {
+  if (props.forcedClosed) {
+    return (
+      <span id="open-badge" class="open-badge closed" data-forced="1">
+        ● Tutup sementara
+        {props.forcedClosed.reason ? ` — ${props.forcedClosed.reason}` : ""}
+      </span>
+    );
+  }
   return (
     <span id="open-badge" class="open-badge" data-hours={props.hoursJson}>
       ● Jam buka di bawah
@@ -102,6 +159,7 @@ export function SiteHero(props: {
   tagline?: string;
   image?: { src: string; alt: string } | null;
   hoursJson: string;
+  forcedClosed?: { reason?: string } | null;
   waHref: string;
   menuAnchor?: string;
 }) {
@@ -128,7 +186,7 @@ export function SiteHero(props: {
         </span>
       ) : null}
       <div class="hero-inner">
-        <OpenBadge hoursJson={props.hoursJson} />
+        <OpenBadge hoursJson={props.hoursJson} forcedClosed={props.forcedClosed} />
         <h1>{props.name}</h1>
         {props.tagline ? <p class="tagline">{props.tagline}</p> : null}
         <div class="hero-cta">

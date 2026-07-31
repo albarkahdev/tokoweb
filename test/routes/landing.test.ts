@@ -40,6 +40,45 @@ describe("landing tokoweb.id", () => {
     expect(html).not.toContain("noindex");
   });
 
+  it("serves blog index with articles + CTA", async () => {
+    const response = await get("/blog");
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain("Cara Bikin Website Warung Makan");
+    expect(html).toContain("/blog/cara-bikin-website-warung-makan");
+    expect(html).toContain('rel="canonical"');
+    expect(html).not.toContain("noindex");
+  });
+
+  it("serves a blog article with prose + Article json-ld", async () => {
+    const response = await get("/blog/jualan-makanan-online-tanpa-aplikasi-ojol");
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain('class="prose"');
+    expect(html).toContain('"@type":"Article"');
+    expect(html).toContain("tokoweb.id");
+  });
+
+  it("404 for unknown blog slug", async () => {
+    expect((await get("/blog/tidak-ada-artikel")).status).toBe(404);
+  });
+
+  it("serves toko directory", async () => {
+    const response = await get("/toko");
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain("Toko Bergabung");
+  });
+
+  it("sitemap lists apex, blog, toko", async () => {
+    const response = await get("/sitemap.xml");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("xml");
+    const xml = await response.text();
+    expect(xml).toContain("https://tokoweb.id/blog");
+    expect(xml).toContain("https://tokoweb.id/toko");
+    expect(xml).toContain("https://tokoweb.id/blog/cara-bikin-website-warung-makan");
+  });
+
   it("promises 1 day and links login + mitra", async () => {
     const html = await (await get("/")).text();
     expect(html).toContain("≤ 1 hari");
@@ -115,6 +154,9 @@ describe("landing tokoweb.id", () => {
       }),
     );
     expect(opened.status).toBe(200);
+    const openedBody = await opened.text();
+    expect(openedBody).toContain("Panduan Mitra");
+    expect(openedBody).toContain("Kapan komisi cair");
   });
 
   it("serves robots and sitemap", async () => {

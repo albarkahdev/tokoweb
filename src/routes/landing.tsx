@@ -1,17 +1,25 @@
 import { Hono } from "hono";
 import { matchCachedPage, putCachedPage } from "@/db/edge-cache";
 import { createReferrer, findReferrerByCode, findReferrerByWa } from "@/db/referrers";
+import { listTenants } from "@/db/tenants";
+import { BLOG_ARTICLES, blogSlugs, findArticle, parseBlogBody } from "@/domain/blog";
 import { formDataToValues } from "@/domain/cms";
 import { hashOneTimeToken } from "@/domain/one-time-token";
 import { createFixedWindowLimiter } from "@/domain/rate-limit";
 import { generateReferralCode, isValidPin } from "@/domain/referral-code";
+import { buildSiteSitemap } from "@/domain/sitemap";
 import { verifyTurnstile } from "@/domain/turnstile";
 import type { AppEnv } from "@/env";
+import { featuredThemes, themeSwatch } from "@/themes/kuliner/configs";
 import { AppLayout } from "@/ui/app-layout";
 import { Card, PageTitle, Text, TextLink } from "@/ui/display";
 import {
+  ArticleBody,
+  ArticleHeader,
+  BlogGrid,
   CtaBand,
   CtaRow,
+  DirectoryGrid,
   FaqList,
   FeatureGrid,
   Hero,
@@ -81,6 +89,50 @@ function landingJsonLd(baseDomain: string): string {
       "Jasa pembuatan website untuk UMKM kuliner Indonesia. Jadi dalam sehari, mulai Rp 75.000/bulan, kelola sendiri dari HP.",
   });
 }
+
+function contentTopBarLinks(baseDomain: string) {
+  return [
+    { href: "/#fitur", label: "Fitur" },
+    { href: "/#harga", label: "Harga" },
+    { href: "/blog", label: "Blog" },
+    { href: "/toko", label: "Toko" },
+    { href: `https://app.${baseDomain}/masuk`, label: "Masuk" },
+  ];
+}
+
+function footerLinks(baseDomain: string) {
+  return [
+    { href: "/", label: "Beranda" },
+    { href: "/blog", label: "Blog" },
+    { href: "/toko", label: "Toko Bergabung" },
+    { href: "/mitra", label: "Jadi Mitra" },
+    { href: `https://app.${baseDomain}/masuk`, label: "Masuk" },
+  ];
+}
+
+function contentCtaHref(c: { env: AppEnv["Bindings"] }): string {
+  return c.env.CONTACT_WA_NUMBER
+    ? waLink(c.env.CONTACT_WA_NUMBER, "Halo tokoweb, saya mau tanya website untuk usaha saya.")
+    : `https://demo.${c.env.BASE_DOMAIN}/kuliner`;
+}
+
+function articleJsonLd(baseDomain: string, article: (typeof BLOG_ARTICLES)[number]): string {
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.description,
+    datePublished: article.date,
+    keywords: article.keywords.join(", "),
+    author: { "@type": "Organization", name: "tokoweb.id" },
+    publisher: { "@type": "Organization", name: "tokoweb.id" },
+    mainEntityOfPage: `https://${baseDomain}/blog/${article.slug}`,
+  }).replace(/</g, "\\u003c");
+}
+
+const BLOG_TITLE = "Blog tokoweb.id — Tips Jualan & Website untuk Warung & UMKM Kuliner";
+const BLOG_DESC =
+  "Panduan praktis untuk pemilik warung dan UMKM kuliner: bikin website, jualan online, foto makanan, promosi hemat, dan tips agar mudah ditemukan di Google.";
 
 export const landing = new Hono<AppEnv>()
   .get("/", async (c) => {
@@ -200,35 +252,20 @@ export const landing = new Hono<AppEnv>()
           <SectionHeader
             kicker="Pilih gayamu"
             title="60 tema premium, satu klik ganti"
-            sub="Tiga contoh di bawah — klik untuk demo hidup, lalu jelajahi semua 60 tema dengan nama usahamu."
+            sub="Lima belas tema unggulan di bawah — geser carousel-nya, klik untuk demo hidup, lalu jelajahi selengkapnya dengan nama usahamu."
           />
           <ThemeStrip
-            themes={[
-              {
-                slug: "hangat",
-                name: "Hangat",
-                character: "Earth tone membumi — untuk warung & rumah makan keluarga.",
-                gradient: "linear-gradient(135deg, #FFFBF5 0%, #E8A03C 60%, #C4501B 100%)",
-                textColor: "#3B2413",
-                demoUrl: `${demoUrl}?tema=hangat`,
-              },
-              {
-                slug: "arang",
-                name: "Arang",
-                character: "Gelap elegan berlapis emas — untuk grill, kopi, dining malam.",
-                gradient: "linear-gradient(135deg, #1A1815 0%, #242019 55%, #C9A227 130%)",
-                textColor: "#EDE6DA",
-                demoUrl: `${demoUrl}?tema=arang`,
-              },
-              {
-                slug: "ceria",
-                name: "Ceria",
-                character: "Cerah playful — untuk kedai kekinian, dessert & minuman.",
-                gradient: "linear-gradient(135deg, #FFFDF7 0%, #4ECDC4 55%, #FF6B57 115%)",
-                textColor: "#27221C",
-                demoUrl: `${demoUrl}?tema=ceria`,
-              },
-            ]}
+            themes={featuredThemes().map((theme) => {
+              const swatch = themeSwatch(theme);
+              return {
+                slug: theme.slug,
+                name: theme.name,
+                character: theme.character,
+                gradient: swatch.gradient,
+                textColor: swatch.textColor,
+                demoUrl: `${demoUrl}?tema=${theme.slug}`,
+              };
+            })}
           />
         </LandingSection>
         <LandingSection>
@@ -515,15 +552,130 @@ export const landing = new Hono<AppEnv>()
     });
     return c.html(mitraResultPage({ code }));
   })
+  .get("/blog", (c) => {
+    const base = c.env.BASE_DOMAIN;
+    const html = `<!doctype html>${String(
+      <LandingShell
+        title={BLOG_TITLE}
+        description={BLOG_DESC}
+        canonical={`https://${base}/blog`}
+        jsonLd={landingJsonLd(base)}
+      >
+        <TopBar
+          ctaHref={contentCtaHref(c)}
+          ctaLabel="Buat Website"
+          links={contentTopBarLinks(base)}
+        />
+        <LandingSection>
+          <SectionHeader
+            kicker="Blog"
+            title="Tips jualan & website untuk warung"
+            sub="Panduan singkat dan praktis biar usahamu makin ramai — online maupun offline."
+          />
+          <BlogGrid
+            items={BLOG_ARTICLES.map((article) => ({
+              href: `/blog/${article.slug}`,
+              title: article.title,
+              description: article.description,
+              meta: `${article.readMinutes} menit baca`,
+            }))}
+          />
+        </LandingSection>
+        <CtaBand
+          title="Siap punya website untuk usahamu?"
+          sub="Menu online, promo, tombol WhatsApp — jadi kurang dari sehari."
+          primary={{ href: contentCtaHref(c), label: "Mulai Sekarang" }}
+        />
+        <LandingFooter links={footerLinks(base)} />
+      </LandingShell>,
+    )}`;
+    return c.html(html, 200, { "cache-control": "public, max-age=3600, s-maxage=86400" });
+  })
+  .get("/blog/:slug", (c) => {
+    const base = c.env.BASE_DOMAIN;
+    const article = findArticle(c.req.param("slug"));
+    if (!article) return c.notFound();
+    const meta = `${new Date(article.date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })} · ${article.readMinutes} menit baca`;
+    const html = `<!doctype html>${String(
+      <LandingShell
+        title={`${article.title} — tokoweb.id`}
+        description={article.description}
+        canonical={`https://${base}/blog/${article.slug}`}
+        jsonLd={articleJsonLd(base, article)}
+      >
+        <TopBar
+          ctaHref={contentCtaHref(c)}
+          ctaLabel="Buat Website"
+          links={contentTopBarLinks(base)}
+        />
+        <article class="prose-wrap">
+          <ArticleHeader title={article.title} meta={meta} />
+          <ArticleBody blocks={parseBlogBody(article.body)} />
+        </article>
+        <CtaBand
+          title="Punya website warung seperti ini"
+          sub="Menu online, promo otomatis, tombol WhatsApp — mulai Rp 75rb/bulan."
+          primary={{ href: contentCtaHref(c), label: "Lihat & Gabung" }}
+        />
+        <LandingFooter links={footerLinks(base)} />
+      </LandingShell>,
+    )}`;
+    return c.html(html, 200, { "cache-control": "public, max-age=3600, s-maxage=86400" });
+  })
+  .get("/toko", async (c) => {
+    const base = c.env.BASE_DOMAIN;
+    const tenants = (await listTenants(c.env.DB)).filter((t) => t.status === "active");
+    const html = `<!doctype html>${String(
+      <LandingShell
+        title="Toko Bergabung — tokoweb.id"
+        description="Daftar warung, kedai, dan restoran yang sudah punya website bersama tokoweb.id. Temukan dan pesan langsung dari mereka."
+        canonical={`https://${base}/toko`}
+        jsonLd={landingJsonLd(base)}
+      >
+        <TopBar
+          ctaHref={contentCtaHref(c)}
+          ctaLabel="Buat Website"
+          links={contentTopBarLinks(base)}
+        />
+        <LandingSection>
+          <SectionHeader
+            kicker="Toko Bergabung"
+            title={`${tenants.length} usaha sudah online`}
+            sub="Warung, kedai, dan resto yang sudah punya website bersama tokoweb.id."
+          />
+          <DirectoryGrid
+            items={tenants.map((t) => ({
+              href: `https://${t.slug}.${base}/`,
+              name: t.name,
+              vertical: "Kuliner",
+              initial: (t.name.trim()[0] ?? "T").toUpperCase(),
+            }))}
+          />
+        </LandingSection>
+        <CtaBand
+          title="Mau usahamu tampil di sini?"
+          sub="Bikin website warungmu, langsung masuk daftar Toko Bergabung."
+          primary={{ href: contentCtaHref(c), label: "Gabung Sekarang" }}
+        />
+        <LandingFooter links={footerLinks(base)} />
+      </LandingShell>,
+    )}`;
+    return c.html(html, 200, { "cache-control": "public, max-age=300, s-maxage=1800" });
+  })
   .get("/robots.txt", (c) =>
     c.text(`User-agent: *\nAllow: /\nSitemap: https://${c.env.BASE_DOMAIN}/sitemap.xml\n`, 200, {
       "cache-control": "public, max-age=86400",
     }),
   )
-  .get("/sitemap.xml", (c) =>
-    c.text(
-      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://${c.env.BASE_DOMAIN}/</loc></url><url><loc>https://${c.env.BASE_DOMAIN}/mitra</loc></url></urlset>\n`,
+  .get("/sitemap.xml", async (c) => {
+    const tenants = (await listTenants(c.env.DB)).filter((t) => t.status === "active");
+    return c.text(
+      buildSiteSitemap(
+        c.env.BASE_DOMAIN,
+        tenants.map((t) => t.slug),
+        blogSlugs(),
+      ),
       200,
-      { "content-type": "application/xml", "cache-control": "public, max-age=86400" },
-    ),
-  );
+      { "content-type": "application/xml", "cache-control": "public, max-age=3600" },
+    );
+  });

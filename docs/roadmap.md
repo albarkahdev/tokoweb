@@ -50,3 +50,30 @@ Hanya ini. Permintaan di luar daftar = tolak atau tunda ke Fase 2 (butuh konfirm
 - Evaluasi: Analytics Engine untuk tracker, payment gateway penuh, tim pertama.
 
 **Selesai jika:** ≥ 100 tenant bayar, churn bulanan < 5%, operasional ≤ 2 jam/hari.
+
+---
+
+## Modul fitur (jalur terpisah dari fase skala di atas)
+
+Penomoran "Fase 4/5" di sini = jalur fitur milik founder, **bukan** fase skala
+Fase 1/2/3 di atas. Dikerjakan setelah Fase 1 DoD lengkap.
+
+### Fase 5 — Pemesanan (Ordering)
+Tenant kuliner menerima pesanan online. Tamu (tanpa login) → pilih menu →
+checkout → bayar-dulu (manual, verifikasi mitra) → mitra proses. Dine-in (QR meja)
+& Pick-up. Invoice HTML printable.
+Spec lengkap: `docs/ordering-spec.md`. Keputusan: `docs/adr/0010-pemesanan-online.md`.
+
+### Fase 4 — Polish & fondasi pertumbuhan
+Paket 14 item sebelum modul Pemesanan: tombol dummy demo, section pengumuman,
+SEO situs mitra + sitemap (demo `noindex`), section kepercayaan, disclaimer SEO,
+reset password via WA, invoice langganan, blog pusat 10 artikel, kurasi 15 tema
+unggulan (carousel di landing: Hangat, Senja, Sambal, Kopi, Manis, Lampion, Pasar,
+Karnaval, Blueprint, Bara, Loket, Lilin, Sawah, Kunang, Jeruk; sisa terkunci 🔒),
+slug wajib + direktori "Toko Bergabung", upload logo
+toko, fix pill buka/tutup, tutup manual override jadwal.
+Spec: `docs/fase4-spec.md`. Keputusan: `docs/adr/0011-fase4-keputusan.md`.
+
+### Fase 6 — Akun pembeli, riwayat, reorder
+Login ringan (HP/email OTP), riwayat pesanan, reorder/tambahan. Membutuhkan Fase 5
+sudah jalan. Ditahan sampai ada permintaan nyata.

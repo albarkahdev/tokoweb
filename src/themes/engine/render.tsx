@@ -1,7 +1,8 @@
-import { DAY_KEYS, DAY_LABELS, isItemActive, itemPhotos } from "@/domain/cms";
+import { DAY_KEYS, DAY_LABELS, isItemActive, itemPhotos, trustBadges } from "@/domain/cms";
 import type { MenuItem } from "@/domain/content";
 import { formatRupiah } from "@/domain/money";
 import {
+  ANNOUNCE_SCRIPT,
   LIGHTBOX_SCRIPT,
   MENU_POPUP_SCRIPT,
   OPEN_NOW_SCRIPT,
@@ -15,6 +16,7 @@ import { siteCss } from "@/themes/engine/site-css";
 import type { RenderData, ThemeConfig } from "@/themes/engine/types";
 import { themeConfigFor } from "@/themes/kuliner/configs";
 import {
+  AnnouncementBar,
   CategoryNav,
   ContactCard,
   GalleryGrid,
@@ -34,6 +36,7 @@ import {
   SubpageNav,
   TestimonialCard,
   TestimonialGrid,
+  TrustStrip,
   WaFloat,
 } from "@/ui/site";
 
@@ -146,6 +149,7 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
   const menuClass = `menu-${theme.layout.menu}`;
   const gallery = galleryPhotos(data);
   const specials = items.filter((item) => item.special);
+  const trustList = trustBadges(data.site.content.trust);
 
   return (
     <>
@@ -155,9 +159,11 @@ function HomeSections(props: { data: RenderData; theme: ThemeConfig; waNumber: s
         tagline={info.tagline}
         image={heroImage(data)}
         hoursJson={JSON.stringify(data.site.content.hours ?? {})}
+        forcedClosed={info.temp_closed?.active ? { reason: info.temp_closed.reason } : null}
         waHref={waLink(waNumber, `Halo ${businessName}, saya mau pesan.`)}
         menuAnchor="#menu"
       />
+      {trustList.length > 0 ? <TrustStrip badges={trustList} /> : null}
       {specials.length > 0 ? (
         <SiteSection
           id="spesial"
@@ -354,6 +360,10 @@ export function renderKulinerPage(data: RenderData): string {
   const businessName = info.name ?? data.site.name;
   const canonical = `${data.baseUrl}${data.path === "/" ? "" : data.path}`;
   const isHome = data.path === "/";
+  const announcement =
+    info.announcement?.active && info.announcement.text?.trim()
+      ? info.announcement.text.trim()
+      : null;
   const hasPromos = data.promos.length > 0;
   const tickerLine = hasPromos
     ? data.promos.map((promo) => `🔥 ${promo.title}`).join("   ✦   ")
@@ -374,6 +384,7 @@ export function renderKulinerPage(data: RenderData): string {
       scripts={[
         trackerScript(data.appBaseUrl),
         OPEN_NOW_SCRIPT,
+        ANNOUNCE_SCRIPT,
         REVEAL_SCRIPT,
         LIGHTBOX_SCRIPT,
         MENU_POPUP_SCRIPT,
@@ -381,6 +392,7 @@ export function renderKulinerPage(data: RenderData): string {
         SHARE_SCRIPT,
       ]}
     >
+      {announcement ? <AnnouncementBar text={announcement} dismissKey={data.site.slug} /> : null}
       {isHome ? <PromoTicker line={tickerLine} href={hasPromos ? "#promo" : undefined} /> : null}
       <SiteNav
         brand={businessName}
@@ -388,6 +400,7 @@ export function renderKulinerPage(data: RenderData): string {
         links={navLinks(data)}
         waHref={waLink(waNumber, `Halo ${businessName}, saya mau pesan.`)}
         withTicker={isHome}
+        logoSrc={info.logo_key ? `/img/${info.logo_key}` : null}
       />
       {isHome ? null : (
         <SubpageNav

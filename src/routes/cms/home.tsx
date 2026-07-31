@@ -88,6 +88,11 @@ export const cmsHome = new Hono<AppEnv>().get("/", async (c) => {
                 : []),
             ]}
           />
+          <Text small muted>
+            📈 Muncul di Google butuh waktu. Website baru biasanya mulai terindeks dalam 1–4 minggu
+            — wajar kalau di awal belum muncul saat dicari. Isi menu selengkap mungkin dan bagikan
+            linknya untuk mempercepat.
+          </Text>
           <Actions>
             <LinkButton href="/pratinjau" external>
               Pratinjau Website

@@ -7,11 +7,18 @@ export function demoChromeHtml(
   currentPath: string,
 ): string {
   const active = themes.find((theme) => theme.slug === activeTheme);
-  const items = themes
-    .map(
-      (theme) =>
-        `<a href="${currentPath}?tema=${theme.slug}" class="demo-tp-item${theme.slug === activeTheme ? " on" : ""}" data-f="${`${theme.name} ${theme.character} ${(theme.tags ?? []).join(" ")}`.toLowerCase()}"><b>${theme.name}</b><span>${theme.character}</span></a>`,
-    )
+  const ordered = themes
+    .slice()
+    .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
+  const usableCount = ordered.filter((theme) => theme.featured).length;
+  const items = ordered
+    .map((theme) => {
+      const f = `${theme.name} ${theme.character} ${(theme.tags ?? []).join(" ")}`.toLowerCase();
+      if (theme.featured) {
+        return `<a href="${currentPath}?tema=${theme.slug}" class="demo-tp-item${theme.slug === activeTheme ? " on" : ""}" data-f="${f}"><b>${theme.name}</b><span>${theme.character}</span></a>`;
+      }
+      return `<div class="demo-tp-item lock" data-f="${f}" aria-disabled="true" title="Tema premium — segera hadir"><b>🔒 ${theme.name}</b><span>${theme.character}</span><em class="tag">Premium</em></div>`;
+    })
     .join("");
   return `
 <style>
@@ -42,6 +49,10 @@ export function demoChromeHtml(
 .demo-tp-item b{font-size:0.92rem}
 .demo-tp-item.on b::after{content:" ✓ dipakai";color:#FFD166;font-size:0.75rem}
 .demo-tp-item span{color:#8F86AB;font-size:0.78rem}
+.demo-tp-item.lock{opacity:0.6;cursor:not-allowed;position:relative}
+.demo-tp-item.lock:hover{background:transparent;border-color:transparent}
+.demo-tp-item.lock b{color:#B9B3C8}
+.demo-tp-item.lock .tag{position:absolute;top:0.6rem;right:0.7rem;font-style:normal;font-size:0.6rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:#1D1410;background:#FFD166;border-radius:9999px;padding:0.1rem 0.5rem}
 body{padding-top:3.1rem;padding-bottom:7rem}
 .promo-ticker{top:3.1rem}
 .site-nav{top:3.1rem}
@@ -63,6 +74,8 @@ body{padding-top:3.1rem;padding-bottom:7rem}
 .demo-cta button{background:linear-gradient(135deg,#FF6B57,#FF8A3D);color:#1D1410;border:none;border-radius:0.55rem;padding:0.6rem 1.2rem;font-weight:800;cursor:pointer;font-family:inherit;font-size:0.9rem;transition:transform 0.15s ease}
 .demo-cta button:hover{transform:translateY(-1px)}
 .wa-float{display:none}
+.demo-toast{position:fixed;left:50%;bottom:8.5rem;transform:translate(-50%,1rem);z-index:90;background:#17141F;color:#fff;border:1px solid #453F55;border-radius:9999px;padding:0.65rem 1.15rem;font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:0.82rem;font-weight:600;box-shadow:0 12px 40px rgb(0 0 0 / 0.45);opacity:0;pointer-events:none;transition:opacity 0.2s ease,transform 0.2s ease;max-width:90vw;text-align:center}
+.demo-toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
 <div class="demo-top">
   <span class="lbl">Tema</span>
@@ -71,11 +84,12 @@ body{padding-top:3.1rem;padding-bottom:7rem}
 </div>
 <div class="demo-tp" id="demo-tp">
   <div class="demo-tp-box" role="dialog" aria-modal="true" aria-label="Pilih tema">
-    <div class="demo-tp-head"><strong>Pilih Tema (${themes.length})</strong><button type="button" class="demo-tp-close" aria-label="Tutup">×</button></div>
+    <div class="demo-tp-head"><strong>Pilih Tema · ${usableCount} bisa dicoba</strong><button type="button" class="demo-tp-close" aria-label="Tutup">×</button></div>
     <input class="demo-tp-search" id="demo-tp-search" placeholder="Cari: gelap, mewah, playful, animasi…">
     <div class="demo-tp-list">${items}</div>
   </div>
 </div>
+<div class="demo-toast" id="demo-toast" role="status"></div>
 <div class="demo-cta" id="demo-cta">
   <div class="inner">
     <p class="pitch"><strong>Suka website ini?</strong> <span>Punya versimu — jadi ≤ 1 hari,</span> <span class="price">mulai Rp 75rb/bulan.</span> <button type="button" id="demo-cta-mau" class="cta-mini-btn">Saya mau! →</button> <button type="button" id="demo-cta-toggle" class="cta-hide" aria-label="Sembunyikan form">▾</button></p>
@@ -148,6 +162,15 @@ tpSearch.addEventListener("input",function(){
     item.style.display=!q||(item.getAttribute("data-f")||"").toLowerCase().indexOf(q)!==-1?"":"none";
   });
 });
+var toast=document.getElementById("demo-toast");var toastTimer;
+function showToast(msg){toast.textContent=msg;toast.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(function(){toast.classList.remove("show")},2600)}
+document.addEventListener("click",function(e){
+  var a=e.target.closest("a");if(!a)return;
+  var href=a.getAttribute("href")||"";
+  if(/^(https:\\/\\/wa\\.me|tel:|https:\\/\\/(www\\.)?(maps|goo)\\.)/i.test(href)||a.classList.contains("btn-wa")||a.classList.contains("nav-wa")){
+    e.preventDefault();showToast("Ini demo — tombol asli aktif di website kamu ✨");
+  }
+},true);
 })();
 </script>`;
 }
