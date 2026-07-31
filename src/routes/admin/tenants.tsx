@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { deleteCookie, setCookie } from "hono/cookie";
 import { issueToken } from "@/db/auth-tokens";
+import { findPendingSubmission, reviewSubmission } from "@/db/billing";
 import { getSiteContent } from "@/db/contents";
 import { invalidateTenantCache } from "@/db/edge-cache";
 import { verifyPayment } from "@/db/payments";
@@ -24,6 +25,7 @@ import { hashPassword } from "@/domain/password";
 import { isPlan, PLAN_PRICES } from "@/domain/plan";
 import { buildMonthlyReportText, previousMonthRange } from "@/domain/report";
 import { isSlugReserved, SLUG_PATTERN, slugStatus, suggestSlug } from "@/domain/slug";
+import { sqlUtcDateTime } from "@/domain/stats";
 import { nextDueDateAfterPayment, wibDateOf } from "@/domain/subscription";
 import type { AppEnv } from "@/env";
 import { AdminPage, adminHtml } from "@/routes/admin/shared";
@@ -39,11 +41,12 @@ import {
   CopyArea,
   DataList,
   ListTable,
+  MediaRow,
   Row,
   Text,
   TextLink,
 } from "@/ui/display";
-import { Button, Field, Form, SelectField } from "@/ui/form";
+import { Button, Field, Form, HiddenInput, SelectField } from "@/ui/form";
 
 function statusBadge(status: string) {
   if (status === "active") return <Badge tone="success">aktif</Badge>;
@@ -131,6 +134,7 @@ export const adminTenants = new Hono<AppEnv>()
     const payouts = closing ? await listPayoutsForReferral(c.env.DB, closing.id) : [];
     const content = await getSiteContent(c.env.DB, tenant.id);
     const hasContent = Boolean(content.info?.name);
+    const pendingBilling = await findPendingSubmission(c.env.DB, tenant.id);
 
     const month = previousMonthRange(wibDateOf(Date.now()));
     const monthBefore = previousMonthRange(month.from);
@@ -201,8 +205,43 @@ export const adminTenants = new Hono<AppEnv>()
               ) : null}
             </Actions>
           </Card>
+          {pendingBilling ? (
+            <Card>
+              <CardTitle>
+                Bukti Bayar dari Klien <Badge tone="warning">perlu dicek</Badge>
+              </CardTitle>
+              <DataList
+                rows={[
+                  { label: "Periode", value: pendingBilling.period },
+                  { label: "Nominal diklaim", value: formatRupiah(pendingBilling.amount) },
+                  { label: "Dikirim", value: pendingBilling.created_at },
+                  ...(pendingBilling.note
+                    ? [{ label: "Catatan", value: pendingBilling.note }]
+                    : []),
+                ]}
+              />
+              {pendingBilling.proof_key ? (
+                <MediaRow src={`/img/${pendingBilling.proof_key}`} alt="Bukti transfer klien" />
+              ) : (
+                <Text small muted>
+                  Tanpa lampiran gambar.
+                </Text>
+              )}
+              <Text small muted>
+                Cek mutasi rekening dulu. Cocok → “Tandai Lunas” di bawah (periode & nominal sudah
+                terisi). Tidak cocok → tolak.
+              </Text>
+              <Form
+                action={`/admin/tenant/${tenant.id}/tolak-bukti`}
+                confirm="Tolak bukti ini? Klien diminta upload ulang."
+              >
+                <HiddenInput name="period" value={pendingBilling.period} />
+                <Button variant="danger">Tolak Bukti</Button>
+              </Form>
+            </Card>
+          ) : null}
           <Card>
-            <CardTitle>Verifikasi Pembayaran QRIS</CardTitle>
+            <CardTitle>Verifikasi Pembayaran</CardTitle>
             <Form
               action={`/admin/tenant/${tenant.id}/bayar`}
               confirm="Pastikan pembayaran benar-benar sudah masuk. Catat sekali saja per periode — dobel pencatatan bisa membuka komisi mitra tanpa pembayaran nyata. Lanjut?"
@@ -211,12 +250,28 @@ export const adminTenants = new Hono<AppEnv>()
                 label="Jenis"
                 name="kind"
                 options={[
+                  {
+                    value: "monthly",
+                    label: "Langganan bulanan",
+                    selected: pendingBilling !== null,
+                  },
                   { value: "setup", label: "Setup (sekali)" },
-                  { value: "monthly", label: "Langganan bulanan" },
                 ]}
               />
-              <Field label="Nominal (Rp)" name="amount" inputmode="numeric" required />
-              <Field label="Periode" name="period" placeholder="2026-08" required />
+              <Field
+                label="Nominal (Rp)"
+                name="amount"
+                inputmode="numeric"
+                required
+                value={pendingBilling ? String(pendingBilling.amount) : undefined}
+              />
+              <Field
+                label="Periode"
+                name="period"
+                placeholder="2026-08"
+                required
+                value={pendingBilling?.period}
+              />
               <Button block>Tandai Lunas</Button>
             </Form>
           </Card>
@@ -320,6 +375,9 @@ export const adminTenants = new Hono<AppEnv>()
         `/admin/tenant/${tenant.id}?err=Pembayaran ${kind} periode ${period} sudah pernah dicatat. Tidak diproses ulang.`,
       );
     }
+    if (kind === "monthly") {
+      await reviewSubmission(c.env.DB, tenant.id, period, "matched", sqlUtcDateTime(Date.now()));
+    }
     if (result.tenantReactivated) {
       await invalidateTenantCache(tenantHostnames(tenant, c.env.BASE_DOMAIN), [
         ...PUBLIC_PAGE_PATHS,
@@ -329,6 +387,17 @@ export const adminTenants = new Hono<AppEnv>()
       ? ` Cicilan komisi #${result.unlockedInstallment} siap cair.`
       : "";
     return c.redirect(`/admin/tenant/${tenant.id}?ok=Pembayaran dicatat.${note}`);
+  })
+  .post("/tenant/:id/tolak-bukti", async (c) => {
+    const tenant = await findTenantById(c.env.DB, Number(c.req.param("id")));
+    if (!tenant) return c.notFound();
+    const values = formDataToValues(await c.req.formData());
+    const period = (values.period ?? "").trim();
+    if (!/^\d{4}-\d{2}$/.test(period)) {
+      return c.redirect(`/admin/tenant/${tenant.id}?err=Periode tidak valid.`);
+    }
+    await reviewSubmission(c.env.DB, tenant.id, period, "rejected", sqlUtcDateTime(Date.now()));
+    return c.redirect(`/admin/tenant/${tenant.id}?ok=Bukti ditolak. Klien diminta upload ulang.`);
   })
   .post("/tenant/:id/golive", async (c) => {
     const tenant = await findTenantById(c.env.DB, Number(c.req.param("id")));
