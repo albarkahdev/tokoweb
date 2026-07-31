@@ -105,7 +105,10 @@ export const ORDER_CSS = `
 .ord-timeline .ord-dot{position:relative;z-index:1;display:block;width:14px;height:14px;border-radius:50%;background:var(--surface);border:2px solid rgba(0,0,0,0.2);margin:0 auto 0.35rem;transition:background 0.3s ease,border-color 0.3s ease}
 .ord-timeline li.done{color:var(--text);font-weight:700}
 .ord-timeline li.done .ord-dot{background:var(--primary);border-color:var(--primary)}
-.ord-cancelled{text-align:center;color:#b42318;font-weight:600;margin:1rem 0}
+.ord-cancelled{background:#fef3f2;border:1px solid #fecdca;border-radius:var(--r-card);padding:1rem 1.1rem;margin:1rem 0;text-align:center}
+.ord-cancelled-title{color:#b42318;font-weight:700;margin:0}
+.ord-cancelled-reason{color:#912018;font-style:italic;margin:0.5rem 0 0}
+.ord-cancelled-note{color:var(--muted);font-size:0.88rem;margin:0.6rem 0 0}
 .ord-card{background:var(--surface);border:1px solid rgba(0,0,0,0.07);border-radius:var(--r-card);padding:1rem;box-shadow:var(--shadow-card)}
 .ord-summary-head{display:flex;justify-content:space-between;font-size:0.85rem;color:var(--muted);margin-bottom:0.7rem;gap:0.6rem}
 .ord-lines{list-style:none;padding:0;margin:0 0 0.5rem;display:flex;flex-direction:column;gap:0.45rem}

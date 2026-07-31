@@ -251,3 +251,28 @@ export function statusLabelFor(status: OrderStatus, fulfillment: Fulfillment): s
   }
   return ORDER_STATUS_LABELS[status];
 }
+
+export const MAX_CANCEL_REASON = 120;
+
+export const CANCEL_REASON_PRESETS = [
+  "Menu/stok habis",
+  "Toko sedang tutup",
+  "Pesanan tidak bisa dipenuhi",
+  "Pembeli membatalkan",
+] as const;
+
+export function buildCancelReason(preset: string, note: string): string | null {
+  const cleanNote = (note ?? "").trim();
+  const cleanPreset = (preset ?? "").trim();
+  const known = (CANCEL_REASON_PRESETS as readonly string[]).includes(cleanPreset);
+  let reason: string;
+  if (known) {
+    reason = cleanNote ? `${cleanPreset}: ${cleanNote}` : cleanPreset;
+  } else {
+    reason = cleanNote;
+  }
+  reason = reason.trim();
+  if (!reason) return null;
+  if (reason.length > MAX_CANCEL_REASON) reason = reason.slice(0, MAX_CANCEL_REASON).trim();
+  return reason;
+}

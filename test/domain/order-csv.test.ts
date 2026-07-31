@@ -16,6 +16,7 @@ function row(over: Partial<OrderCsvRow> = {}): OrderCsvRow {
     tax_amount: 0,
     total: 38000,
     note: null,
+    cancel_reason: null,
     items: "Bakmi x2",
     ...over,
   };
@@ -26,7 +27,7 @@ describe("buildOrdersCsv", () => {
     const csv = buildOrdersCsv([row()]);
     const [header, first] = csv.split("\r\n");
     expect(header).toBe(
-      "Kode,Tanggal,Nama,HP,Jenis,Meja,Status,Bayar,Subtotal,Biaya,Pajak,Total,Catatan,Item",
+      "Kode,Tanggal,Nama,HP,Jenis,Meja,Status,Bayar,Subtotal,Biaya,Pajak,Total,Catatan,Alasan batal,Item",
     );
     expect(first).toContain("ABC123");
     expect(first).toContain("Makan di tempat");
@@ -41,6 +42,11 @@ describe("buildOrdersCsv", () => {
     expect(csv).toContain("'@SUM(1)");
   });
 
+  it("includes the cancellation reason", () => {
+    const csv = buildOrdersCsv([row({ status: "dibatalkan", cancel_reason: "Menu/stok habis" })]);
+    expect(csv.split("\r\n")[1]).toContain("Menu/stok habis");
+  });
+
   it("marks non-cash orders as Online", () => {
     expect(buildOrdersCsv([row({ cash: 0 })]).split("\r\n")[1]).toContain("Online");
   });
@@ -52,7 +58,7 @@ describe("buildOrdersCsv", () => {
 
   it("handles empty rows with only a header", () => {
     expect(buildOrdersCsv([])).toBe(
-      "Kode,Tanggal,Nama,HP,Jenis,Meja,Status,Bayar,Subtotal,Biaya,Pajak,Total,Catatan,Item",
+      "Kode,Tanggal,Nama,HP,Jenis,Meja,Status,Bayar,Subtotal,Biaya,Pajak,Total,Catatan,Alasan batal,Item",
     );
   });
 

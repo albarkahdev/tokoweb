@@ -10,7 +10,13 @@ import {
   setOrderPayment,
 } from "@/db/orders";
 import { formatRupiah } from "@/domain/money";
-import { applyTransition, ORDER_STATUS_LABELS, type OrderStatus } from "@/domain/order";
+import {
+  applyTransition,
+  buildCancelReason,
+  CANCEL_REASON_PRESETS,
+  ORDER_STATUS_LABELS,
+  type OrderStatus,
+} from "@/domain/order";
 import { buildOrdersCsv, ordersCsvFilename } from "@/domain/order-csv";
 import {
   PAYMENT_TYPE_LABELS,
@@ -35,7 +41,7 @@ import {
   Text,
   TextLink,
 } from "@/ui/display";
-import { Button, Form } from "@/ui/form";
+import { Button, Field, Form, SelectField } from "@/ui/form";
 import { renderOrderInvoiceHtml } from "@/ui/invoice";
 
 const ACTIONABLE: OrderStatus[] = ["baru", "cek_bayar"];
@@ -188,6 +194,38 @@ function InboxPage(props: {
   );
 }
 
+const CANCELLABLE: OrderStatus[] = ["baru", "menunggu_bayar", "cek_bayar"];
+
+function CancelCard(props: { order: OrderRow }) {
+  const { order } = props;
+  const isNew = order.status === "baru";
+  return (
+    <Card>
+      <CardTitle>{isNew ? "Tolak pesanan" : "Batalkan pesanan"}</CardTitle>
+      <Text small muted>
+        Pilih alasannya — pembeli akan melihat alasan ini di halaman status, jadi dia tahu kenapa
+        dan tidak jadi bayar.
+      </Text>
+      <Form
+        action={`/pesanan/${order.code}/batal`}
+        confirm={isNew ? "Tolak pesanan ini?" : "Batalkan pesanan ini?"}
+      >
+        <SelectField
+          label="Alasan"
+          name="alasan"
+          options={CANCEL_REASON_PRESETS.map((reason) => ({ value: reason, label: reason }))}
+        />
+        <Field
+          label="Catatan untuk pembeli (opsional)"
+          name="catatan"
+          placeholder="mis. stok ayam bakar habis"
+        />
+        <Button variant="danger">{isNew ? "Tolak pesanan" : "Batalkan pesanan"}</Button>
+      </Form>
+    </Card>
+  );
+}
+
 function OrderActions(props: { order: OrderRow; readOnly: boolean }) {
   const { order } = props;
   if (props.readOnly) return null;
@@ -203,28 +241,9 @@ function OrderActions(props: { order: OrderRow; readOnly: boolean }) {
     } else {
       actions.push({ action: "konfirmasi", label: "Konfirmasi & buka pembayaran" });
     }
-    actions.push({
-      action: "batal",
-      label: "Tolak pesanan",
-      variant: "danger",
-      confirm: "Batalkan pesanan ini?",
-    });
-  } else if (order.status === "menunggu_bayar") {
-    actions.push({
-      action: "batal",
-      label: "Batalkan",
-      variant: "danger",
-      confirm: "Batalkan pesanan ini?",
-    });
   } else if (order.status === "cek_bayar") {
     actions.push({ action: "verifikasi", label: "Terima pembayaran → proses" });
     actions.push({ action: "tolak", label: "Tolak bukti bayar", variant: "secondary" });
-    actions.push({
-      action: "batal",
-      label: "Batalkan",
-      variant: "danger",
-      confirm: "Batalkan pesanan ini?",
-    });
   } else if (order.status === "diproses") {
     actions.push({
       action: "siap",
@@ -234,18 +253,24 @@ function OrderActions(props: { order: OrderRow; readOnly: boolean }) {
   } else if (order.status === "siap") {
     actions.push({ action: "selesai", label: "Tandai selesai" });
   }
-  if (actions.length === 0) return null;
+  const cancellable = CANCELLABLE.includes(order.status);
+  if (actions.length === 0 && !cancellable) return null;
   return (
-    <Card>
-      <CardTitle>Tindakan</CardTitle>
-      <Actions>
-        {actions.map((a) => (
-          <Form action={`/pesanan/${order.code}/${a.action}`} confirm={a.confirm}>
-            <Button variant={a.variant}>{a.label}</Button>
-          </Form>
-        ))}
-      </Actions>
-    </Card>
+    <>
+      {actions.length > 0 ? (
+        <Card>
+          <CardTitle>Tindakan</CardTitle>
+          <Actions>
+            {actions.map((a) => (
+              <Form action={`/pesanan/${order.code}/${a.action}`} confirm={a.confirm}>
+                <Button variant={a.variant}>{a.label}</Button>
+              </Form>
+            ))}
+          </Actions>
+        </Card>
+      ) : null}
+      {cancellable ? <CancelCard order={order} /> : null}
+    </>
   );
 }
 
@@ -288,6 +313,9 @@ function DetailPage(props: {
             { label: "Catatan", value: order.note ?? "-" },
             { label: "Metode bayar", value: props.methodLabel ?? "-" },
             { label: "Masuk", value: wib(order.created_at) },
+            ...(order.status === "dibatalkan" && order.cancel_reason
+              ? [{ label: "Alasan batal", value: order.cancel_reason }]
+              : []),
           ]}
         />
       </Card>
@@ -442,13 +470,19 @@ export const cmsPesanan = new Hono<AppEnv>()
     if (!target) return c.redirect(`/pesanan/${code}`);
     const order = await getOrderByCodeScoped(c, cms.tenant.id, code);
     if (!order) return c.redirect("/pesanan?err=Pesanan tidak ditemukan.");
+    const action = c.req.param("action");
+    let cancelReason: string | null = null;
+    if (action === "batal") {
+      const form = await c.req.parseBody();
+      cancelReason = buildCancelReason(String(form.alasan ?? ""), String(form.catatan ?? ""));
+    }
     try {
       const next = applyTransition(order, target, sqlUtcDateTime(Date.now()));
-      if (c.req.param("action") === "tolak") {
+      if (action === "tolak") {
         next.paid_at = null;
         await setOrderPayment(c.env.DB, order.id, cms.tenant.id, null, null, null);
       }
-      await saveOrderTransition(c.env.DB, order.id, cms.tenant.id, next);
+      await saveOrderTransition(c.env.DB, order.id, cms.tenant.id, next, cancelReason);
     } catch {
       return c.redirect(`/pesanan/${code}?err=Tindakan tidak valid untuk status saat ini.`);
     }

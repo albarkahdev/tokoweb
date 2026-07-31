@@ -357,6 +357,8 @@ export function OrderStatusView(props: {
   createdLabel: string;
   waReceiptHref: string | null;
   justCreated?: boolean;
+  cancelReason?: string | null;
+  paidBefore?: boolean;
   children?: unknown;
 }) {
   const steps: { key: OrderStatus; label: string }[] = props.cash
@@ -389,7 +391,15 @@ export function OrderStatusView(props: {
         </span>
       </div>
       {props.status === "dibatalkan" ? (
-        <p class="ord-cancelled">Pesanan ini dibatalkan.</p>
+        <div class="ord-cancelled">
+          <p class="ord-cancelled-title">Pesanan dibatalkan penjual</p>
+          {props.cancelReason ? <p class="ord-cancelled-reason">“{props.cancelReason}”</p> : null}
+          <p class="ord-cancelled-note">
+            {props.paidBefore
+              ? "Kalau kamu sudah terlanjur bayar, hubungi penjual untuk pengembalian dana."
+              : "Tenang, kamu belum melakukan pembayaran apa pun. Silakan pesan lagi kapan saja 🙏"}
+          </p>
+        </div>
       ) : (
         <ol class="ord-timeline">
           {steps.map((step, index) => (

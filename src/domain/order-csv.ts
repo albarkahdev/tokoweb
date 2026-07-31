@@ -14,6 +14,7 @@ export type OrderCsvRow = {
   tax_amount: number;
   total: number;
   note: string | null;
+  cancel_reason: string | null;
   items: string | null;
 };
 
@@ -31,6 +32,7 @@ const HEADERS = [
   "Pajak",
   "Total",
   "Catatan",
+  "Alasan batal",
   "Item",
 ];
 
@@ -64,6 +66,7 @@ function rowCells(row: OrderCsvRow): (string | number)[] {
     row.tax_amount,
     row.total,
     row.note ?? "",
+    row.cancel_reason ?? "",
     row.items ?? "",
   ];
 }
