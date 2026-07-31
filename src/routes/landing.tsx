@@ -551,6 +551,7 @@ export const landing = new Hono<AppEnv>()
       c.env.TURNSTILE_SECRET,
       values["cf-turnstile-response"] ?? "",
       c.req.header("cf-connecting-ip"),
+      c.env.ENVIRONMENT,
     );
     if (!humanOk) {
       return c.html(mitraResultPage({ error: "Verifikasi anti-robot gagal. Coba lagi." }), 400);

@@ -26,7 +26,13 @@ import { AppLayout } from "@/ui/app-layout";
 import { demoChromeHtml } from "@/ui/demo-chrome";
 import { Card, PageTitle, Text, TextLink } from "@/ui/display";
 import { Button, Field, Form, HiddenInput } from "@/ui/form";
-import { OrderStatusHint, OrderStatusView, OrderTopNav, PaymentPanel } from "@/ui/order";
+import {
+  OrderDemoNote,
+  OrderStatusHint,
+  OrderStatusView,
+  OrderTopNav,
+  PaymentPanel,
+} from "@/ui/order";
 import { TurnstileWidget } from "@/ui/turnstile-widget";
 
 const DEMO_ORDER_SETTINGS = {
@@ -296,6 +302,7 @@ export const demo = new Hono<AppEnv>()
       c.env.TURNSTILE_SECRET,
       values["cf-turnstile-response"] ?? "",
       c.req.header("cf-connecting-ip"),
+      c.env.ENVIRONMENT,
     );
     if (!humanOk) {
       return c.html(thanksPage("Verifikasi anti-robot gagal. Coba lagi ya!"), 400);
@@ -380,7 +387,7 @@ function demoStatusPage(
     <>
       <OrderTopNav brand={DEMO_BUSINESS_NAME} homeHref={homeHref} />
       <div class="ord-status ord-status-flush">
-        <div class="ord-demo-note">{DEMO_NOTICE}</div>
+        <OrderDemoNote>{DEMO_NOTICE}</OrderDemoNote>
       </div>
       <OrderStatusView
         code="DEMO1234"

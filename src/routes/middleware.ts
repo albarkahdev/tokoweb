@@ -23,6 +23,7 @@ export const securityHeaders: MiddlewareHandler<AppEnv> = async (c, next) => {
   c.header("X-Frame-Options", "DENY");
   c.header("X-Content-Type-Options", "nosniff");
   c.header("Referrer-Policy", "strict-origin-when-cross-origin");
+  c.header("Content-Security-Policy", "frame-ancestors 'none'; base-uri 'self'; object-src 'none'");
 };
 
 export const requireOwner: MiddlewareHandler<AppEnv> = async (c, next) => {

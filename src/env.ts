@@ -10,6 +10,7 @@ export type Bindings = {
   CONTACT_WA_NUMBER: string;
   TURNSTILE_SECRET?: string;
   TURNSTILE_SITE_KEY?: string;
+  ENVIRONMENT?: string;
 };
 
 export type AppEnv = {

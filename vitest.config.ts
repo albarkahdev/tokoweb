@@ -14,6 +14,7 @@ export default defineConfig({
           AUTH_SECRET: "test-auth-secret",
           TURNSTILE_SECRET: "",
           TURNSTILE_SITE_KEY: "",
+          ENVIRONMENT: "test",
         },
       },
     }),

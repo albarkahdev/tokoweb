@@ -1,6 +1,7 @@
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+  cancelStaleNewOrders,
   cancelStaleUnpaidOrders,
   countOrdersByStatus,
   createOrder,
@@ -115,6 +116,18 @@ describe("orders db", () => {
     const n = await cancelStaleUnpaidOrders(env.DB, "2021-01-01 00:00:00");
     expect(n).toBe(0);
     expect((await getOrderById(env.DB, o.id, 1))?.status).toBe("menunggu_bayar");
+  });
+
+  it("auto-cancels abandoned 'baru' orders past the new-order cutoff", async () => {
+    const oldNew = await createOrder(env.DB, orderInput("OLDNEW01"));
+    const freshNew = await createOrder(env.DB, orderInput("FRESHNW1"));
+    await env.DB.prepare("UPDATE orders SET created_at='2020-01-01 00:00:00' WHERE id=?1")
+      .bind(oldNew.id)
+      .run();
+    const n = await cancelStaleNewOrders(env.DB, "2021-01-01 00:00:00");
+    expect(n).toBe(1);
+    expect((await getOrderById(env.DB, oldNew.id, 1))?.status).toBe("dibatalkan");
+    expect((await getOrderById(env.DB, freshNew.id, 1))?.status).toBe("baru");
   });
 
   it("records buyer payment method and proof", async () => {

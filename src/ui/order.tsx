@@ -1,3 +1,4 @@
+import type { Child } from "hono/jsx";
 import { formatRupiah } from "@/domain/money";
 import { type OrderStatus, statusLabelFor } from "@/domain/order";
 import type { PaymentLine } from "@/domain/payment-method";
@@ -114,6 +115,14 @@ function MenuCard(props: { item: OrderMenuItem }) {
       </div>
     </article>
   );
+}
+
+export function OrderFlash(props: { children: Child }) {
+  return <div class="ord-flash">{props.children}</div>;
+}
+
+export function OrderDemoNote(props: { children: Child }) {
+  return <div class="ord-demo-note">{props.children}</div>;
 }
 
 export function OrderEmptyMenu() {

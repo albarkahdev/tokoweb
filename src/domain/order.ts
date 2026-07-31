@@ -201,6 +201,7 @@ export function buildWaMessage(order: WaOrderSummary, statusUrl: string): string
 export const MAX_TABLES = 200;
 export const MAX_FEES = 3;
 export const STALE_UNPAID_HOURS = 24;
+export const STALE_NEW_HOURS = 48;
 
 export function staleUnpaidCutoffIso(nowMs: number, hours: number = STALE_UNPAID_HOURS): string {
   return new Date(nowMs - hours * 3_600_000).toISOString().replace("T", " ").slice(0, 19);

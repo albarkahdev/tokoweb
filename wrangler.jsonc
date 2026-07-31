@@ -19,6 +19,7 @@
     }
   ],
   "vars": {
+    "ENVIRONMENT": "production",
     "BASE_DOMAIN": "tokoweb.id",
     "CONTACT_WA_NUMBER": "",
     "STORAGE_ENDPOINT": "https://is3.cloudhost.id",

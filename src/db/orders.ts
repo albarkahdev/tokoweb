@@ -238,3 +238,13 @@ export async function cancelStaleUnpaidOrders(db: D1Database, cutoffIso: string)
     .run();
   return result.meta.changes ?? 0;
 }
+
+export async function cancelStaleNewOrders(db: D1Database, cutoffIso: string): Promise<number> {
+  const result = await db
+    .prepare(
+      "UPDATE orders SET status = 'dibatalkan', cancelled_at = datetime('now') WHERE status = 'baru' AND created_at < ?1",
+    )
+    .bind(cutoffIso)
+    .run();
+  return result.meta.changes ?? 0;
+}

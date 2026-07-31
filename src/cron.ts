@@ -1,12 +1,12 @@
 import { pruneTrackEvents, upsertDailyStats } from "@/db/daily-stats";
 import { invalidateTenantCache } from "@/db/edge-cache";
 import { listSubscriptionsWithDueDate, listTenantsWithPromoBoundary } from "@/db/lifecycle";
-import { cancelStaleUnpaidOrders } from "@/db/orders";
+import { cancelStaleNewOrders, cancelStaleUnpaidOrders } from "@/db/orders";
 import { releaseMaturedFirstInstallments, voidUnpaidPayouts } from "@/db/payouts";
 import { findClosingByTenant } from "@/db/referrals";
 import { setSubscriptionCycle } from "@/db/subscriptions";
 import { setTenantStatus } from "@/db/tenants";
-import { staleUnpaidCutoffIso } from "@/domain/order";
+import { STALE_NEW_HOURS, staleUnpaidCutoffIso } from "@/domain/order";
 import { addDays, pruneCutoffUtc, sqlUtcDateTime, yesterdayWibWindow } from "@/domain/stats";
 import { lifecycleStatusFor, wibDateOf } from "@/domain/subscription";
 import type { Bindings } from "@/env";
@@ -27,6 +27,7 @@ export async function runNightlyMaintenance(env: Bindings, nowMs: number): Promi
   await purgePromoBoundaries(env, today);
   await releaseMaturedFirstInstallments(env.DB, sqlUtcDateTime(nowMs - REFUND_WINDOW_MS));
   await cancelStaleUnpaidOrders(env.DB, staleUnpaidCutoffIso(nowMs));
+  await cancelStaleNewOrders(env.DB, staleUnpaidCutoffIso(nowMs, STALE_NEW_HOURS));
 }
 
 async function runSubscriptionLifecycle(env: Bindings, todayWib: string): Promise<void> {

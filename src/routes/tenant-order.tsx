@@ -45,7 +45,9 @@ import {
   MyOrdersView,
   OrderCartSheet,
   OrderClosedNotice,
+  OrderDemoNote,
   OrderEmptyMenu,
+  OrderFlash,
   type OrderMenuCategory,
   OrderMenuGrid,
   OrderStatusHint,
@@ -168,8 +170,8 @@ export function renderOrderPage(
         myOrdersHref={opts.myOrdersHref}
       />
       <div class="ord-wrap">
-        {opts.demoNotice ? <div class="ord-demo-note">{opts.demoNotice}</div> : null}
-        {opts.error ? <div class="ord-flash">{opts.error}</div> : null}
+        {opts.demoNotice ? <OrderDemoNote>{opts.demoNotice}</OrderDemoNote> : null}
+        {opts.error ? <OrderFlash>{opts.error}</OrderFlash> : null}
         {categories.length === 0 ? (
           <OrderEmptyMenu />
         ) : (
@@ -305,6 +307,7 @@ export const tenantOrder = new Hono<AppEnv>()
       c.env.TURNSTILE_SECRET,
       String(form.get("cf-turnstile-response") ?? ""),
       c.req.header("cf-connecting-ip"),
+      c.env.ENVIRONMENT,
     );
     if (!humanOk) {
       return c.html(
@@ -547,6 +550,7 @@ export const tenantOrder = new Hono<AppEnv>()
       c.env.TURNSTILE_SECRET,
       String(form.get("cf-turnstile-response") ?? ""),
       c.req.header("cf-connecting-ip"),
+      c.env.ENVIRONMENT,
     );
     if (!humanOk) return c.redirect(`/o/${code}`);
 
