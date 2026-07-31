@@ -22,6 +22,17 @@ export type MenuItem = {
   featured?: boolean;
   special?: boolean;
   active?: boolean;
+  available?: boolean;
+};
+
+export type OrderFeeSetting = { label?: string; amount?: number };
+
+export type OrderSettings = {
+  enabled?: boolean;
+  tax_percent?: number;
+  fees?: OrderFeeSetting[];
+  min_order?: number;
+  tables?: number;
 };
 
 export type MenuCategory = {
@@ -42,6 +53,7 @@ export type SiteContent = {
   menu?: MenuCategory[];
   gallery?: { image_key?: string; alt?: string }[];
   trust?: SiteTrust;
+  order_settings?: OrderSettings;
 };
 
 export function parseSiteContent(json: string | null): SiteContent {
